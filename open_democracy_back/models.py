@@ -9,10 +9,39 @@ from wagtail.snippets.models import register_snippet
 
 
 class HomePage(Page):
+    # HomePage can be created only on the root
+    parent_page_types = ["wagtailcore.Page"]
+
+    tagline = models.CharField(max_length=127, default="")
     body = RichTextField()
 
+    content_panels = Page.content_panels + [
+        FieldPanel("tagline"),
+        FieldPanel("body"),
+    ]
+
     api_fields = [
-        APIField('body')
+        APIField('title'),
+        APIField('tagline'),
+        APIField('body'),
+    ]
+
+
+class BlogPage(Page):
+    published_date = models.DateTimeField()
+    body = RichTextField()
+    private_field = models.CharField(max_length=255)
+
+    content_panels = Page.content_panels + [
+        FieldPanel("published_date"),
+        FieldPanel("body"),
+        FieldPanel("private_field"),
+    ]
+
+    # Export fields over the API
+    api_fields = [
+        APIField('published_date'),
+        APIField('body'),
     ]
 
 

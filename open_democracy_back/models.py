@@ -2,7 +2,7 @@ from django.db import models
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
-from wagtail.admin.edit_handlers import FieldPanel, InlinePanel
+from wagtail.admin.edit_handlers import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.api import APIField
 from wagtail.core.fields import RichTextField
 
@@ -170,6 +170,9 @@ class Question(index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableMo
         help_text="Choisir le type de question",
     )
 
+    min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
+    max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
+
     search_fields = [
         index.SearchField("question", partial_match=True),
     ]
@@ -178,9 +181,21 @@ class Question(index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableMo
         FieldPanel("criteria"),
         FieldPanel("order"),
         FieldPanel("question"),
-        FieldPanel("type"),
         FieldPanel("objective"),
-        InlinePanel("response_choices", label="Choix de réponses possibles"),
+        FieldPanel("type"),
+        InlinePanel(
+            "response_choices",
+            label="Choix de réponses possibles",
+            help_text="Ne renseigner que si cela à un sens par rapport au type de question",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("min"),
+                FieldPanel("max"),
+            ],
+            heading="Valeurs extrêmes possibles",
+            help_text="Ne renseigner que si cela à un sens par rapport au type de question",
+        ),
     ]
 
     def __str__(self):

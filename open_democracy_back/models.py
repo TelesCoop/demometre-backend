@@ -8,6 +8,7 @@ from wagtail.core.fields import RichTextField
 
 from wagtail.core.models import Page, TranslatableMixin, Orderable
 from wagtail.search import index
+from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
 
 
@@ -105,7 +106,7 @@ class MarkerOrderByRole(Orderable):
     )
     marker = models.ForeignKey(Marker, on_delete=models.CASCADE)
     panels = [
-        FieldPanel("marker"),
+        SnippetChooserPanel("marker"),
     ]
 
 
@@ -140,7 +141,7 @@ class Criteria(TranslatableMixin):
 
 
 @register_snippet
-class Question(index.Indexed, TranslatableMixin, TimeStampedModel):
+class Question(index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableModel):
     # TODO : question : how to behave when you delete a criteria?
     #  Delete all question or not authorize if questions are linked ?
     criteria = models.ForeignKey(
@@ -153,6 +154,22 @@ class Question(index.Indexed, TranslatableMixin, TimeStampedModel):
     question = models.CharField(max_length=510, default="")
     objective = models.BooleanField(default=False)
 
+    class QuestionType(models.TextChoices):
+        OPEN = "open", "Ouverte"
+        UNIQUE_CHOICE = "unique_choice", "Choix unique"
+        MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
+        CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
+        CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
+        BOOLEAN = "boolean", "Binaire oui / non"
+        NUMERICAL = "numerical", "Numérique"
+
+    type = models.CharField(
+        max_length=32,
+        choices=QuestionType.choices,
+        default=QuestionType.OPEN,
+        help_text="Choisir le type de question",
+    )
+
     search_fields = [
         index.SearchField("question", partial_match=True),
     ]
@@ -161,7 +178,9 @@ class Question(index.Indexed, TranslatableMixin, TimeStampedModel):
         FieldPanel("criteria"),
         FieldPanel("order"),
         FieldPanel("question"),
+        FieldPanel("type"),
         FieldPanel("objective"),
+        InlinePanel("response_choices", label="Choix de réponses possibles"),
     ]
 
     def __str__(self):
@@ -177,3 +196,25 @@ class Question(index.Indexed, TranslatableMixin, TimeStampedModel):
         verbose_name_plural = "Questions"
         verbose_name = "Question"
         ordering = ["order"]
+
+
+class ResponseChoice(TranslatableMixin, TimeStampedModel, Orderable):
+    question = ParentalKey(
+        Question, on_delete=models.CASCADE, related_name="response_choices"
+    )
+    response_choice = models.CharField(
+        max_length=510, default="", verbose_name="Réponse possible"
+    )
+
+    def __str__(self):
+        return self.response_choice
+
+    def __init__(self, *args, **kwargs):
+        """Fixes a bug when trying to translate."""
+        if "index_entries" in kwargs:
+            kwargs.pop("index_entries")
+        super().__init__(*args, **kwargs)
+
+    class Meta(TranslatableMixin.Meta):
+        verbose_name_plural = "Choix de réponse"
+        verbose_name = "Choix de réponse"

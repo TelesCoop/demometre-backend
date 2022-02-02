@@ -2,7 +2,11 @@ from django.db import models
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
-from wagtail.admin.edit_handlers import FieldPanel, InlinePanel, MultiFieldPanel
+from wagtail.admin.edit_handlers import (
+    FieldPanel,
+    InlinePanel,
+    FieldRowPanel,
+)
 from wagtail.api import APIField
 from wagtail.core.fields import RichTextField
 
@@ -151,8 +155,18 @@ class Question(index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableMo
         verbose_name="N°",
         help_text="Place que doit occuper cette question dans son critère",
     )
-    question = models.CharField(max_length=510, default="")
-    objective = models.BooleanField(default=False)
+    title = models.CharField(max_length=125, default="")
+    question = models.TextField(default="")
+    objectivity = models.CharField(
+        max_length=32,
+        choices=[("objective", "objective"), ("subjective", "subjective")],
+        default="subjective",
+    )
+    method = models.CharField(
+        max_length=32,
+        choices=[("quantitative", "quantitative"), ("qualitative", "qualitative")],
+        blank=True,
+    )
 
     class QuestionType(models.TextChoices):
         OPEN = "open", "Ouverte"
@@ -180,21 +194,27 @@ class Question(index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableMo
     panels = [
         FieldPanel("criteria"),
         FieldPanel("order"),
+        FieldPanel("title"),
         FieldPanel("question"),
-        FieldPanel("objective"),
+        FieldPanel("objectivity"),
+        FieldPanel("method"),
         FieldPanel("type"),
         InlinePanel(
             "response_choices",
             label="Choix de réponses possibles",
             help_text="Ne renseigner que si cela à un sens par rapport au type de question",
         ),
-        MultiFieldPanel(
+        FieldRowPanel(
             [
                 FieldPanel("min"),
                 FieldPanel("max"),
             ],
             heading="Valeurs extrêmes possibles",
             help_text="Ne renseigner que si cela à un sens par rapport au type de question",
+        ),
+        InlinePanel(
+            "question_filters",
+            label="Conditions d'affichage de la question",
         ),
     ]
 
@@ -233,3 +253,29 @@ class ResponseChoice(TranslatableMixin, TimeStampedModel, Orderable):
     class Meta(TranslatableMixin.Meta):
         verbose_name_plural = "Choix de réponse"
         verbose_name = "Choix de réponse"
+
+
+class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
+    question = ParentalKey(
+        Question, on_delete=models.CASCADE, related_name="question_filters"
+    )
+
+    conditional_question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, verbose_name="Filtre par question"
+    )
+
+    def get_possible_response(self):
+        possible_responses = ResponseChoice.objects.filter(
+            question_id=self.conditional_question.id
+        )
+        return {
+            "question__in": [
+                possible_responses,
+            ]
+        }
+
+    response = models.ForeignKey(
+        ResponseChoice,
+        # limit_choices_to=get_possible_response,
+        on_delete=models.CASCADE,
+    )

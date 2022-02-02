@@ -9,14 +9,14 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
 from .api import api_router
+from .views import modal_filter_view
 
 urlpatterns = [
-    path('django-admin/', admin.site.urls),
-
-    path('api/v2/', api_router.urls),
-
-    path('admin/', include(wagtailadmin_urls)),
-    path('documents/', include(wagtaildocs_urls)),
+    path("django-admin/", admin.site.urls),
+    path("api/v2/", api_router.urls),
+    path("admin/modal/", modal_filter_view, name="filter"),
+    path("admin/", include(wagtailadmin_urls)),
+    path("documents/", include(wagtaildocs_urls)),
 ]
 
 
@@ -32,9 +32,8 @@ if settings.DEBUG:
 # Translatable URLs
 # These will be available under a language code prefix. For example /en/search/
 urlpatterns += i18n_patterns(
-    path('search/', search_views.search, name='search'),
+    path("search/", search_views.search, name="search"),
     path("", include(wagtail_urls)),
-
     # Alternatively, if you want Wagtail pages to be served from a subpath
     # of your site, rather than the site root:
     #    path("pages/", include(wagtail_urls)),

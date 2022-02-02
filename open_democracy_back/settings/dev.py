@@ -1,12 +1,12 @@
-from .base import *
+from .base import *  # noqa: F401,F403
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-35rbfpb*$*g#+za7iz0*w1+$80)@*le31f--mv3287c*th273p'
+SECRET_KEY = "django-insecure-35rbfpb*$*g#+za7iz0*w1+$80)@*le31f--mv3287c*th273p"
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 BASE_URL = "http://localhost:8000/"
 
@@ -14,14 +14,10 @@ FRONT_END_URL = "http://localhost:3000"
 SESSION_COOKIE_SAMESITE = None
 CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 CORS_ALLOW_CREDENTIALS = True
-# CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ALLOW_CREDENTIALS = False
-# ALLOWED_HOSTS = ['*']
-CORS_ORIGIN_WHITELIST = (
-    'http://localhost:3000',
-)
+
+CORS_ORIGIN_WHITELIST = ("http://localhost:3000",)
 
 try:
-    from .local import *
+    from .local import *  # noqa: F401,F403
 except ImportError:
     pass

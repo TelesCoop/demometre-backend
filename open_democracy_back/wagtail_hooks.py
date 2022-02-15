@@ -9,7 +9,9 @@ from wagtail.snippets import widgets as wagtailsnippets_widgets
 @hooks.register("register_snippet_listing_buttons")
 def snippet_listing_buttons(snippet, user, next_url=None):
     yield wagtailsnippets_widgets.SnippetListingButton(
-        "A page listing button", "/admin/modal/?trigger=coucou", priority=10
+        "A page listing button",
+        "/admin/filter/?question_id=" + str(snippet.id),
+        priority=10,
     )
 
 

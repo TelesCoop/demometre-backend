@@ -37,7 +37,7 @@ class HomePage(Page):
 
 @register_snippet
 class Role(TranslatableMixin, ClusterableModel):
-    name = models.CharField(verbose_name="nom", max_length=125)
+    name = models.CharField(verbose_name="Nom", max_length=125)
 
     panels = [
         FieldPanel("name"),
@@ -59,15 +59,21 @@ class Role(TranslatableMixin, ClusterableModel):
 
 
 @register_snippet
-class Pillar(TranslatableMixin):
-    name = models.CharField(verbose_name="nom", max_length=125)
+class Pillar(TranslatableMixin, Orderable):
+    name = models.CharField(verbose_name="Nom", max_length=125)
+    code = models.CharField(
+        verbose_name="Code",
+        max_length=2,
+        help_text="Correspond au numéro (ou lettre) de ce pilier",
+    )
 
     panels = [
         FieldPanel("name"),
+        FieldPanel("code"),
     ]
 
     def __str__(self):
-        return self.name
+        return self.get_code() + ": " + self.name
 
     def __init__(self, *args, **kwargs):
         """Fixes a bug when trying to translate."""
@@ -75,23 +81,33 @@ class Pillar(TranslatableMixin):
             kwargs.pop("index_entries")
         super().__init__(*args, **kwargs)
 
+    def get_code(self):
+        return self.code
+
     class Meta(TranslatableMixin.Meta):
-        verbose_name_plural = "Piliers"
+        verbose_name_plural = "1. Piliers"
         verbose_name = "Pilier"
+        ordering = ["code"]
 
 
 @register_snippet
 class Marker(TranslatableMixin):
     pillar = models.ForeignKey(Pillar, null=True, blank=True, on_delete=models.SET_NULL)
-    name = models.CharField(verbose_name="nom", max_length=125)
+    name = models.CharField(verbose_name="Nom", max_length=125)
+    code = models.CharField(
+        verbose_name="Code",
+        max_length=2,
+        help_text="Correspond au numéro (ou lettre) de ce marqueur dans son pilier",
+    )
 
     panels = [
         FieldPanel("pillar"),
         FieldPanel("name"),
+        FieldPanel("code"),
     ]
 
     def __str__(self):
-        return self.name
+        return self.get_code() + ": " + self.name
 
     def __init__(self, *args, **kwargs):
         """Fixes a bug when trying to translate."""
@@ -99,9 +115,13 @@ class Marker(TranslatableMixin):
             kwargs.pop("index_entries")
         super().__init__(*args, **kwargs)
 
+    def get_code(self):
+        return self.pillar.get_code() + self.code
+
     class Meta(TranslatableMixin.Meta):
-        verbose_name_plural = "Marqueurs"
+        verbose_name_plural = "2. Marqueurs"
         verbose_name = "Marqueur"
+        ordering = ["code"]
 
 
 class MarkerOrderByRole(Orderable):
@@ -117,20 +137,21 @@ class MarkerOrderByRole(Orderable):
 @register_snippet
 class Criteria(TranslatableMixin):
     marker = models.ForeignKey(Marker, null=True, blank=True, on_delete=models.SET_NULL)
-    order = models.IntegerField(
-        verbose_name="N°",
-        help_text="Place que doit occuper ce critère dans son marqueur",
+    name = models.CharField(verbose_name="Nom", max_length=125)
+    code = models.CharField(
+        verbose_name="Code",
+        max_length=2,
+        help_text="Correspond au numéro (ou lettre) de ce critère dans son marqueur",
     )
-    name = models.CharField(verbose_name="nom", max_length=125)
 
     panels = [
         FieldPanel("marker"),
-        FieldPanel("order"),
         FieldPanel("name"),
+        FieldPanel("code"),
     ]
 
     def __str__(self):
-        return self.name
+        return self.get_code() + ": " + self.name
 
     def __init__(self, *args, **kwargs):
         """Fixes a bug when trying to translate."""
@@ -138,44 +159,30 @@ class Criteria(TranslatableMixin):
             kwargs.pop("index_entries")
         super().__init__(*args, **kwargs)
 
+    def get_code(self):
+        return self.marker.get_code() + "." + self.code
+
     class Meta(TranslatableMixin.Meta):
-        verbose_name_plural = "Critères"
+        verbose_name_plural = "3. Critères"
         verbose_name = "Critère"
-        ordering = ["order"]
+        ordering = ["code"]
 
 
-@register_snippet
-class Question(index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableModel):
-    # TODO : question : how to behave when you delete a criteria?
-    #  Delete all question or not authorize if questions are linked ?
-    criteria = models.ForeignKey(
-        Criteria, null=True, blank=True, on_delete=models.SET_NULL
-    )
-    order = models.IntegerField(
-        verbose_name="N°",
-        help_text="Place que doit occuper cette question dans son critère",
-    )
-    title = models.CharField(max_length=125, default="")
+class QuestionType(models.TextChoices):
+    OPEN = "open", "Ouverte"
+    UNIQUE_CHOICE = "unique_choice", "Choix unique"
+    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
+    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
+    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
+    BOOLEAN = "boolean", "Binaire oui / non"
+    NUMERICAL = "numerical", "Numérique"
+
+
+class QuestionBase(
+    index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableModel
+):
+    name = models.CharField(max_length=125, default="")
     question = models.TextField(default="")
-    objectivity = models.CharField(
-        max_length=32,
-        choices=[("objective", "objective"), ("subjective", "subjective")],
-        default="subjective",
-    )
-    method = models.CharField(
-        max_length=32,
-        choices=[("quantitative", "quantitative"), ("qualitative", "qualitative")],
-        blank=True,
-    )
-
-    class QuestionType(models.TextChoices):
-        OPEN = "open", "Ouverte"
-        UNIQUE_CHOICE = "unique_choice", "Choix unique"
-        MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
-        CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
-        CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
-        BOOLEAN = "boolean", "Binaire oui / non"
-        NUMERICAL = "numerical", "Numérique"
 
     type = models.CharField(
         max_length=32,
@@ -192,12 +199,8 @@ class Question(index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableMo
     ]
 
     panels = [
-        FieldPanel("criteria"),
-        FieldPanel("order"),
-        FieldPanel("title"),
+        FieldPanel("name"),
         FieldPanel("question"),
-        FieldPanel("objectivity"),
-        FieldPanel("method"),
         FieldPanel("type"),
         InlinePanel(
             "response_choices",
@@ -212,14 +215,7 @@ class Question(index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableMo
             heading="Valeurs extrêmes possibles",
             help_text="Ne renseigner que si cela à un sens par rapport au type de question",
         ),
-        InlinePanel(
-            "question_filters",
-            label="Conditions d'affichage de la question",
-        ),
     ]
-
-    def __str__(self):
-        return self.question
 
     def __init__(self, *args, **kwargs):
         """Fixes a bug when trying to translate."""
@@ -228,15 +224,10 @@ class Question(index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableMo
         super().__init__(*args, **kwargs)
 
     class Meta(TranslatableMixin.Meta):
-        verbose_name_plural = "Questions"
-        verbose_name = "Question"
-        ordering = ["order"]
+        abstract = True
 
 
-class ResponseChoice(TranslatableMixin, TimeStampedModel, Orderable):
-    question = ParentalKey(
-        Question, on_delete=models.CASCADE, related_name="response_choices"
-    )
+class ResponseChoiceBase(TranslatableMixin, TimeStampedModel, Orderable):
     response_choice = models.CharField(
         max_length=510, default="", verbose_name="Réponse possible"
     )
@@ -253,6 +244,68 @@ class ResponseChoice(TranslatableMixin, TimeStampedModel, Orderable):
     class Meta(TranslatableMixin.Meta):
         verbose_name_plural = "Choix de réponse"
         verbose_name = "Choix de réponse"
+        abstract = True
+
+
+@register_snippet
+class Question(QuestionBase):
+    # TODO : question : how to behave when you delete a criteria?
+    #  Delete all question or not authorize if questions are linked ?
+    criteria = models.ForeignKey(
+        Criteria, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    code = models.CharField(
+        verbose_name="Code",
+        max_length=2,
+        help_text="Correspond au numéro (ou lettre) de cette question dans son critère",
+    )
+
+    objectivity = models.CharField(
+        max_length=32,
+        choices=[("objective", "Objective"), ("subjective", "Subjective")],
+        default="subjective",
+    )
+    method = models.CharField(
+        max_length=32,
+        choices=[("quantitative", "Quantitative"), ("qualitative", "Qualitative")],
+        blank=True,
+    )
+
+    panels = (
+        [
+            FieldPanel("criteria"),
+            FieldPanel("code"),
+            FieldPanel("objectivity"),
+            FieldPanel("method"),
+        ]
+        + QuestionBase.panels
+        + [
+            InlinePanel(
+                "question_filters",
+                label="Conditions d'affichage de la question",
+            ),
+        ]
+    )
+
+    def __str__(self):
+        return self.get_code() + ": " + self.name
+
+    def get_code(self):
+        return self.criteria.get_code() + self.code
+
+    class Meta(QuestionBase.Meta):
+        verbose_name_plural = "4. Questions"
+        verbose_name = "Question"
+        ordering = ["code"]
+
+
+class ResponseChoice(ResponseChoiceBase):
+    question = ParentalKey(
+        Question, on_delete=models.CASCADE, related_name="response_choices"
+    )
+
+    class Meta(ResponseChoiceBase.Meta):
+        pass
 
 
 class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
@@ -279,3 +332,32 @@ class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
         # limit_choices_to=get_possible_response,
         on_delete=models.CASCADE,
     )
+
+
+@register_snippet
+class Profiling(QuestionBase):
+    order = models.IntegerField(
+        verbose_name="N°",
+        help_text="Donne l'ordre d'affichage des questions de profilage",
+    )
+
+    panels = [
+        FieldPanel("order"),
+    ] + QuestionBase.panels
+
+    def __str__(self):
+        return self.name
+
+    class Meta(QuestionBase.Meta):
+        verbose_name_plural = "Questions de Profilage"
+        verbose_name = "Question de Profilage"
+        ordering = ["order"]
+
+
+class ProfilingResponseChoice(ResponseChoiceBase):
+    profiling_question = ParentalKey(
+        Profiling, on_delete=models.CASCADE, related_name="response_choices"
+    )
+
+    class Meta(ResponseChoiceBase.Meta):
+        pass

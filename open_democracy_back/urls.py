@@ -14,7 +14,7 @@ from .views import modal_filter_view
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("api/v2/", api_router.urls),
-    path("admin/modal/", modal_filter_view, name="filter"),
+    path("admin/filter/", modal_filter_view, name="filter"),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
 ]

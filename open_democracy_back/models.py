@@ -59,7 +59,7 @@ class Role(TranslatableMixin, ClusterableModel):
 
 
 @register_snippet
-class Pillar(TranslatableMixin, Orderable):
+class Pillar(models.Model):
     name = models.CharField(verbose_name="Nom", max_length=125)
     code = models.CharField(
         verbose_name="Code",
@@ -75,23 +75,17 @@ class Pillar(TranslatableMixin, Orderable):
     def __str__(self):
         return self.get_code() + ": " + self.name
 
-    def __init__(self, *args, **kwargs):
-        """Fixes a bug when trying to translate."""
-        if "index_entries" in kwargs:
-            kwargs.pop("index_entries")
-        super().__init__(*args, **kwargs)
-
     def get_code(self):
         return self.code
 
-    class Meta(TranslatableMixin.Meta):
+    class Meta:
         verbose_name_plural = "1. Piliers"
         verbose_name = "Pilier"
         ordering = ["code"]
 
 
 @register_snippet
-class Marker(TranslatableMixin):
+class Marker(index.Indexed, models.Model):
     pillar = models.ForeignKey(Pillar, null=True, blank=True, on_delete=models.SET_NULL)
     name = models.CharField(verbose_name="Nom", max_length=125)
     code = models.CharField(
@@ -106,19 +100,17 @@ class Marker(TranslatableMixin):
         FieldPanel("code"),
     ]
 
+    search_fields = [
+        index.SearchField("name", partial_match=True),
+    ]
+
     def __str__(self):
         return self.get_code() + ": " + self.name
-
-    def __init__(self, *args, **kwargs):
-        """Fixes a bug when trying to translate."""
-        if "index_entries" in kwargs:
-            kwargs.pop("index_entries")
-        super().__init__(*args, **kwargs)
 
     def get_code(self):
         return self.pillar.get_code() + self.code
 
-    class Meta(TranslatableMixin.Meta):
+    class Meta:
         verbose_name_plural = "2. Marqueurs"
         verbose_name = "Marqueur"
         ordering = ["code"]
@@ -135,7 +127,7 @@ class MarkerOrderByRole(Orderable):
 
 
 @register_snippet
-class Criteria(TranslatableMixin):
+class Criteria(index.Indexed, models.Model):
     marker = models.ForeignKey(Marker, null=True, blank=True, on_delete=models.SET_NULL)
     name = models.CharField(verbose_name="Nom", max_length=125)
     code = models.CharField(
@@ -150,19 +142,15 @@ class Criteria(TranslatableMixin):
         FieldPanel("code"),
     ]
 
+    search_fields = [index.SearchField("name", partial_match=True)]
+
     def __str__(self):
         return self.get_code() + ": " + self.name
-
-    def __init__(self, *args, **kwargs):
-        """Fixes a bug when trying to translate."""
-        if "index_entries" in kwargs:
-            kwargs.pop("index_entries")
-        super().__init__(*args, **kwargs)
 
     def get_code(self):
         return self.marker.get_code() + "." + self.code
 
-    class Meta(TranslatableMixin.Meta):
+    class Meta:
         verbose_name_plural = "3. Critères"
         verbose_name = "Critère"
         ordering = ["code"]
@@ -178,9 +166,7 @@ class QuestionType(models.TextChoices):
     NUMERICAL = "numerical", "Numérique"
 
 
-class QuestionBase(
-    index.Indexed, TranslatableMixin, TimeStampedModel, ClusterableModel
-):
+class QuestionBase(index.Indexed, TimeStampedModel, ClusterableModel):
     name = models.CharField(max_length=125, default="")
     question = models.TextField(default="")
 
@@ -196,6 +182,7 @@ class QuestionBase(
 
     search_fields = [
         index.SearchField("question", partial_match=True),
+        index.SearchField("name", partial_match=True),
     ]
 
     panels = [
@@ -217,17 +204,11 @@ class QuestionBase(
         ),
     ]
 
-    def __init__(self, *args, **kwargs):
-        """Fixes a bug when trying to translate."""
-        if "index_entries" in kwargs:
-            kwargs.pop("index_entries")
-        super().__init__(*args, **kwargs)
-
-    class Meta(TranslatableMixin.Meta):
+    class Meta:
         abstract = True
 
 
-class ResponseChoiceBase(TranslatableMixin, TimeStampedModel, Orderable):
+class ResponseChoiceBase(TimeStampedModel, Orderable):
     response_choice = models.CharField(
         max_length=510, default="", verbose_name="Réponse possible"
     )
@@ -235,13 +216,7 @@ class ResponseChoiceBase(TranslatableMixin, TimeStampedModel, Orderable):
     def __str__(self):
         return self.response_choice
 
-    def __init__(self, *args, **kwargs):
-        """Fixes a bug when trying to translate."""
-        if "index_entries" in kwargs:
-            kwargs.pop("index_entries")
-        super().__init__(*args, **kwargs)
-
-    class Meta(TranslatableMixin.Meta):
+    class Meta:
         verbose_name_plural = "Choix de réponse"
         verbose_name = "Choix de réponse"
         abstract = True
@@ -287,6 +262,10 @@ class Question(QuestionBase):
         ]
     )
 
+    search_fields = QuestionBase.search_fields + [
+        index.SearchField("__str__", partial_match=True),
+    ]
+
     def __str__(self):
         return self.get_code() + ": " + self.name
 
@@ -302,6 +281,35 @@ class Question(QuestionBase):
 class ResponseChoice(ResponseChoiceBase):
     question = ParentalKey(
         Question, on_delete=models.CASCADE, related_name="response_choices"
+    )
+
+    class Meta(ResponseChoiceBase.Meta):
+        pass
+
+
+@register_snippet
+class Profiling(QuestionBase):
+    order = models.IntegerField(
+        verbose_name="N°",
+        help_text="Donne l'ordre d'affichage des questions de profilage",
+    )
+
+    panels = [
+        FieldPanel("order"),
+    ] + QuestionBase.panels
+
+    def __str__(self):
+        return self.name
+
+    class Meta(QuestionBase.Meta):
+        verbose_name_plural = "Questions de Profilage"
+        verbose_name = "Question de Profilage"
+        ordering = ["order"]
+
+
+class ProfilingResponseChoice(ResponseChoiceBase):
+    profiling_question = ParentalKey(
+        Profiling, on_delete=models.CASCADE, related_name="response_choices"
     )
 
     class Meta(ResponseChoiceBase.Meta):
@@ -332,32 +340,3 @@ class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
         # limit_choices_to=get_possible_response,
         on_delete=models.CASCADE,
     )
-
-
-@register_snippet
-class Profiling(QuestionBase):
-    order = models.IntegerField(
-        verbose_name="N°",
-        help_text="Donne l'ordre d'affichage des questions de profilage",
-    )
-
-    panels = [
-        FieldPanel("order"),
-    ] + QuestionBase.panels
-
-    def __str__(self):
-        return self.name
-
-    class Meta(QuestionBase.Meta):
-        verbose_name_plural = "Questions de Profilage"
-        verbose_name = "Question de Profilage"
-        ordering = ["order"]
-
-
-class ProfilingResponseChoice(ResponseChoiceBase):
-    profiling_question = ParentalKey(
-        Profiling, on_delete=models.CASCADE, related_name="response_choices"
-    )
-
-    class Meta(ResponseChoiceBase.Meta):
-        pass

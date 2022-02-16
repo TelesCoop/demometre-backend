@@ -1,7 +1,6 @@
-if((window.location.href).indexOf('question/add') != -1 || (window.location.href).indexOf('question/edit') != -1) {
+document.addEventListener('DOMContentLoaded', () => {
 
-    document.addEventListener('DOMContentLoaded', () => {
-
+    if((window.location.href).indexOf('question/add') != -1 || (window.location.href).indexOf('question/edit') != -1) {
         // Drawer questions: display the answer rules for the corresponding question types
         const typeQuestionOptions = document.getElementById("id_type");
         var responseChoice = document.querySelector("#id_response_choices-FORMS").closest(".object")
@@ -30,6 +29,15 @@ if((window.location.href).indexOf('question/add') != -1 || (window.location.href
         });
 
         // Questions filtering
+    }
 
-    })
-}
+    // TODO : faire fonctionner !!! ne fonctionne pas (je sais pas pourquoi ... )
+    if((window.location.href).indexOf('snippets/') != -1 && (window.location.href).indexOf('question/') == -1) {
+        var buttonAction = document.querySelectorAll(".actions [title='A page listing button']")
+        console.log("CCC")
+        console.log(buttonAction)
+        buttonAction.forEach(button => {
+            button.style.display = "none";
+        })
+    }
+})

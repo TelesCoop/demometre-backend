@@ -1,3 +1,4 @@
+import operator
 from django.db import models
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
@@ -316,27 +317,52 @@ class ProfilingResponseChoice(ResponseChoiceBase):
         pass
 
 
+NUMERICAL_OPERATOR = [
+    (operator.lt, "<"),
+    (operator.gt, ">"),
+    (operator.le, "<="),
+    (operator.ge, ">="),
+    (operator.ne, "!="),
+    (operator.eq, "="),
+]
+BOOLEAN_OPERATOR = [("and", "et"), ("or", "ou"), ("not", "non")]
+
+
 class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
     question = ParentalKey(
         Question, on_delete=models.CASCADE, related_name="question_filters"
     )
 
     conditional_question = models.ForeignKey(
-        Question, on_delete=models.CASCADE, verbose_name="Filtre par question"
-    )
-
-    def get_possible_response(self):
-        possible_responses = ResponseChoice.objects.filter(
-            question_id=self.conditional_question.id
-        )
-        return {
-            "question__in": [
-                possible_responses,
-            ]
-        }
-
-    response = models.ForeignKey(
-        ResponseChoice,
-        # limit_choices_to=get_possible_response,
+        Question,
         on_delete=models.CASCADE,
+        verbose_name="Filtre par question",
+        related_name="questions_that_depend_on_me",
     )
+
+    intersection_operator = models.CharField(
+        max_length=8,
+        choices=BOOLEAN_OPERATOR,
+    )
+
+    # if conditional question is unique or multiple choices type
+    response_choices = models.ManyToManyField(ResponseChoice)
+
+    # if conditional question is numerical or close with scale
+    numerical_operator = models.CharField(
+        max_length=8,
+        choices=NUMERICAL_OPERATOR,
+    )
+    numerical_value = models.IntegerField(blank=True, null=True)
+
+    # if conditional question is boolean
+    boolean_response = models.BooleanField(blank=True, null=True)
+
+
+# @register_snippet
+# class ProfileType(models.Model):
+#     name = models.CharField(max_length=125, default="")
+
+#     class Meta():
+#         verbose_name_plural = "Types de profil"
+#         verbose_name = "Type de profil"

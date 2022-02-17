@@ -9,7 +9,7 @@ from wagtail.snippets import widgets as wagtailsnippets_widgets
 @hooks.register("register_snippet_listing_buttons")
 def snippet_listing_buttons(snippet, user, next_url=None):
     yield wagtailsnippets_widgets.SnippetListingButton(
-        "A page listing button",  # Caution : this name is used in js script
+        "Condition d'affichage",  # Caution : this name is used in js script
         "/admin/question/filter/?question_id=" + str(snippet.id),
         priority=10,
     )

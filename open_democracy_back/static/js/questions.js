@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // TODO : faire fonctionner !!! ne fonctionne pas (je sais pas pourquoi ... )
     if((window.location.href).indexOf('snippets/') != -1 && (window.location.href).indexOf('question/') == -1) {
-        var buttonAction = document.querySelectorAll(".actions [title='A page listing button']")
+        var buttonAction = document.querySelectorAll(".actions [title='Condition d'affichage']")
         console.log("CCC")
         console.log(buttonAction)
         buttonAction.forEach(button => {

@@ -247,21 +247,12 @@ class Question(QuestionBase):
         blank=True,
     )
 
-    panels = (
-        [
-            FieldPanel("criteria"),
-            FieldPanel("code"),
-            FieldPanel("objectivity"),
-            FieldPanel("method"),
-        ]
-        + QuestionBase.panels
-        + [
-            InlinePanel(
-                "question_filters",
-                label="Conditions d'affichage de la question",
-            ),
-        ]
-    )
+    panels = [
+        FieldPanel("criteria"),
+        FieldPanel("code"),
+        FieldPanel("objectivity"),
+        FieldPanel("method"),
+    ] + QuestionBase.panels
 
     search_fields = QuestionBase.search_fields + [
         index.SearchField("__str__", partial_match=True),
@@ -318,14 +309,22 @@ class ProfilingResponseChoice(ResponseChoiceBase):
 
 
 NUMERICAL_OPERATOR = [
-    (operator.lt, "<"),
-    (operator.gt, ">"),
-    (operator.le, "<="),
-    (operator.ge, ">="),
-    (operator.ne, "!="),
-    (operator.eq, "="),
+    ("<", "<"),
+    (">", ">"),
+    ("<=", "<="),
+    (">=", ">="),
+    ("!=", "!="),
+    ("=", "="),
 ]
-BOOLEAN_OPERATOR = [("and", "et"), ("or", "ou"), ("not", "non")]
+BOOLEAN_OPERATOR = [("and", "et"), ("or", "ou")]
+NUMERICAL_OPERATOR_CONVERSION = [
+    ("<", operator.lt),
+    (">", operator.gt),
+    ("<=", operator.le),
+    (">=", operator.ge),
+    ("!=", operator.ne),
+    ("=", operator.eq),
+]
 
 
 class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):

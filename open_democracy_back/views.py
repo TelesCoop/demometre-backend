@@ -4,7 +4,7 @@ from django.shortcuts import render
 from open_democracy_back.forms import QuestionFilterForm
 from django.db.models import Q
 
-from open_democracy_back.models import Question, ResponseChoice
+from open_democracy_back.models import Question, QuestionFilter, ResponseChoice
 
 
 def question_filter_view(request):
@@ -34,9 +34,9 @@ def question_filter_view(request):
             question_id=question_id, questions_list=questions_list
         )
 
-    conditionals_questions = Question.objects.filter(
-        questions_that_depend_on_me__question_id=question_id
-    )
+    question = Question.objects.get(id=question_id)
+
+    question_filters = QuestionFilter.objects.filter(question_id=question_id)
 
     questions_response_by_id = defaultdict(
         lambda: {"type": "", "min": 0, "max": 0, "responses": {}}
@@ -54,7 +54,8 @@ def question_filter_view(request):
         request,
         "admin/question_filter.html",
         {
-            "conditionals_questions": conditionals_questions,
+            "question": question,
+            "question_filters": question_filters,
             "questions_response_by_id": json.dumps(questions_response_by_id),
             "filter_form": filter_form,
         },

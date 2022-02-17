@@ -14,11 +14,37 @@
     {% include "wagtailadmin/shared/header.html" with title="Modal Title" icon="no-view" %}
 
     <div class="nice-padding">
-        conditionals_questions : {{ conditionals_questions }}
+        <h1>Conditions d'affichage pour la question : <i>{{ question }}</i></h1>
+        {% if question_filters.count > 0 %}
+            <h2>Conditions d'affichage déjà existantes</h2>
+            <ul class="vertical">
+                {% for question_filter in question_filters %}
+                    <span style="text-transform:uppercase; margin: 10px 0;">{% if question_filter.intersection_operator %}{{ question_filter.intersection_operator }}{% endif %}</span>
+                    <li>
+
+                        <b>{{ question_filter.conditional_question }}</b><br/>
+                        {% if question_filter.response_choices.count > 0 %}
+                            (Lien logique : ou)
+                            {% for response_choice in question_filter.response_choices.all %}
+                                réponse = {{ response_choice }}
+                            {% endfor %}
+                        {% endif %}
+                        {% if question_filter.numerical_operator %}
+                            réponse {{ question_filter.numerical_operator }} {{ question_filter.numerical_value }}
+                        {% endif %}
+                        {% if question_filter.boolean_response %}
+                            réponse = {{ question_filter.boolean_response }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <h2>Créer une nouvelle condition d'affichage</h2>
         <form action="{% url 'filter' %}" method="post">
             {% csrf_token %}
             {{ filter_form.question.as_hidden }}
-            {% if conditionals_questions.count > 0 %}
+            {% if question_filters.count > 0 %}
                 <div>
                     {{ filter_form.intersection_operator.error }}
                     {{ filter_form.intersection_operator.label_tag }}
@@ -55,6 +81,7 @@
             <br/>
             <input type="submit" value="Ajouter">
         </form>
+        <a class="btn btn-primary" href="/admin/snippets/open_democracy_back/question/">Terminer</a>
     </div>
 
     <script type="text/javascript">

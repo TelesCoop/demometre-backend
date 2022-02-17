@@ -7,6 +7,30 @@
             display: flex;
             flex-direction: column;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 30%;
+            top: 30%;
+            width: 50%;
+            height: 200px;
+            overflow: auto;
+          }
+          .modal-content {
+            border: 1px solid #888;
+            padding: 10px;
+            background-color: #fefefe;
+          }
+          .close {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            width: auto;
+            font-size: 20px;
+            font-weight: bold;
+            color: #474e5d;
+          }
     </style>
 {% endblock %}
 
@@ -35,13 +59,30 @@
                         {% if question_filter.boolean_response %}
                             réponse = {{ question_filter.boolean_response }}
                         {% endif %}
+                        <button onclick="document.getElementById('confirm-delete-{{ question_filter.id }}').style.display='block'">Supprimer</button>
                     </li>
+
+                    <div id="confirm-delete-{{ question_filter.id }}" class="modal">
+                        <form class="modal-content" action="{% url 'delete-filter' question.id question_filter.id %}" method="post">
+                            {% csrf_token %}
+                            <span onclick="document.getElementById('confirm-delete-{{ question_filter.id }}').style.display='none'" class="close" title="Close Modal">×</span>
+                            <div class="container">
+                                <h1>Supprimer une condition d'affichage</h1>
+                                <p>Vous êtes sur le point de supprimer : {{ question_filter }}</p>
+                                <div class="clearfix">
+                                    <button type="button" onclick="document.getElementById('confirm-delete-{{ question_filter.id }}').style.display='none'" class="cancelbtn">Cancel</button>
+                                    <input type="submit" value="Supprimer" onclick="document.getElementById('confirm-delete-{{ question_filter.id }}').style.display='none'">
+                                </div>
+                            </div>
+                        </form>
+                      </div>
+
                 {% endfor %}
             </ul>
         {% endif %}
 
         <h2>Créer une nouvelle condition d'affichage</h2>
-        <form action="{% url 'filter' %}" method="post">
+        <form action="{% url 'filter' question.id %}" method="post">
             {% csrf_token %}
             {{ filter_form.question.as_hidden }}
             {% if question_filters.count > 0 %}
@@ -85,8 +126,8 @@
     </div>
 
     <script type="text/javascript">
-        const QUESTIONS_RESPONSE_BY_ID = JSON.parse("{{questions_response_by_id | escapejs }}");
-        console.log(QUESTIONS_RESPONSE_BY_ID)
+        const OTHER_QUESTIONS_RESPONSE_BY_ID = JSON.parse("{{other_questions_response_by_id | escapejs }}");
+        console.log(OTHER_QUESTIONS_RESPONSE_BY_ID)
 
         var new_question_filter = document.getElementById("id_conditional_question");
         var display_response_choices = document.getElementById("id_display_response_choices");
@@ -95,10 +136,10 @@
         var display_boolean_response = document.getElementById("id_display_boolean_response");
 
         new_question_filter.addEventListener("change", function() {
-            const new_question_filter_type = QUESTIONS_RESPONSE_BY_ID[new_question_filter.value].type
+            const new_question_filter_type = OTHER_QUESTIONS_RESPONSE_BY_ID[new_question_filter.value].type
             if (new_question_filter_type == "unique_choice" || new_question_filter_type == "multiple_choice"){
                 var str = ""
-                for (const [response_choice_id, response_choice] of Object.entries(QUESTIONS_RESPONSE_BY_ID[new_question_filter.value].responses)) {
+                for (const [response_choice_id, response_choice] of Object.entries(OTHER_QUESTIONS_RESPONSE_BY_ID[new_question_filter.value].responses)) {
                     var id = "id_response_choices_" + response_choice_id
                     str += "<li><label for='" + id + "'>"
                         + "<input type='checkbox' name='response_choices' value='" + response_choice_id + "' id='" + id + "'></input>"
@@ -119,9 +160,9 @@
 
             if (new_question_filter_type == "closed_with_scale") {
                 display_scale_response.innerHTML = "La réponse est contenu entre "
-                    + QUESTIONS_RESPONSE_BY_ID[new_question_filter.value].min
+                    + OTHER_QUESTIONS_RESPONSE_BY_ID[new_question_filter.value].min
                     + " et "
-                    + QUESTIONS_RESPONSE_BY_ID[new_question_filter.value].max
+                    + OTHER_QUESTIONS_RESPONSE_BY_ID[new_question_filter.value].max
                 display_scale_response.style.display =  "block";
             } else {
                 display_scale_response.style.display =  "none";

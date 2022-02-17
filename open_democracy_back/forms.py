@@ -24,7 +24,7 @@ class QuestionFilterForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         question_id = kwargs.pop("question_id")
-        questions_list = kwargs.pop("questions_list")
+        other_questions_list = kwargs.pop("other_questions_list")
         super().__init__(*args, **kwargs)
         self.fields["question"].initial = Question.objects.get(id=question_id)
-        self.fields["conditional_question"].queryset = questions_list
+        self.fields["conditional_question"].queryset = other_questions_list

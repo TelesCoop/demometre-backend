@@ -9,12 +9,17 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
 from .api import api_router
-from .views import question_filter_view
+from .views import QuestionFilterView, question_filter_view
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("api/v2/", api_router.urls),
-    path("admin/question/filter/", question_filter_view, name="filter"),
+    path("admin/question/<int:pk>/filter/", question_filter_view, name="filter"),
+    path(
+        "admin/question/<int:pk>/filter/<int:question_filter_pk>/delete",
+        QuestionFilterView.as_view(),
+        name="delete-filter",
+    ),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
 ]

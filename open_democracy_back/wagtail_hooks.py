@@ -10,7 +10,7 @@ from wagtail.snippets import widgets as wagtailsnippets_widgets
 def snippet_listing_buttons(snippet, user, next_url=None):
     yield wagtailsnippets_widgets.SnippetListingButton(
         "Condition d'affichage",  # Caution : this name is used in js script
-        "/admin/question/filter/?question_id=" + str(snippet.id),
+        "/admin/question/" + str(snippet.id) + "/filter/",
         priority=10,
     )
 

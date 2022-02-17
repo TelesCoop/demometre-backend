@@ -317,14 +317,14 @@ NUMERICAL_OPERATOR = [
     ("=", "="),
 ]
 BOOLEAN_OPERATOR = [("and", "et"), ("or", "ou")]
-NUMERICAL_OPERATOR_CONVERSION = [
-    ("<", operator.lt),
-    (">", operator.gt),
-    ("<=", operator.le),
-    (">=", operator.ge),
-    ("!=", operator.ne),
-    ("=", operator.eq),
-]
+NUMERICAL_OPERATOR_CONVERSION = {
+    "<": operator.lt,
+    ">": operator.gt,
+    "<=": operator.le,
+    ">=": operator.ge,
+    "!=": operator.ne,
+    "=": operator.eq,
+}
 
 
 class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):

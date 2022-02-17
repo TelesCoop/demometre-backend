@@ -341,8 +341,7 @@ class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
     )
 
     intersection_operator = models.CharField(
-        max_length=8,
-        choices=BOOLEAN_OPERATOR,
+        max_length=8, choices=BOOLEAN_OPERATOR, blank=True
     )
 
     # if conditional question is unique or multiple choices type
@@ -350,8 +349,7 @@ class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
 
     # if conditional question is numerical or close with scale
     numerical_operator = models.CharField(
-        max_length=8,
-        choices=NUMERICAL_OPERATOR,
+        max_length=8, choices=NUMERICAL_OPERATOR, blank=True
     )
     numerical_value = models.IntegerField(blank=True, null=True)
 

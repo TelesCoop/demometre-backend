@@ -1,9 +1,12 @@
 {% extends "wagtailadmin/base.html" %}
-{% block titletag %}{{ current_year }} calendar{% endblock %}
 
 {% block extra_css %}
     {{ block.super }}
     <style>
+        .vertical {
+            display: flex;
+            flex-direction: column;
+        }
     </style>
 {% endblock %}
 
@@ -14,35 +17,42 @@
         conditionals_questions : {{ conditionals_questions }}
         <form action="{% url 'filter' %}" method="post">
             {% csrf_token %}
+            {{ filter_form.question.as_hidden }}
             {% if conditionals_questions.count > 0 %}
-                <p>
-                    <label for="{{ filter_form.intersection_operator.id_for_label }}">{{ filter_form.intersection_operator.label }}</label>
-                    {{filter_form.intersection_operator}}
-                </p>
+                <div>
+                    {{ filter_form.intersection_operator.error }}
+                    {{ filter_form.intersection_operator.label_tag }}
+                    {{ filter_form.intersection_operator }}
+                </div>
             {% endif %}
 
-            <p>
-                <label for="{{ filter_form.conditional_question.id_for_label }}">{{ filter_form.conditional_question.label }}</label>
-                {{filter_form.conditional_question}}
-            </p>
+            <div>
+                {{ filter_form.conditional_question.error }}
+                {{ filter_form.conditional_question.label_tag }}
+                {{ filter_form.conditional_question }}
+            </div>
 
-            <p id="id_display_response_choices" style="display: none;">
-                <label for="{{ filter_form.response_choices.id_for_label }}">{{ filter_form.response_choices.label }}</label>
-                {{filter_form.response_choices}}
-            </p>
-            <p id="id_display_scale_response" style="display: none;">
-            </p>
-            <p id="id_display_numerical_response" style="display: none;">
-                <label for="{{ filter_form.numerical_operator.id_for_label }}">{{ filter_form.numerical_operator.label }}</label>
-                {{filter_form.numerical_operator}}
-                <label for="{{ filter_form.numerical_value.id_for_label }}">{{ filter_form.numerical_value.label }}</label>
-                {{filter_form.numerical_value}}
-            </p>
-            <p id="id_display_boolean_response" style="display: none;">
-                <label for="{{ filter_form.boolean_response.id_for_label }}">{{ filter_form.boolean_response.label }}</label>
-                {{filter_form.boolean_response}}
-            </p>
-
+            <div id="id_display_response_choices" style="display: none;">
+                {{ filter_form.response_choices.error }}
+                {{ filter_form.response_choices.label_tag }}
+                {{ filter_form.response_choices }}
+            </div>
+            <div id="id_display_scale_response" style="display: none;">
+            </div>
+            <div id="id_display_numerical_response" style="display: none;">
+                {{ filter_form.numerical_operator.error }}
+                {{ filter_form.numerical_operator.label_tag }}
+                {{ filter_form.numerical_operator }}
+                {{ filter_form.numerical_value.error }}
+                {{ filter_form.numerical_value.label_tag }}
+                {{ filter_form.numerical_value }}
+            </div>
+            <div id="id_display_boolean_response" style="display: none;">
+                {{ filter_form.boolean_response.error }}
+                {{ filter_form.boolean_response.label_tag }}
+                {{ filter_form.boolean_response }}
+            </div>
+            <br/>
             <input type="submit" value="Ajouter">
         </form>
     </div>
@@ -62,9 +72,13 @@
             if (new_question_filter_type == "unique_choice" || new_question_filter_type == "multiple_choice"){
                 var str = ""
                 for (const [response_choice_id, response_choice] of Object.entries(QUESTIONS_RESPONSE_BY_ID[new_question_filter.value].responses)) {
-                    str += "<option value=' "+ response_choice +"'>" + response_choice + "</option>"
-                  }
-                  document.getElementById("id_response_choices").innerHTML = str;
+                    var id = "id_response_choices_" + response_choice_id
+                    str += "<li><label for='" + id + "'>"
+                        + "<input type='checkbox' name='response_choices' value='" + response_choice_id + "' id='" + id + "'></input>"
+                        + response_choice
+                        + "</label></li>"
+                }
+                document.getElementById("id_response_choices").innerHTML = str;
                 display_response_choices.style.display =  "block";
             } else {
                 display_response_choices.style.display =  "none";

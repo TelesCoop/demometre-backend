@@ -81,7 +81,7 @@ class Pillar(models.Model):
 
     class Meta:
         verbose_name_plural = "1. Piliers"
-        verbose_name = "Pilier"
+        verbose_name = "1. Pilier"
         ordering = ["code"]
 
 
@@ -113,7 +113,7 @@ class Marker(index.Indexed, models.Model):
 
     class Meta:
         verbose_name_plural = "2. Marqueurs"
-        verbose_name = "Marqueur"
+        verbose_name = "2. Marqueur"
         ordering = ["code"]
 
 
@@ -153,7 +153,7 @@ class Criteria(index.Indexed, models.Model):
 
     class Meta:
         verbose_name_plural = "3. Critères"
-        verbose_name = "Critère"
+        verbose_name = "3. Critère"
         ordering = ["code"]
 
 
@@ -167,7 +167,13 @@ class QuestionType(models.TextChoices):
     NUMERICAL = "numerical", "Numérique"
 
 
-class QuestionBase(index.Indexed, TimeStampedModel, ClusterableModel):
+class Question(index.Indexed, TimeStampedModel, ClusterableModel):
+    code = models.CharField(
+        verbose_name="Code",
+        max_length=2,
+        help_text="Correspond au numéro (ou lettre) de cette question, détermine son ordre",
+    )
+
     name = models.CharField(max_length=125, default="")
     question_statement = models.TextField(default="")
 
@@ -187,11 +193,6 @@ class QuestionBase(index.Indexed, TimeStampedModel, ClusterableModel):
     #  Delete all question or not authorize if questions are linked ?
     criteria = models.ForeignKey(
         Criteria, null=True, blank=True, on_delete=models.SET_NULL
-    )
-    code = models.CharField(
-        verbose_name="Code",
-        max_length=2,
-        help_text="Correspond au numéro (ou lettre) de cette question, détermine son ordre",
     )
 
     objectivity = models.CharField(
@@ -215,10 +216,7 @@ class QuestionBase(index.Indexed, TimeStampedModel, ClusterableModel):
     ]
 
     panels = [
-        FieldPanel("criteria"),
         FieldPanel("code"),
-        FieldPanel("objectivity"),
-        FieldPanel("method"),
         FieldPanel("name"),
         FieldPanel("question_statement"),
         FieldPanel("type"),
@@ -251,43 +249,58 @@ class QuestionBase(index.Indexed, TimeStampedModel, ClusterableModel):
         ordering = ["code"]
 
 
-class QuestionManager(models.Manager):
+class QuestionnaireQuestionManager(models.Manager):
     def get_queryset(self):
         return (
-            super(QuestionManager, self).get_queryset().filter(profiling_question=False)
+            super(QuestionnaireQuestionManager, self)
+            .get_queryset()
+            .filter(profiling_question=False)
         )
 
 
-class ProfilingManager(models.Manager):
+class ProfilingQuestionManager(models.Manager):
     def get_queryset(self):
         return (
-            super(ProfilingManager, self).get_queryset().filter(profiling_question=True)
+            super(ProfilingQuestionManager, self)
+            .get_queryset()
+            .filter(profiling_question=True)
         )
 
 
 @register_snippet
-class Question(QuestionBase):
-    objects = QuestionManager()
+class QuestionnaireQuestion(Question):
+    objects = QuestionnaireQuestionManager()
+
+    panels = (
+        [
+            FieldPanel("criteria"),
+        ]
+        + Question.panels
+        + [
+            FieldPanel("objectivity"),
+            FieldPanel("method"),
+        ]
+    )
 
     def save(self, **kwargs):
         self.profiling_question = False
         super().save(**kwargs)
 
-    class Meta(QuestionBase.Meta):
+    class Meta(Question.Meta):
         verbose_name_plural = "4. Questions"
-        verbose_name = "Question"
+        verbose_name = "4. Question"
         proxy = True
 
 
 @register_snippet
-class Profiling(QuestionBase):
-    objects = ProfilingManager()
+class ProfilingQuestion(Question):
+    objects = ProfilingQuestionManager()
 
     def save(self, **kwargs):
         self.profiling_question = True
         super().save(**kwargs)
 
-    class Meta(QuestionBase.Meta):
+    class Meta(Question.Meta):
         verbose_name_plural = "Questions de Profilage"
         verbose_name = "Question de Profilage"
         proxy = True
@@ -295,7 +308,7 @@ class Profiling(QuestionBase):
 
 class ResponseChoice(TimeStampedModel, Orderable):
     question = ParentalKey(
-        QuestionBase, on_delete=models.CASCADE, related_name="response_choices"
+        Question, on_delete=models.CASCADE, related_name="response_choices"
     )
 
     response_choice = models.CharField(
@@ -341,11 +354,11 @@ NUMERICAL_OPERATOR_CONVERSION = {
 class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
     # TODO : add profileType field
     question = ParentalKey(
-        QuestionBase, on_delete=models.CASCADE, related_name="question_filters"
+        Question, on_delete=models.CASCADE, related_name="question_filters"
     )
 
     conditional_question = models.ForeignKey(
-        QuestionBase,
+        Question,
         on_delete=models.CASCADE,
         verbose_name="Filtre par question",
         related_name="questions_that_depend_on_me",
@@ -370,7 +383,7 @@ class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
 
 class QuestionFilterByProfileType(TimeStampedModel, Orderable, ClusterableModel):
     question = ParentalKey(
-        QuestionBase,
+        Question,
         on_delete=models.CASCADE,
         related_name="question_filters_by_profile_type",
     )

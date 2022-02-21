@@ -1,6 +1,6 @@
 from django import forms
 
-from open_democracy_back.models import QuestionBase, QuestionFilter, ResponseChoice
+from open_democracy_back.models import Question, QuestionFilter, ResponseChoice
 
 
 class QuestionFilterForm(forms.ModelForm):
@@ -26,5 +26,5 @@ class QuestionFilterForm(forms.ModelForm):
         question_id = kwargs.pop("question_id")
         other_questions_list = kwargs.pop("other_questions_list")
         super().__init__(*args, **kwargs)
-        self.fields["question"].initial = QuestionBase.objects.get(id=question_id)
+        self.fields["question"].initial = Question.objects.get(id=question_id)
         self.fields["conditional_question"].queryset = other_questions_list

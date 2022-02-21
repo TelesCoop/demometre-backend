@@ -6,11 +6,11 @@ from open_democracy_back.forms import QuestionFilterForm
 from django.db.models import Q
 from django.views.generic.edit import BaseDeleteView
 
-from open_democracy_back.models import QuestionBase, QuestionFilter, ResponseChoice
+from open_democracy_back.models import Question, QuestionFilter, ResponseChoice
 
 
 def question_filter_view(request, pk):
-    other_questions_list = QuestionBase.objects.filter(~Q(id=pk)).prefetch_related(
+    other_questions_list = Question.objects.filter(~Q(id=pk)).prefetch_related(
         "response_choices"
     )
 
@@ -31,7 +31,7 @@ def question_filter_view(request, pk):
             question_id=pk, other_questions_list=other_questions_list
         )
 
-    question = QuestionBase.objects.get(id=pk)
+    question = Question.objects.get(id=pk)
 
     question_filters = QuestionFilter.objects.filter(question_id=pk)
 

@@ -169,7 +169,7 @@ class QuestionType(models.TextChoices):
 
 class QuestionBase(index.Indexed, TimeStampedModel, ClusterableModel):
     name = models.CharField(max_length=125, default="")
-    question = models.TextField(default="")
+    question_statement = models.TextField(default="")
 
     type = models.CharField(
         max_length=32,
@@ -181,14 +181,46 @@ class QuestionBase(index.Indexed, TimeStampedModel, ClusterableModel):
     min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
     max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
 
+    # Questionnary questions fields
+
+    # TODO : question : how to behave when you delete a criteria?
+    #  Delete all question or not authorize if questions are linked ?
+    criteria = models.ForeignKey(
+        Criteria, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    code = models.CharField(
+        verbose_name="Code",
+        max_length=2,
+        help_text="Correspond au numéro (ou lettre) de cette question, détermine son ordre",
+    )
+
+    objectivity = models.CharField(
+        max_length=32,
+        choices=[("objective", "Objective"), ("subjective", "Subjective")],
+        default="subjective",
+    )
+    method = models.CharField(
+        max_length=32,
+        choices=[("quantitative", "Quantitative"), ("qualitative", "Qualitative")],
+        blank=True,
+    )
+
+    # Profiling questions fields
+    profiling_question = models.BooleanField(default=False)
+
     search_fields = [
-        index.SearchField("question", partial_match=True),
+        index.SearchField("question_statement", partial_match=True),
         index.SearchField("name", partial_match=True),
+        index.SearchField("__str__", partial_match=True),
     ]
 
     panels = [
+        FieldPanel("criteria"),
+        FieldPanel("code"),
+        FieldPanel("objectivity"),
+        FieldPanel("method"),
         FieldPanel("name"),
-        FieldPanel("question"),
+        FieldPanel("question_statement"),
         FieldPanel("type"),
         InlinePanel(
             "response_choices",
@@ -205,11 +237,67 @@ class QuestionBase(index.Indexed, TimeStampedModel, ClusterableModel):
         ),
     ]
 
+    def __str__(self):
+        if self.profiling_question:
+            return "Profilage : " + self.name
+        return self.get_code() + ": " + self.name
+
+    def get_code(self):
+        if self.criteria:
+            return self.criteria.get_code() + self.code
+        return self.code
+
     class Meta:
-        abstract = True
+        ordering = ["code"]
 
 
-class ResponseChoiceBase(TimeStampedModel, Orderable):
+class QuestionManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super(QuestionManager, self).get_queryset().filter(profiling_question=False)
+        )
+
+
+class ProfilingManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super(ProfilingManager, self).get_queryset().filter(profiling_question=True)
+        )
+
+
+@register_snippet
+class Question(QuestionBase):
+    objects = QuestionManager()
+
+    def save(self, **kwargs):
+        self.profiling_question = False
+        super().save(**kwargs)
+
+    class Meta(QuestionBase.Meta):
+        verbose_name_plural = "4. Questions"
+        verbose_name = "Question"
+        proxy = True
+
+
+@register_snippet
+class Profiling(QuestionBase):
+    objects = ProfilingManager()
+
+    def save(self, **kwargs):
+        self.profiling_question = True
+        super().save(**kwargs)
+
+    class Meta(QuestionBase.Meta):
+        verbose_name_plural = "Questions de Profilage"
+        verbose_name = "Question de Profilage"
+        proxy = True
+
+
+class ResponseChoice(TimeStampedModel, Orderable):
+    question = ParentalKey(
+        QuestionBase, on_delete=models.CASCADE, related_name="response_choices"
+    )
+
     response_choice = models.CharField(
         max_length=510, default="", verbose_name="Réponse possible"
     )
@@ -220,92 +308,15 @@ class ResponseChoiceBase(TimeStampedModel, Orderable):
     class Meta:
         verbose_name_plural = "Choix de réponse"
         verbose_name = "Choix de réponse"
-        abstract = True
 
 
 @register_snippet
-class Question(QuestionBase):
-    # TODO : question : how to behave when you delete a criteria?
-    #  Delete all question or not authorize if questions are linked ?
-    criteria = models.ForeignKey(
-        Criteria, null=True, blank=True, on_delete=models.SET_NULL
-    )
-    code = models.CharField(
-        verbose_name="Code",
-        max_length=2,
-        help_text="Correspond au numéro (ou lettre) de cette question dans son critère",
-    )
+class ProfileType(models.Model):
+    name = models.CharField(max_length=125, default="")
 
-    objectivity = models.CharField(
-        max_length=32,
-        choices=[("objective", "Objective"), ("subjective", "Subjective")],
-        default="subjective",
-    )
-    method = models.CharField(
-        max_length=32,
-        choices=[("quantitative", "Quantitative"), ("qualitative", "Qualitative")],
-        blank=True,
-    )
-
-    panels = [
-        FieldPanel("criteria"),
-        FieldPanel("code"),
-        FieldPanel("objectivity"),
-        FieldPanel("method"),
-    ] + QuestionBase.panels
-
-    search_fields = QuestionBase.search_fields + [
-        index.SearchField("__str__", partial_match=True),
-    ]
-
-    def __str__(self):
-        return self.get_code() + ": " + self.name
-
-    def get_code(self):
-        return self.criteria.get_code() + self.code
-
-    class Meta(QuestionBase.Meta):
-        verbose_name_plural = "4. Questions"
-        verbose_name = "Question"
-        ordering = ["code"]
-
-
-class ResponseChoice(ResponseChoiceBase):
-    question = ParentalKey(
-        Question, on_delete=models.CASCADE, related_name="response_choices"
-    )
-
-    class Meta(ResponseChoiceBase.Meta):
-        pass
-
-
-@register_snippet
-class Profiling(QuestionBase):
-    order = models.IntegerField(
-        verbose_name="N°",
-        help_text="Donne l'ordre d'affichage des questions de profilage",
-    )
-
-    panels = [
-        FieldPanel("order"),
-    ] + QuestionBase.panels
-
-    def __str__(self):
-        return self.name
-
-    class Meta(QuestionBase.Meta):
-        verbose_name_plural = "Questions de Profilage"
-        verbose_name = "Question de Profilage"
-        ordering = ["order"]
-
-
-class ProfilingResponseChoice(ResponseChoiceBase):
-    profiling_question = ParentalKey(
-        Profiling, on_delete=models.CASCADE, related_name="response_choices"
-    )
-
-    class Meta(ResponseChoiceBase.Meta):
-        pass
+    class Meta:
+        verbose_name_plural = "Types de profil"
+        verbose_name = "Type de profil"
 
 
 NUMERICAL_OPERATOR = [
@@ -328,12 +339,13 @@ NUMERICAL_OPERATOR_CONVERSION = {
 
 
 class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
+    # TODO : add profileType field
     question = ParentalKey(
-        Question, on_delete=models.CASCADE, related_name="question_filters"
+        QuestionBase, on_delete=models.CASCADE, related_name="question_filters"
     )
 
     conditional_question = models.ForeignKey(
-        Question,
+        QuestionBase,
         on_delete=models.CASCADE,
         verbose_name="Filtre par question",
         related_name="questions_that_depend_on_me",
@@ -356,10 +368,20 @@ class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
     boolean_response = models.BooleanField(blank=True, null=True)
 
 
-# @register_snippet
-# class ProfileType(models.Model):
-#     name = models.CharField(max_length=125, default="")
+class QuestionFilterByProfileType(TimeStampedModel, Orderable, ClusterableModel):
+    question = ParentalKey(
+        QuestionBase,
+        on_delete=models.CASCADE,
+        related_name="question_filters_by_profile_type",
+    )
 
-#     class Meta():
-#         verbose_name_plural = "Types de profil"
-#         verbose_name = "Type de profil"
+    conditional_profile_type = models.ForeignKey(
+        ProfileType,
+        on_delete=models.CASCADE,
+        verbose_name="Filtre par type de profile",
+        related_name="questions_that_depend_on_me",
+    )
+
+    intersection_operator = models.CharField(
+        max_length=8, choices=BOOLEAN_OPERATOR, blank=True
+    )

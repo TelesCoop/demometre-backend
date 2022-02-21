@@ -1,7 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    if((window.location.href).indexOf('question/add') != -1 || (window.location.href).indexOf('question/edit') != -1) {
-        // Drawer questions: display the answer rules for the corresponding question types
+    // Drawer questions: display the answer rules for the corresponding question types
+    if(
+        (window.location.href).indexOf('question/add') != -1
+        || (window.location.href).indexOf('question/edit') != -1
+        || (window.location.href).indexOf('profiling/add') != -1
+        || (window.location.href).indexOf('profiling/edit') != -1) {
         const typeQuestionOptions = document.getElementById("id_type");
         var responseChoice = document.querySelector("#id_response_choices-FORMS").closest(".object")
         var extremeBounds = document.querySelector("#id_min").closest(".object")
@@ -27,8 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
         typeQuestionOptions.addEventListener("change", function() {
             responseRules(typeQuestionOptions.value)
         });
-
-        // Questions filtering
     }
 
     // TODO : faire fonctionner !!! ne fonctionne pas (je sais pas pourquoi ... )

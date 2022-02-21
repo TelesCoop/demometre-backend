@@ -5,15 +5,21 @@ from wagtail.core import hooks
 
 from wagtail.snippets import widgets as wagtailsnippets_widgets
 
-from open_democracy_back.models import Question
+from open_democracy_back.models import ProfileType, Question
 
 
 @hooks.register("register_snippet_listing_buttons")
 def snippet_listing_buttons(snippet, user, next_url=None):
     if isinstance(snippet, Question):
         yield wagtailsnippets_widgets.SnippetListingButton(
-            "Condition d'affichage",  # Caution : this name is used in js script
-            "/admin/question/" + str(snippet.id) + "/filter/",
+            "Condition d'affichage de la question",
+            "/admin/question/" + str(snippet.id) + "/rules/",
+            priority=10,
+        )
+    if isinstance(snippet, ProfileType):
+        yield wagtailsnippets_widgets.SnippetListingButton(
+            "Définir ce profil",
+            "/admin/profile-type/" + str(snippet.id) + "/rules/",
             priority=10,
         )
 

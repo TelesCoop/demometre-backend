@@ -1,0 +1,252 @@
+{% extends "wagtailadmin/base.html" %}
+
+{% block content %}
+    {% include "wagtailadmin/shared/header.html" with title="Modal Title" icon="no-view" %}
+
+    <div class="nice-padding">
+        {% if question %}
+        <h1>Conditions d'affichage pour la question : <i>{{ question }}</i></h1>
+        {% elif profile_type %}
+        <h1>Définition du profil : <i>{{ profile_type }}</i></h1>
+        {% endif %}
+
+        {% if rules.count > 0 %}
+            {% if question %}
+            <h2>Conditions d'affichage déjà existantes</h2>
+            {% elif profile_type %}
+            <h2>Règles déjà existantes</h2>
+            {% endif %}
+
+            <ul class="vertical">
+                {% for rule in rules %}
+                    <span style="text-transform:uppercase; margin: 10px 0;">{% if rule.intersection_operator %}{{ rule.intersection_operator }}{% endif %}</span>
+                    <li>
+
+                        <b>{{ rule.conditional_question }}</b><br/>
+                        {% if rule.response_choices.count > 0 %}
+                            (Lien logique : ou)
+                            {% for response_choice in rule.response_choices.all %}
+                                réponse = {{ response_choice }}
+                            {% endfor %}
+                        {% endif %}
+                        {% if rule.numerical_operator %}
+                            réponse {{ rule.numerical_operator }} {{ rule.numerical_value }}
+                        {% endif %}
+                        {% if rule.boolean_response %}
+                            réponse = {{ rule.boolean_response }}
+                        {% endif %}
+                        <button onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='block'">Supprimer</button>
+                    </li>
+
+                    <div id="confirm-delete-{{ rule.id }}" class="modal">
+                        <form class="modal-content" action="{% if question %} {% url 'delete-question-filter' question.id rule.id %} {% elif profile_type %} {% url 'delete-profile-type-definition' profile_type.id rule.id %} {% endif %}" method="post">
+                            {% csrf_token %}
+                            <span onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'" class="close" title="Close Modal">×</span>
+                            <div class="container">
+                                <h1>Supprimer une condition d'affichage</h1>
+                                <p>Vous êtes sur le point de supprimer : {{ rule }}</p>
+                                <div class="clearfix">
+                                    <button type="button" onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'" class="cancelbtn">Cancel</button>
+                                    <input type="submit" value="Supprimer" onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'">
+                                </div>
+                            </div>
+                        </form>
+                      </div>
+
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if question %}
+        <h2>Créer une nouvelle condition d'affichage</h2>
+        <form action="{% url 'question-filter' question.id %}" method="post">
+        {% elif profile_type %}
+        <h2>Créer une nouvelle règle</h2>
+        <form action="{% url 'profile-type-definition' profile_type.id %}" method="post">
+        {% endif %}
+            {% csrf_token %}
+            {{ rule_form.question.as_hidden }}
+            {{ rule_form.profile_type.as_hidden }}
+            <div style="display: flex;">
+                <input id="toggle-conditional-question" class="toggle toggle-left" name="toggle" value="false" type="radio" checked>
+                <label for="toggle-conditional-question" class="btn">Question</label>
+                <input id="toggle-conditional-profile-type" class="toggle toggle-right" name="toggle" value="true" type="radio">
+                <label for="toggle-conditional-profile-type" class="btn">Profil</label>
+            </div>
+
+            {% if rules.count > 0 %}
+                <div>
+                    {{ rule_form.intersection_operator.error }}
+                    {{ rule_form.intersection_operator.label_tag }}
+                    {{ rule_form.intersection_operator }}
+                </div>
+            {% endif %}
+
+            <div id="id_display_conditional_question" style="display: block;">
+                <div>
+                    {{ rule_form.conditional_question.error }}
+                    {{ rule_form.conditional_question.label_tag }}
+                    {{ rule_form.conditional_question }}
+                </div>
+
+                <div id="id_display_response_choices" style="display: none;">
+                    {{ rule_form.response_choices.error }}
+                    {{ rule_form.response_choices.label_tag }}
+                    {{ rule_form.response_choices }}
+                </div>
+                <div id="id_display_scale_response" style="display: none;">
+                </div>
+                <div id="id_display_numerical_response" style="display: none;">
+                    {{ rule_form.numerical_operator.error }}
+                    {{ rule_form.numerical_operator.label_tag }}
+                    {{ rule_form.numerical_operator }}
+                    {{ rule_form.numerical_value.error }}
+                    {{ rule_form.numerical_value.label_tag }}
+                    {{ rule_form.numerical_value }}
+                </div>
+                <div id="id_display_boolean_response" style="display: none;">
+                    {{ rule_form.boolean_response.error }}
+                    {{ rule_form.boolean_response.label_tag }}
+                    {{ rule_form.boolean_response }}
+                </div>
+            </div>
+            <div id="id_display_conditional_profile_type" style="display: none;">
+                <div>
+                    {{ rule_form.conditional_profile_type.error }}
+                    {{ rule_form.conditional_profile_type.label_tag }}
+                    {{ rule_form.conditional_profile_type }}
+                </div>
+            </div>
+            <br/>
+            <input type="submit" value="Ajouter">
+        </form>
+        <a class="btn btn-primary" href="/admin/snippets/open_democracy_back/question/">Terminer</a>
+    </div>
+
+    <script type="text/javascript">
+        const OTHER_QUESTIONS_RESPONSE_BY_ID = JSON.parse("{{other_questions_response_by_id | escapejs }}");
+
+        var display_conditional_question = document.getElementById("id_display_conditional_question");
+        var new_rule = document.getElementById("id_conditional_question");
+        var display_response_choices = document.getElementById("id_display_response_choices");
+        var display_scale_response = document.getElementById("id_display_scale_response");
+        var display_numerical_response = document.getElementById("id_display_numerical_response");
+        var display_boolean_response = document.getElementById("id_display_boolean_response");
+
+        var display_conditional_profile_type = document.getElementById("id_display_conditional_profile_type");
+
+        document.getElementById("toggle-conditional-question").addEventListener("click", function() {
+            display_conditional_question.style.display = "block";
+            display_conditional_profile_type.style.display = "none";
+        })
+
+        document.getElementById("toggle-conditional-profile-type").addEventListener("click", function() {
+            display_conditional_question.style.display = "none";
+            display_conditional_profile_type.style.display = "block";
+        })
+
+        new_rule.addEventListener("change", function() {
+            const new_rule_type = OTHER_QUESTIONS_RESPONSE_BY_ID[new_rule.value].type
+            if (new_rule_type == "unique_choice" || new_rule_type == "multiple_choice"){
+                var str = ""
+                for (const [response_choice_id, response_choice] of Object.entries(OTHER_QUESTIONS_RESPONSE_BY_ID[new_rule.value].responses)) {
+                    var id = "id_response_choices_" + response_choice_id
+                    str += "<li><label for='" + id + "'>"
+                        + "<input type='checkbox' name='response_choices' value='" + response_choice_id + "' id='" + id + "'></input>"
+                        + response_choice
+                        + "</label></li>"
+                }
+                document.getElementById("id_response_choices").innerHTML = str;
+                display_response_choices.style.display =  "block";
+            } else {
+                display_response_choices.style.display =  "none";
+            }
+
+            if (new_rule_type == "numerical" || new_rule_type == "closed_with_scale") {
+                display_numerical_response.style.display =  "block";
+            } else {
+                display_numerical_response.style.display =  "none";
+            }
+
+            if (new_rule_type == "closed_with_scale") {
+                display_scale_response.innerHTML = "La réponse est contenu entre "
+                    + OTHER_QUESTIONS_RESPONSE_BY_ID[new_rule.value].min
+                    + " et "
+                    + OTHER_QUESTIONS_RESPONSE_BY_ID[new_rule.value].max
+                display_scale_response.style.display =  "block";
+            } else {
+                display_scale_response.style.display =  "none";
+            }
+
+            if (new_rule_type == "boolean") {
+                display_boolean_response.style.display =  "block";
+            } else {
+                display_boolean_response.style.display =  "none";
+            }
+        });
+    </script>
+
+{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <style>
+        .vertical {
+            display: flex;
+            flex-direction: column;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 30%;
+            top: 30%;
+            width: 50%;
+            height: 200px;
+            overflow: auto;
+        }
+        .modal-content {
+            border: 1px solid #888;
+            padding: 10px;
+            background-color: #fefefe;
+        }
+        .close {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            width: auto;
+            font-size: 20px;
+            font-weight: bold;
+            color: #474e5d;
+        }
+
+        .btn {
+            border: 3px solid #1a1a1a;
+            display: inline-block;
+            padding: 10px;
+            position: relative;
+            text-align: center;
+            transition: background 600ms ease, color 600ms ease;
+       }
+        input[type="radio"].toggle {
+            display: none;
+       }
+        input[type="radio"].toggle + label {
+            cursor: pointer;
+            min-width: 60px;
+       }
+        input[type="radio"].toggle.toggle-left + label {
+            border-right: 0;
+       }
+        input[type="radio"].toggle.toggle-right + label {
+            margin-left: -5px;
+       }
+        input[type="radio"].toggle:checked + label {
+            cursor: default;
+            color: #fff;
+            background-color: #1a1a1a;
+            transition: color 200ms;
+       }
+
+    </style>
+{% endblock %}

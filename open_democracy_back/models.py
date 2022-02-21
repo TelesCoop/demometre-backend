@@ -258,15 +258,6 @@ class QuestionnaireQuestionManager(models.Manager):
         )
 
 
-class ProfilingQuestionManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super(ProfilingQuestionManager, self)
-            .get_queryset()
-            .filter(profiling_question=True)
-        )
-
-
 @register_snippet
 class QuestionnaireQuestion(Question):
     objects = QuestionnaireQuestionManager()
@@ -290,6 +281,15 @@ class QuestionnaireQuestion(Question):
         verbose_name_plural = "4. Questions"
         verbose_name = "4. Question"
         proxy = True
+
+
+class ProfilingQuestionManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super(ProfilingQuestionManager, self)
+            .get_queryset()
+            .filter(profiling_question=True)
+        )
 
 
 @register_snippet
@@ -327,6 +327,9 @@ class ResponseChoice(TimeStampedModel, Orderable):
 class ProfileType(models.Model):
     name = models.CharField(max_length=125, default="")
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         verbose_name_plural = "Types de profil"
         verbose_name = "Type de profil"
@@ -351,17 +354,47 @@ NUMERICAL_OPERATOR_CONVERSION = {
 }
 
 
-class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
-    # TODO : add profileType field
-    question = ParentalKey(
-        Question, on_delete=models.CASCADE, related_name="question_filters"
+class Rule(TimeStampedModel, Orderable, ClusterableModel):
+    """
+    Manage filtering of question (if the question must be shown) depending on conditional question answer or conditional profile type
+    OR
+    Define profile type depending on conditional question answer
+    """
+
+    # Only one of question or profile_type must be filled
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name="question_filters",
+        null=True,
+        blank=True,
     )
 
+    profile_type = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name="definitions",
+        null=True,
+        blank=True,
+    )
+
+    # Only one of conditional_question or conditional_profile_type must be filled
     conditional_question = models.ForeignKey(
         Question,
         on_delete=models.CASCADE,
         verbose_name="Filtre par question",
-        related_name="questions_that_depend_on_me",
+        related_name="rules_that_depend_on_me",
+        null=True,
+        blank=True,
+    )
+
+    conditional_profile_type = models.ForeignKey(
+        ProfileType,
+        on_delete=models.CASCADE,
+        verbose_name="Filtre par type de profile",
+        related_name="rules_that_depend_on_me",
+        null=True,
+        blank=True,
     )
 
     intersection_operator = models.CharField(
@@ -381,20 +414,17 @@ class QuestionFilter(TimeStampedModel, Orderable, ClusterableModel):
     boolean_response = models.BooleanField(blank=True, null=True)
 
 
-class QuestionFilterByProfileType(TimeStampedModel, Orderable, ClusterableModel):
-    question = ParentalKey(
-        Question,
-        on_delete=models.CASCADE,
-        related_name="question_filters_by_profile_type",
-    )
+# class QuestionFilterByProfileTypeManager(models.Manager):
+#     def get_queryset(self):
+#         return (
+#             super(QuestionFilterByProfileTypeManager, self)
+#             .get_queryset()
+#             .filter(conditional_profile_type__isnull=False)
+#         )
 
-    conditional_profile_type = models.ForeignKey(
-        ProfileType,
-        on_delete=models.CASCADE,
-        verbose_name="Filtre par type de profile",
-        related_name="questions_that_depend_on_me",
-    )
 
-    intersection_operator = models.CharField(
-        max_length=8, choices=BOOLEAN_OPERATOR, blank=True
-    )
+# class QuestionFilterByProfileType(QuestionFilter):
+#     objects = QuestionFilterByProfileTypeManager()
+
+#     class Meta(Question.Meta):
+#         proxy = True

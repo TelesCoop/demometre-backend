@@ -1,39 +1,71 @@
 import json
 from collections import defaultdict
 from django.shortcuts import render
-from django.urls import reverse
-from open_democracy_back.forms import QuestionFilterForm
+from django.urls import reverse, resolve
+from open_democracy_back.forms import RuleForm
 from django.db.models import Q
 from django.views.generic.edit import BaseDeleteView
 
-from open_democracy_back.models import Question, QuestionFilter, ResponseChoice
+from open_democracy_back.models import (
+    ProfileType,
+    ProfilingQuestion,
+    Question,
+    QuestionType,
+    Rule,
+    ResponseChoice,
+)
 
 
-def question_filter_view(request, pk):
-    other_questions_list = Question.objects.filter(~Q(id=pk)).prefetch_related(
-        "response_choices"
-    )
+def rules_definition_view(request, pk):
+    current_url = resolve(request.path_info).url_name
+    if current_url == "profile-type-definition":
+        other_questions_list = ProfilingQuestion.objects.filter(
+            ~Q(type=QuestionType.OPEN) & ~Q(type=QuestionType.CLOSED_WITH_RANKING)
+        ).prefetch_related("response_choices")
+        other_profile_types = ProfileType.objects.filter(~Q(id=pk))
+        profile_type = ProfileType.objects.get(id=pk)
+        question = None
+        rules = Rule.objects.filter(profile_type_id=pk)
+    else:
+        other_questions_list = Question.objects.filter(
+            ~Q(id=pk)
+            & ~Q(type=QuestionType.OPEN)
+            & ~Q(type=QuestionType.CLOSED_WITH_RANKING)
+        ).prefetch_related("response_choices")
+        other_profile_types = ProfileType.objects.all()
+        profile_type = None
+        question = Question.objects.get(id=pk)
+        rules = Rule.objects.filter(question_id=pk)
 
     if request.method == "POST":
-        filter_form = QuestionFilterForm(
-            request.POST, question_id=pk, other_questions_list=other_questions_list
+        rule_form = RuleForm(
+            request.POST,
+            question=question,
+            profile_type=profile_type,
+            other_questions_list=other_questions_list,
+            other_profile_types=other_profile_types,
         )
-        # The queryset of response_choices was changed dynamically un js, filter_form use the initial queryset, so the selection is not valid
-        filter_form.fields["response_choices"].queryset = ResponseChoice.objects.filter(
+        # The queryset of response_choices was changed dynamically un js, rule_form use the initial queryset, so the selection is not valid
+        rule_form.fields["response_choices"].queryset = ResponseChoice.objects.filter(
             question_id=request.POST.get("conditional_question")
         )
-        if filter_form.is_valid():
-            filter_form.save()
+        if rule_form.is_valid():
+            rule_form.save()
             # No redirection, the user can create several filters in a row
+            rule_form = RuleForm(
+                question=question,
+                profile_type=profile_type,
+                other_questions_list=other_questions_list,
+                other_profile_types=other_profile_types,
+            )
 
     else:
-        filter_form = QuestionFilterForm(
-            question_id=pk, other_questions_list=other_questions_list
+        rule_form = RuleForm(
+            question=question,
+            profile_type=profile_type,
+            other_questions_list=other_questions_list,
+            other_profile_types=other_profile_types,
         )
-
-    question = Question.objects.get(id=pk)
-
-    question_filters = QuestionFilter.objects.filter(question_id=pk)
 
     other_questions_response_by_id = defaultdict(
         lambda: {"type": "", "min": 0, "max": 0, "responses": {}}
@@ -49,23 +81,26 @@ def question_filter_view(request, pk):
 
     return render(
         request,
-        "admin/question_filter.html",
+        "admin/rules.html",
         {
             "question": question,
-            "question_filters": question_filters,
+            "profile_type": profile_type,
+            "rules": rules,
             "other_questions_response_by_id": json.dumps(
                 other_questions_response_by_id
             ),
-            "filter_form": filter_form,
+            "rule_form": rule_form,
         },
     )
 
 
-class QuestionFilterView(BaseDeleteView):
-    model = QuestionFilter
+class RuleView(BaseDeleteView):
+    model = Rule
 
     def get_object(self):
-        return QuestionFilter.objects.get(id=self.kwargs.get("question_filter_pk"))
+        return Rule.objects.get(id=self.kwargs.get("rule_pk"))
 
     def get_success_url(self):
-        return reverse("filter", args=(str(self.kwargs.get("pk"))))
+        if resolve(self.request.path_info).url_name == "delete-profile-type-definition":
+            return reverse("profile-type-definition", args=(str(self.kwargs.get("pk"))))
+        return reverse("question-filter", args=(str(self.kwargs.get("pk"))))

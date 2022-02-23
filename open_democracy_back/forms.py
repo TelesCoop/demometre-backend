@@ -11,7 +11,6 @@ class RuleForm(forms.ModelForm):
             "profile_type",
             "conditional_question",
             "conditional_profile_type",
-            "intersection_operator",
             "response_choices",
             "numerical_operator",
             "numerical_value",
@@ -34,3 +33,13 @@ class RuleForm(forms.ModelForm):
         self.fields["profile_type"].initial = profile_type
         self.fields["conditional_question"].queryset = other_questions_list
         self.fields["conditional_profile_type"].queryset = other_profile_types
+
+    def clean(self):
+        cd = self.cleaned_data
+        if cd["conditional_question"]:
+            # The queryset of response_choices was changed dynamically un js, rule_form use the initial queryset, so the selection is not valid
+            self.fields["response_choices"].queryset = ResponseChoice.objects.filter(
+                question=cd["conditional_question"]
+            )
+
+        return cd

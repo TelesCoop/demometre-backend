@@ -12,19 +12,37 @@ from open_democracy_back.models import (
     Question,
     QuestionType,
     Rule,
-    ResponseChoice,
 )
+
+
+def intersection_operator_view(request, pk):
+    current_url = resolve(request.path_info).url_name
+    if current_url == "profile-type-intersection-operator":
+        profile_type = ProfileType.objects.get(id=pk)
+        profile_type.rules_intersection_operator = request.POST.get(
+            "intersection-operator"
+        )
+        profile_type.save()
+    else:
+        question = Question.objects.get(id=pk)
+        question.rules_intersection_operator = request.POST.get("intersection-operator")
+        question.save()
+    return rules_definition_view(request, pk)
 
 
 def rules_definition_view(request, pk):
     current_url = resolve(request.path_info).url_name
-    if current_url == "profile-type-definition":
+    if (
+        current_url == "profile-type-definition"
+        or current_url == "profile-type-intersection-operator"
+    ):
         other_questions_list = ProfilingQuestion.objects.filter(
             ~Q(type=QuestionType.OPEN) & ~Q(type=QuestionType.CLOSED_WITH_RANKING)
         ).prefetch_related("response_choices")
         other_profile_types = ProfileType.objects.filter(~Q(id=pk))
         profile_type = ProfileType.objects.get(id=pk)
         question = None
+        rules_intersection_operator = profile_type.rules_intersection_operator
         rules = Rule.objects.filter(profile_type_id=pk)
     else:
         other_questions_list = Question.objects.filter(
@@ -35,6 +53,7 @@ def rules_definition_view(request, pk):
         other_profile_types = ProfileType.objects.all()
         profile_type = None
         question = Question.objects.get(id=pk)
+        rules_intersection_operator = question.rules_intersection_operator
         rules = Rule.objects.filter(question_id=pk)
 
     if request.method == "POST":
@@ -45,10 +64,8 @@ def rules_definition_view(request, pk):
             other_questions_list=other_questions_list,
             other_profile_types=other_profile_types,
         )
-        # The queryset of response_choices was changed dynamically un js, rule_form use the initial queryset, so the selection is not valid
-        rule_form.fields["response_choices"].queryset = ResponseChoice.objects.filter(
-            question_id=request.POST.get("conditional_question")
-        )
+        # breakpoint()
+
         if rule_form.is_valid():
             rule_form.save()
             # No redirection, the user can create several filters in a row
@@ -85,6 +102,7 @@ def rules_definition_view(request, pk):
         {
             "question": question,
             "profile_type": profile_type,
+            "rules_intersection_operator": rules_intersection_operator,
             "rules": rules,
             "other_questions_response_by_id": json.dumps(
                 other_questions_response_by_id

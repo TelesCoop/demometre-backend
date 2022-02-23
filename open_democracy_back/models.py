@@ -1,4 +1,3 @@
-import operator
 from django.db import models
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
@@ -15,6 +14,8 @@ from wagtail.core.models import Page, TranslatableMixin, Orderable
 from wagtail.search import index
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
+
+from open_democracy_back.constants import NUMERICAL_OPERATOR
 
 
 class HomePage(Page):
@@ -167,7 +168,16 @@ class QuestionType(models.TextChoices):
     NUMERICAL = "numerical", "Numérique"
 
 
+class BooleanOperator(models.TextChoices):
+    AND = "and", "et"
+    OR = "or", "ou"
+
+
 class Question(index.Indexed, TimeStampedModel, ClusterableModel):
+    rules_intersection_operator = models.CharField(
+        max_length=8, choices=BooleanOperator.choices, default=BooleanOperator.AND
+    )
+
     code = models.CharField(
         verbose_name="Code",
         max_length=2,
@@ -251,11 +261,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
 class QuestionnaireQuestionManager(models.Manager):
     def get_queryset(self):
-        return (
-            super(QuestionnaireQuestionManager, self)
-            .get_queryset()
-            .filter(profiling_question=False)
-        )
+        return super().get_queryset().filter(profiling_question=False)
 
 
 @register_snippet
@@ -285,11 +291,7 @@ class QuestionnaireQuestion(Question):
 
 class ProfilingQuestionManager(models.Manager):
     def get_queryset(self):
-        return (
-            super(ProfilingQuestionManager, self)
-            .get_queryset()
-            .filter(profiling_question=True)
-        )
+        return super().get_queryset().filter(profiling_question=True)
 
 
 @register_snippet
@@ -327,31 +329,20 @@ class ResponseChoice(TimeStampedModel, Orderable):
 class ProfileType(models.Model):
     name = models.CharField(max_length=125, default="")
 
+    rules_intersection_operator = models.CharField(
+        max_length=8, choices=BooleanOperator.choices, default=BooleanOperator.AND
+    )
+
+    panels = [
+        FieldPanel("name"),
+    ]
+
     def __str__(self):
         return self.name
 
     class Meta:
         verbose_name_plural = "Types de profil"
         verbose_name = "Type de profil"
-
-
-NUMERICAL_OPERATOR = [
-    ("<", "<"),
-    (">", ">"),
-    ("<=", "<="),
-    (">=", ">="),
-    ("!=", "!="),
-    ("=", "="),
-]
-BOOLEAN_OPERATOR = [("and", "et"), ("or", "ou")]
-NUMERICAL_OPERATOR_CONVERSION = {
-    "<": operator.lt,
-    ">": operator.gt,
-    "<=": operator.le,
-    ">=": operator.ge,
-    "!=": operator.ne,
-    "=": operator.eq,
-}
 
 
 class Rule(TimeStampedModel, Orderable, ClusterableModel):
@@ -397,10 +388,6 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
         blank=True,
     )
 
-    intersection_operator = models.CharField(
-        max_length=8, choices=BOOLEAN_OPERATOR, blank=True
-    )
-
     # if conditional question is unique or multiple choices type
     response_choices = models.ManyToManyField(ResponseChoice)
 
@@ -413,18 +400,6 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
     # if conditional question is boolean
     boolean_response = models.BooleanField(blank=True, null=True)
 
+    # def save(self, *args, **kwargs):
 
-# class QuestionFilterByProfileTypeManager(models.Manager):
-#     def get_queryset(self):
-#         return (
-#             super(QuestionFilterByProfileTypeManager, self)
-#             .get_queryset()
-#             .filter(conditional_profile_type__isnull=False)
-#         )
-
-
-# class QuestionFilterByProfileType(QuestionFilter):
-#     objects = QuestionFilterByProfileTypeManager()
-
-#     class Meta(Question.Meta):
-#         proxy = True
+    #     super.save(*args, **kwargs)

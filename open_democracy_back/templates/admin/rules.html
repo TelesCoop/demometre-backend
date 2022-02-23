@@ -10,6 +10,32 @@
         <h1>Définition du profil : <i>{{ profile_type }}</i></h1>
         {% endif %}
 
+        <b>Lien logique entre les différentes conditions :</b>
+        <form id="intersection-operator-form" action="{% if question %} {% url 'question-intersection-operator' question.id %} {% elif profile_type %} {% url 'profile-type-intersection-operator' profile_type.id %} {% endif %}" method="post">
+            {% csrf_token %}
+            <div style="display: flex;">
+                <input
+                    id="toggle-or"
+                    class="toggle toggle-left"
+                    name="intersection-operator"
+                    value="or"
+                    type="radio"
+                    {% if rules_intersection_operator == "or" %}checked{% endif %}
+                    onclick="document.getElementById('intersection-operator-form').submit()">
+                <label for="toggle-or" class="btn">OU</label>
+                <input
+                    id="toggle-and"
+                    class="toggle toggle-right"
+                    name="intersection-operator"
+                    value="and"
+                    type="radio"
+                    {% if rules_intersection_operator == "and" %}checked{% endif %}
+                    onclick="document.getElementById('intersection-operator-form').submit()"
+                >
+                <label for="toggle-and" class="btn">ET</label>
+            </div>
+        </form>
+
         {% if rules.count > 0 %}
             {% if question %}
             <h2>Conditions d'affichage déjà existantes</h2>
@@ -19,10 +45,8 @@
 
             <ul class="vertical">
                 {% for rule in rules %}
-                    <span style="text-transform:uppercase; margin: 10px 0;">{% if rule.intersection_operator %}{{ rule.intersection_operator }}{% endif %}</span>
                     <li>
-
-                        <b>{{ rule.conditional_question }}</b><br/>
+                        <b>{{ rule.conditional_question|default:rule.conditional_profile_type }}</b><br/>
                         {% if rule.response_choices.count > 0 %}
                             (Lien logique : ou)
                             {% for response_choice in rule.response_choices.all %}
@@ -68,19 +92,11 @@
             {{ rule_form.question.as_hidden }}
             {{ rule_form.profile_type.as_hidden }}
             <div style="display: flex;">
-                <input id="toggle-conditional-question" class="toggle toggle-left" name="toggle" value="false" type="radio" checked>
+                <input id="toggle-conditional-question" class="toggle toggle-left" name="conditional-type" value="question" type="radio" checked>
                 <label for="toggle-conditional-question" class="btn">Question</label>
-                <input id="toggle-conditional-profile-type" class="toggle toggle-right" name="toggle" value="true" type="radio">
+                <input id="toggle-conditional-profile-type" class="toggle toggle-right" name="conditional-type" value="profile" type="radio">
                 <label for="toggle-conditional-profile-type" class="btn">Profil</label>
             </div>
-
-            {% if rules.count > 0 %}
-                <div>
-                    {{ rule_form.intersection_operator.error }}
-                    {{ rule_form.intersection_operator.label_tag }}
-                    {{ rule_form.intersection_operator }}
-                </div>
-            {% endif %}
 
             <div id="id_display_conditional_question" style="display: block;">
                 <div>
@@ -120,7 +136,10 @@
             <br/>
             <input type="submit" value="Ajouter">
         </form>
-        <a class="btn btn-primary" href="/admin/snippets/open_democracy_back/question/">Terminer</a>
+
+        <a class="btn btn-primary"
+            href="{% if question %} /admin/snippets/open_democracy_back/questionnairequestion/ {% elif profile_type %} /admin/snippets/open_democracy_back/profilingquestion/ {% endif %}"
+            >Terminer</a>
     </div>
 
     <script type="text/javascript">

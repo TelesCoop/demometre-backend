@@ -9,11 +9,16 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
 from .api import api_router
-from .views import RuleView, rules_definition_view
+from .views import RuleView, intersection_operator_view, rules_definition_view
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("api/v2/", api_router.urls),
+    path(
+        "admin/question/<int:pk>/edit-intersection-operator/",
+        intersection_operator_view,
+        name="question-intersection-operator",
+    ),
     path(
         "admin/question/<int:pk>/rules/", rules_definition_view, name="question-filter"
     ),
@@ -21,6 +26,11 @@ urlpatterns = [
         "admin/question/<int:pk>/rule/<int:rule_pk>/delete",
         RuleView.as_view(),
         name="delete-question-filter",
+    ),
+    path(
+        "admin/profile-type/<int:pk>/edit-intersection-operator/",
+        intersection_operator_view,
+        name="profile-type-intersection-operator",
     ),
     path(
         "admin/profile-type/<int:pk>/rules/",

@@ -194,6 +194,7 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "ul",
 ]
 
+
 @register_snippet
 class Definition(models.Model):
     word = models.CharField(max_length=255, verbose_name="mot")
@@ -234,13 +235,22 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
 
     legal_frame = RichTextField(
-        null=True, blank=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cadre légal"
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Cadre légal",
     )
     use_case = RichTextField(
-        null=True, blank=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cas d'usage"
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Cas d'usage",
     )
     resources = RichTextField(
-        null=True, blank=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Ressources"
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Ressources",
     )
     comments = RichTextField(
         null=True,
@@ -364,12 +374,10 @@ class ProfilingQuestionManager(models.Manager):
 class ProfilingQuestion(Question):
     objects = ProfilingQuestionManager()
 
-    panels = (
-        [
-            *Question.panels,
-            FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
-        ]
-    )
+    panels = [
+        *Question.panels,
+        FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
+    ]
 
     def save(self, **kwargs):
         self.profiling_question = True

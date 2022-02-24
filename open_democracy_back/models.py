@@ -130,6 +130,7 @@ class MarkerOrderByRole(Orderable):
     ]
 
 
+@register_snippet
 class ThematicTag(TagBase):
     class Meta:
         verbose_name = "Thématique"
@@ -193,7 +194,7 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "ul",
 ]
 
-
+@register_snippet
 class Definition(models.Model):
     word = models.CharField(max_length=255, verbose_name="mot")
     explanation = RichTextField(
@@ -202,6 +203,10 @@ class Definition(models.Model):
 
     def __str__(self):
         return f"Définition de {self.word}"
+
+    class Meta:
+        verbose_name = "Définition"
+        verbose_name_plural = "Définitions"
 
 
 class Question(index.Indexed, TimeStampedModel, ClusterableModel):
@@ -228,20 +233,18 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
     max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
 
-    definitions = models.ManyToManyField(
-        Definition, blank=True, verbose_name="Défintions"
-    )
     legal_frame = RichTextField(
-        null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cadre légal"
+        null=True, blank=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cadre légal"
     )
     use_case = RichTextField(
-        null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cas d'usage"
+        null=True, blank=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cas d'usage"
     )
     resources = RichTextField(
-        null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Ressources"
+        null=True, blank=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Ressources"
     )
     comments = RichTextField(
         null=True,
+        blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
         verbose_name="Commentaires",
         help_text="Indication affichée uniquement pour les administrateurs.",
@@ -269,6 +272,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     # Profiling questions fields
     profiling_question = models.BooleanField(default=False)
 
+    roles = models.ManyToManyField(Role, blank=True)
+
     search_fields = [
         index.SearchField("question_statement", partial_match=True),
         index.SearchField("name", partial_match=True),
@@ -293,7 +298,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
             heading="Valeurs extrêmes possibles",
             help_text="Ne renseigner que si cela à un sens par rapport au type de question",
         ),
-        FieldPanel("definitions"),
+        InlinePanel("related_definition_ordered", label="Ordre des définitions"),
         FieldPanel("use_case"),
         FieldPanel("legal_frame"),
         FieldPanel("resources"),
@@ -312,6 +317,16 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     class Meta:
         ordering = ["code"]
+
+
+class QuestionDefinition(Orderable):
+    question = ParentalKey(
+        Question, on_delete=models.CASCADE, related_name="related_definition_ordered"
+    )
+    definition = models.ForeignKey(Definition, on_delete=models.CASCADE)
+    panels = [
+        SnippetChooserPanel("definition"),
+    ]
 
 
 class QuestionnaireQuestionManager(models.Manager):
@@ -348,6 +363,13 @@ class ProfilingQuestionManager(models.Manager):
 @register_snippet
 class ProfilingQuestion(Question):
     objects = ProfilingQuestionManager()
+
+    panels = (
+        [
+            *Question.panels,
+            FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
+        ]
+    )
 
     def save(self, **kwargs):
         self.profiling_question = True

@@ -1,12 +1,25 @@
 from django.utils.html import format_html_join
 from django.templatetags.static import static
-from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
+from wagtail.contrib.modeladmin.options import (
+    ModelAdmin,
+    modeladmin_register,
+    ModelAdminGroup,
+)
 
 from wagtail.core import hooks
 
 from wagtail.snippets import widgets as wagtailsnippets_widgets
 
-from open_democracy_back.models import ProfileType, Question, ThematicTag, Definition
+from open_democracy_back.models import (
+    ProfileType,
+    Question,
+    ThematicTag,
+    Definition,
+    Pillar,
+    Marker,
+    QuestionnaireQuestion,
+    ProfilingQuestion,
+)
 
 
 @hooks.register("register_snippet_listing_buttons")
@@ -41,7 +54,7 @@ def editor_js():
 
 class ThematicTagModelAdmin(ModelAdmin):
     model = ThematicTag
-    menu_label = 'Thématiques'
+    menu_label = "Thématiques"
     menu_icon = "pilcrow"
     menu_order = 100
     form_fields_exclude = ("slug",)
@@ -52,7 +65,7 @@ class ThematicTagModelAdmin(ModelAdmin):
 
 class DefinitionsModelAdmin(ModelAdmin):
     model = Definition
-    menu_label = 'Définitions'
+    menu_label = "Définitions"
     menu_icon = "openquote"
     menu_order = 200
     add_to_settings_menu = False
@@ -60,5 +73,60 @@ class DefinitionsModelAdmin(ModelAdmin):
     search_fields = ("word",)
 
 
+class PillarModelAdmin(ModelAdmin):
+    model = Pillar
+    menu_label = "Pillier"
+    menu_icon = "folder-inverse"
+    menu_order = 1
+    add_to_settings_menu = False
+    list_display = ["name"]
+    search_fields = ("name",)
+
+
+class MarkerModelAdmin(ModelAdmin):
+    model = Marker
+    menu_label = "Marqueur"
+    menu_icon = "folder-inverse"
+    menu_order = 2
+    add_to_settings_menu = False
+    list_display = ["name"]
+    search_fields = ("name",)
+
+
+class QuestionnaireQuestionModelAdmin(ModelAdmin):
+    model = QuestionnaireQuestion
+    menu_label = "Question"
+    menu_icon = "folder-inverse"
+    menu_order = 3
+    add_to_settings_menu = False
+    list_display = ["name"]
+    search_fields = ("name",)
+
+
+class ProfilingQuestionModelAdmin(ModelAdmin):
+    model = ProfilingQuestion
+    menu_label = "Question de profilage"
+    menu_icon = "folder-inverse"
+    menu_order = 4
+    add_to_settings_menu = False
+    list_display = ["name"]
+    search_fields = ("name",)
+
+
+class Survey(ModelAdminGroup):
+    """Group the"""
+
+    menu_label = "Questionnaire"
+    menu_order = 300
+    menu_icon = "folder-inverse"
+    items = (
+        PillarModelAdmin,
+        MarkerModelAdmin,
+        QuestionnaireQuestionModelAdmin,
+        ProfilingQuestionModelAdmin,
+    )
+
+
 modeladmin_register(ThematicTagModelAdmin)
 modeladmin_register(DefinitionsModelAdmin)
+modeladmin_register(Survey)

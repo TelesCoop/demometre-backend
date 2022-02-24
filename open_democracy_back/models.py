@@ -362,7 +362,7 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
     )
 
     profile_type = models.ForeignKey(
-        Question,
+        ProfileType,
         on_delete=models.CASCADE,
         related_name="definitions",
         null=True,
@@ -401,6 +401,7 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
     boolean_response = models.BooleanField(blank=True, null=True)
 
     def __str__(self):
+        base = self.question if self.question else self.profile_type
         conditional = (
             self.conditional_profile_type
             if self.conditional_profile_type
@@ -415,10 +416,19 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
                     "réponse" + str(self.numerical_operator) + str(self.numerical_value)
                 )
             elif self.response_choices:
-                for response_choice in self.response_choices:
+                for response_choice in self.response_choices.all():
                     detail += "réponse=" + str(response_choice) + ", "
 
-        return self.id + " Règle : " + conditional + " " + detail
+        return (
+            "ID:"
+            + str(self.id)
+            + " - "
+            + str(base)
+            + " - Règle : "
+            + str(conditional)
+            + " "
+            + detail
+        )
 
     def save(self, **kwargs):
         # clean data when save it

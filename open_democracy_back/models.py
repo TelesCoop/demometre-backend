@@ -183,6 +183,23 @@ class BooleanOperator(models.TextChoices):
     OR = "or", "ou"
 
 
+SIMPLE_RICH_TEXT_FIELD_FEATURE = [
+    "bold",
+    "italic",
+    "link",
+    "ol",
+    "ul",
+]
+
+
+class Definition(models.Model):
+    word = models.CharField(max_length=255, verbose_name="mot")
+    explanation = RichTextField(features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="explication")
+
+    def __str__(self):
+        return f"Définition de {self.word}"
+
+
 class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     rules_intersection_operator = models.CharField(
         max_length=8, choices=BooleanOperator.choices, default=BooleanOperator.AND
@@ -206,6 +223,12 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
     max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
+
+    definitions = models.ManyToManyField(Definition, blank=True, verbose_name="Défintions")
+    legal_frame = RichTextField(null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cadre légal")
+    use_case = RichTextField(null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cas d'usage")
+    resources = RichTextField(null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Ressources")
+    comments = RichTextField(null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Commentaires", help_text="Indication affichée uniquement pour les administrateurs.")
 
     # Questionnary questions fields
 
@@ -253,6 +276,11 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
             heading="Valeurs extrêmes possibles",
             help_text="Ne renseigner que si cela à un sens par rapport au type de question",
         ),
+        FieldPanel("definitions"),
+        FieldPanel("use_case"),
+        FieldPanel("legal_frame"),
+        FieldPanel("resources"),
+        FieldPanel("comments"),
     ]
 
     def __str__(self):
@@ -281,9 +309,7 @@ class QuestionnaireQuestion(Question):
     panels = (
         [
             FieldPanel("criteria"),
-        ]
-        + Question.panels
-        + [
+            *Question.panels,
             FieldPanel("objectivity"),
             FieldPanel("method"),
         ]

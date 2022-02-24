@@ -6,7 +6,7 @@ from wagtail.core import hooks
 
 from wagtail.snippets import widgets as wagtailsnippets_widgets
 
-from open_democracy_back.models import ProfileType, Question, ThematicTag
+from open_democracy_back.models import ProfileType, Question, ThematicTag, Definition
 
 
 @hooks.register("register_snippet_listing_buttons")
@@ -43,11 +43,22 @@ class ThematicTagModelAdmin(ModelAdmin):
     model = ThematicTag
     menu_label = 'Thématiques'
     menu_icon = "pilcrow"
-    menu_order = 200
+    menu_order = 100
     form_fields_exclude = ("slug",)
     add_to_settings_menu = False
     list_display = ["name"]
     search_fields = ("name",)
 
 
+class DefinitionsModelAdmin(ModelAdmin):
+    model = Definition
+    menu_label = 'Définitions'
+    menu_icon = "openquote"
+    menu_order = 200
+    add_to_settings_menu = False
+    list_display = ["word"]
+    search_fields = ("word",)
+
+
 modeladmin_register(ThematicTagModelAdmin)
+modeladmin_register(DefinitionsModelAdmin)

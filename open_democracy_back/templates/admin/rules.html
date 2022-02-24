@@ -4,14 +4,14 @@
     {% include "wagtailadmin/shared/header.html" with title="Modal Title" icon="no-view" %}
 
     <div class="nice-padding">
-        {% if question %}
-        <h1>Conditions d'affichage pour la question : <i>{{ question }}</i></h1>
-        {% elif profile_type %}
-        <h1>Définition du profil : <i>{{ profile_type }}</i></h1>
+        {% if data.question %}
+        <h1>Conditions d'affichage pour la question : <i>{{ data.question }}</i></h1>
+        {% elif data.profile_type %}
+        <h1>Définition du profil : <i>{{ data.profile_type }}</i></h1>
         {% endif %}
 
         <b>Lien logique entre les différentes conditions :</b>
-        <form id="intersection-operator-form" action="{% if question %} {% url 'question-intersection-operator' question.id %} {% elif profile_type %} {% url 'profile-type-intersection-operator' profile_type.id %} {% endif %}" method="post">
+        <form id="intersection-operator-form" action="{% if data.question %} {% url 'question-intersection-operator' data.question.id %} {% elif data.profile_type %} {% url 'profile-type-intersection-operator' data.profile_type.id %} {% endif %}" method="post">
             {% csrf_token %}
             <div style="display: flex;">
                 <input
@@ -20,7 +20,7 @@
                     name="intersection-operator"
                     value="or"
                     type="radio"
-                    {% if rules_intersection_operator == "or" %}checked{% endif %}
+                    {% if data.rules_intersection_operator == "or" %}checked{% endif %}
                     onclick="document.getElementById('intersection-operator-form').submit()">
                 <label for="toggle-or" class="btn">OU</label>
                 <input
@@ -29,22 +29,22 @@
                     name="intersection-operator"
                     value="and"
                     type="radio"
-                    {% if rules_intersection_operator == "and" %}checked{% endif %}
+                    {% if data.rules_intersection_operator == "and" %}checked{% endif %}
                     onclick="document.getElementById('intersection-operator-form').submit()"
                 >
                 <label for="toggle-and" class="btn">ET</label>
             </div>
         </form>
 
-        {% if rules.count > 0 %}
-            {% if question %}
+        {% if data.rules.count > 0 %}
+            {% if data.question %}
             <h2>Conditions d'affichage déjà existantes</h2>
-            {% elif profile_type %}
+            {% elif data.profile_type %}
             <h2>Règles déjà existantes</h2>
             {% endif %}
 
             <ul class="vertical">
-                {% for rule in rules %}
+                {% for rule in data.rules %}
                     <li>
                         <b>{{ rule.conditional_question|default:rule.conditional_profile_type }}</b><br/>
                         {% if rule.response_choices.count > 0 %}
@@ -63,7 +63,7 @@
                     </li>
 
                     <div id="confirm-delete-{{ rule.id }}" class="modal">
-                        <form class="modal-content" action="{% if question %} {% url 'delete-question-filter' question.id rule.id %} {% elif profile_type %} {% url 'delete-profile-type-definition' profile_type.id rule.id %} {% endif %}" method="post">
+                        <form class="modal-content" action="{% if data.question %} {% url 'delete-question-filter' data.question.id rule.id %} {% elif data.profile_type %} {% url 'delete-profile-type-definition' data.profile_type.id rule.id %} {% endif %}" method="post">
                             {% csrf_token %}
                             <span onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'" class="close" title="Close Modal">×</span>
                             <div class="container">
@@ -81,12 +81,12 @@
             </ul>
         {% endif %}
 
-        {% if question %}
+        {% if data.question %}
         <h2>Créer une nouvelle condition d'affichage</h2>
-        <form action="{% url 'question-filter' question.id %}" method="post">
-        {% elif profile_type %}
+        <form action="{% url 'question-filter' data.question.id %}" method="post">
+        {% elif data.profile_type %}
         <h2>Créer une nouvelle règle</h2>
-        <form action="{% url 'profile-type-definition' profile_type.id %}" method="post">
+        <form action="{% url 'profile-type-definition' data.profile_type.id %}" method="post">
         {% endif %}
             {% csrf_token %}
             {{ rule_form.question.as_hidden }}
@@ -138,12 +138,12 @@
         </form>
 
         <a class="btn btn-primary"
-            href="{% if question %} /admin/snippets/open_democracy_back/questionnairequestion/ {% elif profile_type %} /admin/snippets/open_democracy_back/profilingquestion/ {% endif %}"
+            href="{% if data.question %} /admin/snippets/open_democracy_back/questionnairequestion/ {% elif data.profile_type %} /admin/snippets/open_democracy_back/profilingquestion/ {% endif %}"
             >Terminer</a>
     </div>
 
     <script type="text/javascript">
-        const OTHER_QUESTIONS_RESPONSE_BY_ID = JSON.parse("{{other_questions_response_by_id | escapejs }}");
+        const QUESTIONS_RESPONSE_BY_QUESTION_ID = JSON.parse("{{ data.questions_response_by_question_id | escapejs }}");
 
         var display_conditional_question = document.getElementById("id_display_conditional_question");
         var new_rule = document.getElementById("id_conditional_question");
@@ -165,10 +165,10 @@
         })
 
         new_rule.addEventListener("change", function() {
-            const new_rule_type = OTHER_QUESTIONS_RESPONSE_BY_ID[new_rule.value].type
+            const new_rule_type = QUESTIONS_RESPONSE_BY_QUESTION_ID[new_rule.value].type
             if (new_rule_type == "unique_choice" || new_rule_type == "multiple_choice"){
                 var str = ""
-                for (const [response_choice_id, response_choice] of Object.entries(OTHER_QUESTIONS_RESPONSE_BY_ID[new_rule.value].responses)) {
+                for (const [response_choice_id, response_choice] of Object.entries(QUESTIONS_RESPONSE_BY_QUESTION_ID[new_rule.value].responses)) {
                     var id = "id_response_choices_" + response_choice_id
                     str += "<li><label for='" + id + "'>"
                         + "<input type='checkbox' name='response_choices' value='" + response_choice_id + "' id='" + id + "'></input>"
@@ -189,9 +189,9 @@
 
             if (new_rule_type == "closed_with_scale") {
                 display_scale_response.innerHTML = "La réponse est contenu entre "
-                    + OTHER_QUESTIONS_RESPONSE_BY_ID[new_rule.value].min
+                    + QUESTIONS_RESPONSE_BY_QUESTION_ID[new_rule.value].min
                     + " et "
-                    + OTHER_QUESTIONS_RESPONSE_BY_ID[new_rule.value].max
+                    + QUESTIONS_RESPONSE_BY_QUESTION_ID[new_rule.value].max
                 display_scale_response.style.display =  "block";
             } else {
                 display_scale_response.style.display =  "none";

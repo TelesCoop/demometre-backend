@@ -393,13 +393,55 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
 
     # if conditional question is numerical or close with scale
     numerical_operator = models.CharField(
-        max_length=8, choices=NUMERICAL_OPERATOR, blank=True
+        max_length=8, choices=NUMERICAL_OPERATOR, blank=True, null=True
     )
     numerical_value = models.IntegerField(blank=True, null=True)
 
     # if conditional question is boolean
     boolean_response = models.BooleanField(blank=True, null=True)
 
-    # def save(self, *args, **kwargs):
+    def __str__(self):
+        conditional = (
+            self.conditional_profile_type
+            if self.conditional_profile_type
+            else self.conditional_question
+        )
+        detail = ""
+        if self.conditional_question:
+            if self.boolean_response:
+                detail = "réponse=" + str(self.boolean_response)
+            elif self.numerical_operator:
+                detail = (
+                    "réponse" + str(self.numerical_operator) + str(self.numerical_value)
+                )
+            elif self.response_choices:
+                for response_choice in self.response_choices:
+                    detail += "réponse=" + str(response_choice) + ", "
 
-    #     super.save(*args, **kwargs)
+        return self.id + " Règle : " + conditional + " " + detail
+
+    def save(self, **kwargs):
+        # clean data when save it
+        if self.conditional_profile_type:
+            self.conditional_question = None
+            self.numerical_operator = None
+            self.numerical_value = None
+            self.boolean_response = None
+        elif self.conditional_question:
+            self.conditional_profile_type = None
+            if (
+                self.conditional_question.type == QuestionType.MULTIPLE_CHOICE
+                or self.conditional_question.type == QuestionType.UNIQUE_CHOICE
+            ):
+                self.numerical_operator = None
+                self.numerical_value = None
+                self.boolean_response = None
+            elif (
+                self.conditional_question.type == QuestionType.NUMERICAL
+                or self.conditional_question.type == QuestionType.CLOSED_WITH_SCALE
+            ):
+                self.boolean_response = None
+            elif self.conditional_question.type == QuestionType.BOOLEAN:
+                self.numerical_value = None
+                self.boolean_response = None
+        super().save(**kwargs)

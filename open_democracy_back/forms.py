@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 
 from open_democracy_back.models import Rule, ResponseChoice
 
@@ -36,10 +37,11 @@ class RuleForm(forms.ModelForm):
 
     def clean(self):
         cd = self.cleaned_data
-        if cd["conditional_question"]:
-            # The queryset of response_choices was changed dynamically un js, rule_form use the initial queryset, so the selection is not valid
-            self.fields["response_choices"].queryset = ResponseChoice.objects.filter(
-                question=cd["conditional_question"]
+        if (cd["numerical_operator"] and not cd["numerical_value"]) or (
+            not cd["numerical_operator"] and cd["numerical_value"]
+        ):
+            raise ValidationError(
+                "numerical_operator and numerical_value must be defined together"
             )
 
         return cd

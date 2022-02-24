@@ -77,7 +77,7 @@ class Pillar(models.Model):
     ]
 
     def __str__(self):
-        return self.get_code() + ": " + self.name
+        return f"{self.get_code()}: {self.name}"
 
     def get_code(self):
         return self.code
@@ -109,7 +109,7 @@ class Marker(index.Indexed, models.Model):
     ]
 
     def __str__(self):
-        return self.get_code() + ": " + self.name
+        return f"{self.get_code()}: {self.name}"
 
     def get_code(self):
         return self.pillar.get_code() + self.code
@@ -145,7 +145,9 @@ class Criteria(index.Indexed, models.Model):
         max_length=2,
         help_text="Correspond au numéro (ou lettre) de ce critère dans son marqueur",
     )
-    thematic_tags = models.ManyToManyField(ThematicTag, blank=True, verbose_name="Thématiques")
+    thematic_tags = models.ManyToManyField(
+        ThematicTag, blank=True, verbose_name="Thématiques"
+    )
 
     panels = [
         FieldPanel("marker"),
@@ -157,7 +159,7 @@ class Criteria(index.Indexed, models.Model):
     search_fields = [index.SearchField("name", partial_match=True)]
 
     def __str__(self):
-        return self.get_code() + ": " + self.name
+        return f"{self.get_code()}: {self.name}"
 
     def get_code(self):
         return self.marker.get_code() + "." + self.code
@@ -194,7 +196,9 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
 
 class Definition(models.Model):
     word = models.CharField(max_length=255, verbose_name="mot")
-    explanation = RichTextField(features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="explication")
+    explanation = RichTextField(
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="explication"
+    )
 
     def __str__(self):
         return f"Définition de {self.word}"
@@ -224,11 +228,24 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
     max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
 
-    definitions = models.ManyToManyField(Definition, blank=True, verbose_name="Défintions")
-    legal_frame = RichTextField(null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cadre légal")
-    use_case = RichTextField(null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cas d'usage")
-    resources = RichTextField(null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Ressources")
-    comments = RichTextField(null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Commentaires", help_text="Indication affichée uniquement pour les administrateurs.")
+    definitions = models.ManyToManyField(
+        Definition, blank=True, verbose_name="Défintions"
+    )
+    legal_frame = RichTextField(
+        null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cadre légal"
+    )
+    use_case = RichTextField(
+        null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Cas d'usage"
+    )
+    resources = RichTextField(
+        null=True, features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Ressources"
+    )
+    comments = RichTextField(
+        null=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Commentaires",
+        help_text="Indication affichée uniquement pour les administrateurs.",
+    )
 
     # Questionnary questions fields
 
@@ -285,8 +302,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     def __str__(self):
         if self.profiling_question:
-            return "Profilage : " + self.name
-        return self.get_code() + ": " + self.name
+            return f"Profilage: {self.name}"
+        return f"{self.get_code()}: {self.name}"
 
     def get_code(self):
         if self.criteria:
@@ -306,14 +323,12 @@ class QuestionnaireQuestionManager(models.Manager):
 class QuestionnaireQuestion(Question):
     objects = QuestionnaireQuestionManager()
 
-    panels = (
-        [
-            FieldPanel("criteria"),
-            *Question.panels,
-            FieldPanel("objectivity"),
-            FieldPanel("method"),
-        ]
-    )
+    panels = [
+        FieldPanel("criteria"),
+        *Question.panels,
+        FieldPanel("objectivity"),
+        FieldPanel("method"),
+    ]
 
     def save(self, **kwargs):
         self.profiling_question = False
@@ -449,22 +464,13 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
                 detail = "réponse=" + str(self.boolean_response)
             elif self.numerical_operator:
                 detail = (
-                    "réponse" + str(self.numerical_operator) + str(self.numerical_value)
+                    f"réponse{str(self.numerical_operator)}{str(self.numerical_value)}"
                 )
             elif self.response_choices:
                 for response_choice in self.response_choices.all():
-                    detail += "réponse=" + str(response_choice) + ", "
+                    detail += f"réponse={str(response_choice)}, "
 
-        return (
-            "ID:"
-            + str(self.id)
-            + " - "
-            + str(base)
-            + " - Règle : "
-            + str(conditional)
-            + " "
-            + detail
-        )
+        return f"ID: {str(self.id)} - {str(base)} - Règle : {str(conditional)} {detail}"
 
     def save(self, **kwargs):
         # clean data when save it

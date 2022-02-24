@@ -1,7 +1,9 @@
 from django.db import models
+from django import forms
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
+from taggit.models import TagBase
 from wagtail.admin.edit_handlers import (
     FieldPanel,
     InlinePanel,
@@ -128,6 +130,12 @@ class MarkerOrderByRole(Orderable):
     ]
 
 
+class ThematicTag(TagBase):
+    class Meta:
+        verbose_name = "Thématique"
+        verbose_name_plural = "Thématiques"
+
+
 @register_snippet
 class Criteria(index.Indexed, models.Model):
     marker = models.ForeignKey(Marker, null=True, blank=True, on_delete=models.SET_NULL)
@@ -137,11 +145,13 @@ class Criteria(index.Indexed, models.Model):
         max_length=2,
         help_text="Correspond au numéro (ou lettre) de ce critère dans son marqueur",
     )
+    thematic_tags = models.ManyToManyField(ThematicTag, blank=True, verbose_name="Thématiques")
 
     panels = [
         FieldPanel("marker"),
         FieldPanel("name"),
         FieldPanel("code"),
+        FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
     ]
 
     search_fields = [index.SearchField("name", partial_match=True)]

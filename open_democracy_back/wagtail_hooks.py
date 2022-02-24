@@ -1,11 +1,12 @@
 from django.utils.html import format_html_join
 from django.templatetags.static import static
+from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
 
 from wagtail.core import hooks
 
 from wagtail.snippets import widgets as wagtailsnippets_widgets
 
-from open_democracy_back.models import ProfileType, Question
+from open_democracy_back.models import ProfileType, Question, ThematicTag
 
 
 @hooks.register("register_snippet_listing_buttons")
@@ -36,3 +37,17 @@ def editor_js():
     )
 
     return js_includes
+
+
+class ThematicTagModelAdmin(ModelAdmin):
+    model = ThematicTag
+    menu_label = 'Thématiques'
+    menu_icon = "pilcrow"
+    menu_order = 200
+    form_fields_exclude = ("slug",)
+    add_to_settings_menu = False
+    list_display = ["name"]
+    search_fields = ("name",)
+
+
+modeladmin_register(ThematicTagModelAdmin)

@@ -114,8 +114,6 @@ class ProfilingQuestionModelAdmin(ModelAdmin):
 
 
 class Survey(ModelAdminGroup):
-    """Group the"""
-
     menu_label = "Questionnaire"
     menu_order = 300
     menu_icon = "folder-inverse"

@@ -48,14 +48,17 @@
                     <li>
                         <ul class="controls">
                             <li>
-                                <button
-                                    type="button"
-                                    class="button button-small button--icon text-replace white hover-no"
-                                    title="Supprimer"
-                                    onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='block'"
-                                >
-                                    <svg class="icon icon-bin icon" aria-hidden="true" focusable="false"><use href="#icon-bin"></use></svg>Supprimer
-                                </button>
+                                <form action="{% if data.question %} {% url 'delete-question-filter' data.question.id rule.id %} {% elif data.profile_type %} {% url 'delete-profile-type-definition' data.profile_type.id rule.id %} {% endif %}" method="post">
+                                    {% csrf_token %}
+                                    <button
+                                        type="submit"
+                                        class="button button-small button--icon text-replace white hover-no"
+                                        title="Supprimer"
+                                        onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='block'"
+                                    >
+                                        <svg class="icon icon-bin icon" aria-hidden="true" focusable="false"><use href="#icon-bin"></use></svg>Supprimer
+                                    </button>
+                                </form>
                             </li>
                         </ul>
                         <fieldset class="chooser">
@@ -83,41 +86,6 @@
                             </div>
                         </fieldset>
                     </li>
-
-                    <div id="confirm-delete-{{ rule.id }}" class="modal fade in" tabindex="-1" role="dialog" style="display: none;">
-
-                        <div  class="modal-dialog">
-                            <div class="modal-content">
-                                <button type="button" class="button close button--icon text-replace" data-dismiss="modal" onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'">
-                                    <svg class="icon icon-cross" aria-hidden="true" focusable="false"><use href="#icon-cross"></use></svg>Fermer
-                                </button>
-                                <div class="modal-body">
-                                    <header class="hasform">
-                                        <div class="row nice-padding">
-                                            <div class="left">
-                                                <div class="col header-title">
-                                                    <h1><svg class="icon icon-bin header-title-icon" aria-hidden="true" focusable="false"><use href="#icon-bin"></use></svg>
-                                                    Supprimer une condition d'affichage</h1>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </header>
-                                    <div class="row nice-padding">
-                                        <form class="modal-content" action="{% if data.question %} {% url 'delete-question-filter' data.question.id rule.id %} {% elif data.profile_type %} {% url 'delete-profile-type-definition' data.profile_type.id rule.id %} {% endif %}" method="post">
-                                            {% csrf_token %}
-                                            <div class="container">
-                                                <p>Vous êtes sur le point de supprimer : <br/><b>{{ rule }}</b></p>
-                                                <div class="actions delete-buttons">
-                                                    <button type="button" class="button button-small button-secondary" onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'" class="cancelbtn">Annuler</button>
-                                                    <input type="submit" class="button button-small button-secondary" value="Oui, Supprimer" onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'">
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 {% endfor %}
             </ul>
         {% endif %}

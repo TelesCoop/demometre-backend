@@ -23,6 +23,41 @@ from open_democracy_back.models import (
     ProfilingQuestion,
 )
 
+from wagtail.contrib.modeladmin.helpers import ButtonHelper
+
+
+class RulesButtonHelper(ButtonHelper):
+
+    # Define classes for our button, here we can set an icon for example
+    view_button_classnames = ["button-small", "icon", "icon-cogs"]
+
+    def view_button(self, obj):
+        # Define a label for our button
+        if isinstance(obj, Question):
+            text = "Condition d'affichage de la question"
+        if isinstance(obj, ProfileType):
+            text = "Définir ce profil"
+        return {
+            "url": "/admin/question/" + str(obj.id) + "/rules/",
+            "label": text,
+            "classname": self.finalise_classname(self.view_button_classnames),
+            "title": text,
+        }
+
+    def get_buttons_for_obj(
+        self, obj, exclude=None, classnames_add=None, classnames_exclude=None
+    ):
+        """
+        This function is used to gather all available buttons.
+        We append our custom button to the btns list.
+        """
+        btns = super().get_buttons_for_obj(
+            obj, exclude, classnames_add, classnames_exclude
+        )
+        if "view" not in (exclude or []):
+            btns.append(self.view_button(obj))
+        return btns
+
 
 @hooks.register("register_snippet_listing_buttons")
 def snippet_listing_buttons(snippet, user, next_url=None):
@@ -79,7 +114,6 @@ class PillarModelAdmin(ModelAdmin):
     model = Pillar
     menu_label = "Pillier"
     menu_icon = "folder-inverse"
-    menu_order = 1
     add_to_settings_menu = False
     list_display = ["name"]
     search_fields = ("name",)
@@ -89,7 +123,6 @@ class MarkerModelAdmin(ModelAdmin):
     model = Marker
     menu_label = "Marqueur"
     menu_icon = "folder-inverse"
-    menu_order = 2
     add_to_settings_menu = False
     list_display = ["name"]
     search_fields = ("name",)
@@ -99,7 +132,6 @@ class CriteriaModelAdmin(ModelAdmin):
     model = Criteria
     menu_label = "Critère"
     menu_icon = "folder-inverse"
-    menu_order = 3
     add_to_settings_menu = False
     list_display = ["name"]
     search_fields = ("name",)
@@ -107,9 +139,9 @@ class CriteriaModelAdmin(ModelAdmin):
 
 class QuestionnaireQuestionModelAdmin(ModelAdmin):
     model = QuestionnaireQuestion
+    button_helper_class = RulesButtonHelper
     menu_label = "Question"
     menu_icon = "folder-inverse"
-    menu_order = 4
     add_to_settings_menu = False
     list_display = ["name"]
     search_fields = ("name",)
@@ -122,8 +154,8 @@ class SurveyAdminGroup(ModelAdminGroup):
     items = (
         PillarModelAdmin,
         MarkerModelAdmin,
-        QuestionnaireQuestionModelAdmin,
         CriteriaModelAdmin,
+        QuestionnaireQuestionModelAdmin,
     )
 
 
@@ -131,7 +163,6 @@ class RoleModelAdmin(ModelAdmin):
     model = Role
     menu_label = "Rôle"
     menu_icon = "folder-inverse"
-    menu_order = 1
     add_to_settings_menu = False
     list_display = ["name"]
     search_fields = ("name",)
@@ -139,9 +170,9 @@ class RoleModelAdmin(ModelAdmin):
 
 class ProfileTypeModelAdmin(ModelAdmin):
     model = ProfileType
+    button_helper_class = RulesButtonHelper
     menu_label = "Type de profil"
     menu_icon = "folder-inverse"
-    menu_order = 2
     add_to_settings_menu = False
     list_display = ["name"]
     search_fields = ("name",)
@@ -149,9 +180,9 @@ class ProfileTypeModelAdmin(ModelAdmin):
 
 class ProfilingQuestionModelAdmin(ModelAdmin):
     model = ProfilingQuestion
+    button_helper_class = RulesButtonHelper
     menu_label = "Question de profilage"
     menu_icon = "folder-inverse"
-    menu_order = 3
     add_to_settings_menu = False
     list_display = ["name"]
     search_fields = ("name",)

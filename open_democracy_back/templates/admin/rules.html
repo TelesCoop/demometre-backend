@@ -43,40 +43,81 @@
             <h2>Règles déjà existantes</h2>
             {% endif %}
 
-            <ul class="vertical">
+            <ul class="multiple">
                 {% for rule in data.rules %}
                     <li>
-                        <b>{{ rule.conditional_question|default:rule.conditional_profile_type }}</b><br/>
-                        {% if rule.response_choices.count > 0 %}
-                            (Lien logique : ou)
-                            {% for response_choice in rule.response_choices.all %}
-                                réponse = {{ response_choice }}
-                            {% endfor %}
-                        {% endif %}
-                        {% if rule.numerical_operator %}
-                            réponse {{ rule.numerical_operator }} {{ rule.numerical_value }}
-                        {% endif %}
-                        {% if rule.boolean_response %}
-                            réponse = {{ rule.boolean_response }}
-                        {% endif %}
-                        <button onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='block'">Supprimer</button>
+                        <ul class="controls">
+                            <li>
+                                <button
+                                    type="button"
+                                    class="button button-small button--icon text-replace white hover-no"
+                                    title="Supprimer"
+                                    onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='block'"
+                                >
+                                    <svg class="icon icon-bin icon" aria-hidden="true" focusable="false"><use href="#icon-bin"></use></svg>Supprimer
+                                </button>
+                            </li>
+                        </ul>
+                        <fieldset class="chooser">
+                            <div class="chosen">
+                                <svg class="icon icon-snippet icon" aria-hidden="true" focusable="false">
+                                    {% if rule.conditional_profile_type or rule.conditional_question.profiling_question %}
+                                    <use href="#icon-user"></use>
+                                    {% else %}
+                                    <use href="#icon-list-ol"></use>
+                                    {% endif %}
+                                </svg>
+                                <b class="title">{{ rule.conditional_profile_type|default:rule.conditional_question }}</b>
+                            </div>
+                            <div>
+                                {% if rule.response_choices.count > 0 %}
+                                    (Lien logique : ou)
+                                    {% for response_choice in rule.response_choices.all %}
+                                        réponse = {{ response_choice }}
+                                    {% endfor %}
+                                {% elif rule.numerical_operator %}
+                                    réponse {{ rule.numerical_operator }} {{ rule.numerical_value }}
+                                {% elif rule.boolean_response %}
+                                    réponse = {{ rule.boolean_response }}
+                                {% endif %}
+                            </div>
+                        </fieldset>
                     </li>
 
-                    <div id="confirm-delete-{{ rule.id }}" class="modal">
-                        <form class="modal-content" action="{% if data.question %} {% url 'delete-question-filter' data.question.id rule.id %} {% elif data.profile_type %} {% url 'delete-profile-type-definition' data.profile_type.id rule.id %} {% endif %}" method="post">
-                            {% csrf_token %}
-                            <span onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'" class="close" title="Close Modal">×</span>
-                            <div class="container">
-                                <h1>Supprimer une condition d'affichage</h1>
-                                <p>Vous êtes sur le point de supprimer : {{ rule }}</p>
-                                <div class="clearfix">
-                                    <button type="button" onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'" class="cancelbtn">Cancel</button>
-                                    <input type="submit" value="Supprimer" onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'">
+                    <div id="confirm-delete-{{ rule.id }}" class="modal fade in" tabindex="-1" role="dialog" style="display: none;">
+
+                        <div  class="modal-dialog">
+                            <div class="modal-content">
+                                <button type="button" class="button close button--icon text-replace" data-dismiss="modal" onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'">
+                                    <svg class="icon icon-cross" aria-hidden="true" focusable="false"><use href="#icon-cross"></use></svg>Fermer
+                                </button>
+                                <div class="modal-body">
+                                    <header class="hasform">
+                                        <div class="row nice-padding">
+                                            <div class="left">
+                                                <div class="col header-title">
+                                                    <h1><svg class="icon icon-bin header-title-icon" aria-hidden="true" focusable="false"><use href="#icon-bin"></use></svg>
+                                                    Supprimer une condition d'affichage</h1>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </header>
+                                    <div class="row nice-padding">
+                                        <form class="modal-content" action="{% if data.question %} {% url 'delete-question-filter' data.question.id rule.id %} {% elif data.profile_type %} {% url 'delete-profile-type-definition' data.profile_type.id rule.id %} {% endif %}" method="post">
+                                            {% csrf_token %}
+                                            <div class="container">
+                                                <p>Vous êtes sur le point de supprimer : <br/><b>{{ rule }}</b></p>
+                                                <div class="actions delete-buttons">
+                                                    <button type="button" class="button button-small button-secondary" onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'" class="cancelbtn">Annuler</button>
+                                                    <input type="submit" class="button button-small button-secondary" value="Oui, Supprimer" onclick="document.getElementById('confirm-delete-{{ rule.id }}').style.display='none'">
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        </form>
-                      </div>
-
+                        </div>
+                    </div>
                 {% endfor %}
             </ul>
         {% endif %}
@@ -92,9 +133,9 @@
             {{ rule_form.question.as_hidden }}
             {{ rule_form.profile_type.as_hidden }}
             <div style="display: flex;">
-                <input id="toggle-conditional-question" class="toggle toggle-left" name="conditional-type" value="question" type="radio" checked>
+                <input id="toggle-conditional-question" class="toggle toggle-left" name="conditional_type" value="question" type="radio" checked>
                 <label for="toggle-conditional-question" class="btn">Question</label>
-                <input id="toggle-conditional-profile-type" class="toggle toggle-right" name="conditional-type" value="profile" type="radio">
+                <input id="toggle-conditional-profile-type" class="toggle toggle-right" name="conditional_type" value="profile" type="radio">
                 <label for="toggle-conditional-profile-type" class="btn">Profil</label>
             </div>
 
@@ -134,10 +175,12 @@
                 </div>
             </div>
             <br/>
-            <input type="submit" value="Ajouter">
+            <div class="actions">
+                <input type="submit" class="button button-small button-secondary" value="Ajouter">
+            </div>
         </form>
 
-        <a class="btn btn-primary"
+        <a type="button" class="button button-small button-secondary" style="margin-top: 1rem;"
             href="{% if data.question %} /admin/snippets/open_democracy_back/questionnairequestion/ {% elif data.profile_type %} /admin/snippets/open_democracy_back/profilingquestion/ {% endif %}"
             >Terminer</a>
     </div>
@@ -210,39 +253,16 @@
 {% block extra_css %}
     {{ block.super }}
     <style>
-        .vertical {
+        .delete-buttons{
             display: flex;
-            flex-direction: column;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 30%;
-            top: 30%;
-            width: 50%;
-            height: 200px;
-            overflow: auto;
-        }
-        .modal-content {
-            border: 1px solid #888;
-            padding: 10px;
-            background-color: #fefefe;
-        }
-        .close {
-            position: absolute;
-            right: 5px;
-            top: 5px;
-            width: auto;
-            font-size: 20px;
-            font-weight: bold;
-            color: #474e5d;
+            flex-direction: row;
+            justify-content: space-between;
         }
 
         .btn {
-            border: 3px solid #1a1a1a;
+            border: 2px solid var(--color-primary);
             display: inline-block;
-            padding: 10px;
+            padding: 8px;
             position: relative;
             text-align: center;
             transition: background 600ms ease, color 600ms ease;
@@ -252,7 +272,8 @@
        }
         input[type="radio"].toggle + label {
             cursor: pointer;
-            min-width: 60px;
+            min-width: 50px;
+            color: var(--color-primary);
        }
         input[type="radio"].toggle.toggle-left + label {
             border-right: 0;
@@ -263,7 +284,7 @@
         input[type="radio"].toggle:checked + label {
             cursor: default;
             color: #fff;
-            background-color: #1a1a1a;
+            background-color: var(--color-primary);
             transition: color 200ms;
        }
 

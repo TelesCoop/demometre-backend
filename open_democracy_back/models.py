@@ -482,7 +482,6 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
     boolean_response = models.BooleanField(blank=True, null=True)
 
     def __str__(self):
-        base = self.question if self.question else self.profile_type
         conditional = (
             self.conditional_profile_type
             if self.conditional_profile_type
@@ -500,7 +499,7 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
                 for response_choice in self.response_choices.all():
                     detail += f"réponse={str(response_choice)}, "
 
-        return f"ID: {str(self.id)} - {str(base)} - Règle : {str(conditional)} {detail}"
+        return f"(ID: {str(self.id)}) {str(conditional)}, {detail}"
 
     def save(self, **kwargs):
         # clean data when save it

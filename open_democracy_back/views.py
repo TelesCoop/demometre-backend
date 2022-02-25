@@ -112,6 +112,12 @@ def rules_definition_view(request, pk):
     data = get_data_for_creating_rules(instance)
 
     if request.method == "POST":
+        # Make sur of the data consistency
+        request.POST._mutable = True
+        if request.POST.get("conditional_type") == "question":
+            request.POST["conditional_profile_type"] = ""
+        elif request.POST.get("conditional_type") == "profile":
+            request.POST["conditional_question"] = ""
         rule_form = RuleForm(
             request.POST,
             question=data["question"],

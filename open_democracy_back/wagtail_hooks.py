@@ -11,8 +11,10 @@ from wagtail.core import hooks
 from wagtail.snippets import widgets as wagtailsnippets_widgets
 
 from open_democracy_back.models import (
+    Criteria,
     ProfileType,
     Question,
+    Role,
     ThematicTag,
     Definition,
     Pillar,
@@ -56,7 +58,7 @@ class ThematicTagModelAdmin(ModelAdmin):
     model = ThematicTag
     menu_label = "Thématiques"
     menu_icon = "pilcrow"
-    menu_order = 100
+    menu_order = 200
     form_fields_exclude = ("slug",)
     add_to_settings_menu = False
     list_display = ["name"]
@@ -67,7 +69,7 @@ class DefinitionsModelAdmin(ModelAdmin):
     model = Definition
     menu_label = "Définitions"
     menu_icon = "openquote"
-    menu_order = 200
+    menu_order = 201
     add_to_settings_menu = False
     list_display = ["word"]
     search_fields = ("word",)
@@ -93,11 +95,53 @@ class MarkerModelAdmin(ModelAdmin):
     search_fields = ("name",)
 
 
+class CriteriaModelAdmin(ModelAdmin):
+    model = Criteria
+    menu_label = "Critère"
+    menu_icon = "folder-inverse"
+    menu_order = 3
+    add_to_settings_menu = False
+    list_display = ["name"]
+    search_fields = ("name",)
+
+
 class QuestionnaireQuestionModelAdmin(ModelAdmin):
     model = QuestionnaireQuestion
     menu_label = "Question"
     menu_icon = "folder-inverse"
-    menu_order = 3
+    menu_order = 4
+    add_to_settings_menu = False
+    list_display = ["name"]
+    search_fields = ("name",)
+
+
+class SurveyAdminGroup(ModelAdminGroup):
+    menu_label = "Questionnaire"
+    menu_order = 202
+    menu_icon = "list-ol"
+    items = (
+        PillarModelAdmin,
+        MarkerModelAdmin,
+        QuestionnaireQuestionModelAdmin,
+        CriteriaModelAdmin,
+    )
+
+
+class RoleModelAdmin(ModelAdmin):
+    model = Role
+    menu_label = "Rôle"
+    menu_icon = "folder-inverse"
+    menu_order = 1
+    add_to_settings_menu = False
+    list_display = ["name"]
+    search_fields = ("name",)
+
+
+class ProfileTypeModelAdmin(ModelAdmin):
+    model = ProfileType
+    menu_label = "Type de profil"
+    menu_icon = "folder-inverse"
+    menu_order = 2
     add_to_settings_menu = False
     list_display = ["name"]
     search_fields = ("name",)
@@ -107,24 +151,24 @@ class ProfilingQuestionModelAdmin(ModelAdmin):
     model = ProfilingQuestion
     menu_label = "Question de profilage"
     menu_icon = "folder-inverse"
-    menu_order = 4
+    menu_order = 3
     add_to_settings_menu = False
     list_display = ["name"]
     search_fields = ("name",)
 
 
-class Survey(ModelAdminGroup):
-    menu_label = "Questionnaire"
-    menu_order = 300
-    menu_icon = "folder-inverse"
+class ProfilingAdminGroup(ModelAdminGroup):
+    menu_label = "Profilage"
+    menu_order = 203
+    menu_icon = "group"
     items = (
-        PillarModelAdmin,
-        MarkerModelAdmin,
-        QuestionnaireQuestionModelAdmin,
+        RoleModelAdmin,
+        ProfileTypeModelAdmin,
         ProfilingQuestionModelAdmin,
     )
 
 
 modeladmin_register(ThematicTagModelAdmin)
 modeladmin_register(DefinitionsModelAdmin)
-modeladmin_register(Survey)
+modeladmin_register(SurveyAdminGroup)
+modeladmin_register(ProfilingAdminGroup)

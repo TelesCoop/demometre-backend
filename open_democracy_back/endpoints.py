@@ -30,11 +30,9 @@ class HomePagesAPIEndpoint(PagesAPIViewSet):
         )
 
     body_fields = PagesAPIViewSet.body_fields + [
-        "tagline",
-        "body",
+        "introduction",
     ]
 
     listing_default_fields = PagesAPIViewSet.listing_default_fields + [
-        "tagline",
-        "body",
+        "introduction",
     ]

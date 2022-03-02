@@ -1,3 +1,4 @@
+from typing import List
 from django.db import models
 from django import forms
 from model_utils.models import TimeStampedModel
@@ -19,24 +20,47 @@ from wagtail.snippets.models import register_snippet
 
 from open_democracy_back.constants import NUMERICAL_OPERATOR
 
+SIMPLE_RICH_TEXT_FIELD_FEATURE = [
+    "bold",
+    "italic",
+    "link",
+    "ol",
+    "ul",
+]
+
 
 class HomePage(Page):
     # HomePage can be created only on the root
     parent_page_types = ["wagtailcore.Page"]
 
-    tagline = models.CharField(max_length=127, default="")
-    body = RichTextField()
+    introduction = models.CharField(max_length=255, default="")
 
     content_panels = Page.content_panels + [
-        FieldPanel("tagline"),
-        FieldPanel("body"),
+        FieldPanel("introduction"),
     ]
 
     api_fields = [
         APIField("title"),
-        APIField("tagline"),
-        APIField("body"),
+        APIField("introduction"),
     ]
+
+    class Meta:
+        verbose_name = "Page d'accueil"
+
+
+class ReferentialPage(Page):
+    parent_page_types = ["HomePage"]
+    subpage_types: List[str] = []
+    max_count_per_parent = 1
+
+    introduction = models.CharField(max_length=255, default="")
+
+    content_panels = Page.content_panels + [
+        FieldPanel("introduction"),
+    ]
+
+    class Meta:
+        verbose_name = "Référentiel"
 
 
 @register_snippet
@@ -71,9 +95,18 @@ class Pillar(models.Model):
         help_text="Correspond au numéro (ou lettre) de ce pilier",
     )
 
+    description = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+        help_text="Description pour le référentiel",
+    )
+
     panels = [
         FieldPanel("name"),
         FieldPanel("code"),
+        FieldPanel("description"),
     ]
 
     def __str__(self):
@@ -97,11 +130,43 @@ class Marker(index.Indexed, models.Model):
         max_length=2,
         help_text="Correspond au numéro (ou lettre) de ce marqueur dans son pilier",
     )
+    description = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+        help_text="Description pour le référentiel",
+    )
+    score_1 = models.TextField(
+        verbose_name="Score = 1",
+        help_text="Description pour le référentiel",
+        default="",
+    )
+    score_2 = models.TextField(
+        verbose_name="Score = 2",
+        help_text="Description pour le référentiel",
+        default="",
+    )
+    score_3 = models.TextField(
+        verbose_name="Score = 3",
+        help_text="Description pour le référentiel",
+        default="",
+    )
+    score_4 = models.TextField(
+        verbose_name="Score = 4",
+        help_text="Description pour le référentiel",
+        default="",
+    )
 
     panels = [
         FieldPanel("pillar"),
         FieldPanel("name"),
         FieldPanel("code"),
+        FieldPanel("description"),
+        FieldPanel("score_1"),
+        FieldPanel("score_2"),
+        FieldPanel("score_3"),
+        FieldPanel("score_4"),
     ]
 
     search_fields = [
@@ -186,15 +251,6 @@ class BooleanOperator(models.TextChoices):
     OR = "or", "ou"
 
 
-SIMPLE_RICH_TEXT_FIELD_FEATURE = [
-    "bold",
-    "italic",
-    "link",
-    "ol",
-    "ul",
-]
-
-
 @register_snippet
 class Definition(models.Model):
     word = models.CharField(max_length=255, verbose_name="mot")
@@ -233,6 +289,14 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
     max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
+
+    description = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+        help_text="Texte précisant la question et pourquoi elle est posée.",
+    )
 
     legal_frame = RichTextField(
         null=True,
@@ -294,6 +358,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("code"),
         FieldPanel("name"),
         FieldPanel("question_statement"),
+        FieldPanel("description"),
         FieldPanel("type"),
         InlinePanel(
             "response_choices",

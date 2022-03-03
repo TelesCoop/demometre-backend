@@ -1,21 +1,38 @@
 from wagtail.api.v2.views import BaseAPIViewSet, PagesAPIViewSet
 
-from open_democracy_back.models import QuestionnaireQuestion, HomePage
+from open_democracy_back.models import (
+    ProfilingQuestion,
+    QuestionnaireQuestion,
+    HomePage,
+)
 
 
-class QuestionModelAPIEndpoint(BaseAPIViewSet):
+QUESTION_FIELDS = [
+    "code",
+    "name",
+    "question_statement",
+    "description",
+    "type",
+    "objectivity",
+]
+
+
+class QuestionnaireQuestionModelAPIEndpoint(BaseAPIViewSet):
 
     model = QuestionnaireQuestion
 
-    body_fields = BaseAPIViewSet.body_fields + [
-        "question",
-        "objective",
-    ]
+    body_fields = BaseAPIViewSet.body_fields + QUESTION_FIELDS
 
-    listing_default_fields = BaseAPIViewSet.listing_default_fields + [
-        "question",
-        "objective",
-    ]
+    listing_default_fields = BaseAPIViewSet.listing_default_fields + QUESTION_FIELDS
+
+
+class ProfilingQuestionModelAPIEndpoint(BaseAPIViewSet):
+
+    model = ProfilingQuestion
+
+    body_fields = BaseAPIViewSet.body_fields + QUESTION_FIELDS
+
+    listing_default_fields = BaseAPIViewSet.listing_default_fields + QUESTION_FIELDS
 
 
 class HomePagesAPIEndpoint(PagesAPIViewSet):

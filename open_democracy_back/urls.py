@@ -13,7 +13,7 @@ from .views import RuleView, intersection_operator_view, rules_definition_view
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
-    path("api/v2/", api_router.urls),
+    path("api/", api_router.urls),
     path(
         "admin/question/<int:pk>/edit-intersection-operator/",
         intersection_operator_view,

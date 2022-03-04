@@ -1,10 +1,7 @@
-from .base import *
-
-# SECURITY WARNING: define the correct hosts in production!
+from .base import *  # noqa: F401,F403
 
 DEBUG = False
 
-try:
-    from .local import *
-except ImportError:
-    pass
+SECRET_KEY = config.getstr("security.secret_key")  # noqa: F405
+ALLOWED_HOSTS = config.getlist("security.allowed_hosts")  # noqa: F405
+STATIC_ROOT = config.getstr("staticfiles.static_root")  # noqa: F405

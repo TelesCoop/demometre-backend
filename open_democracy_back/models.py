@@ -604,3 +604,43 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
                 self.numerical_value = None
                 self.boolean_response = None
         super().save(**kwargs)
+
+
+class AssessmentType(models.TextChoices):
+    MUNICIPALITY = "municipality", "Commune"
+    INTERCOMMUNALITY = "intercommunality", "Intercommunalité"
+
+
+@register_snippet
+class Assessment(TimeStampedModel, ClusterableModel):
+    type = models.CharField(
+        max_length=32,
+        choices=AssessmentType.choices,
+        default=AssessmentType.MUNICIPALITY,
+    )
+
+    panels = [
+        FieldPanel("type"),
+        InlinePanel(
+            "zip_codes",
+            label="Code postaux",
+        ),
+    ]
+
+    class Meta:
+        verbose_name = "Évaluation"
+        verbose_name_plural = "Évaluations"
+
+
+class AssessmentZipCode(Orderable):
+    assessment = ParentalKey(
+        Assessment, related_name="zip_codes", on_delete=models.CASCADE
+    )
+    zip_code = models.CharField(max_length=32, verbose_name="Code postal")
+
+    def __str__(self):
+        return self.zip_code
+
+    class Meta:
+        verbose_name_plural = "Code postaux"
+        verbose_name = "Code postal"

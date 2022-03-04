@@ -9,7 +9,7 @@ def get_assessment_view(request):
         zip_codes__zip_code=zip_code
     ).prefetch_related("zip_codes")
 
-    assessments_object = [
+    assessments = [
         {
             "id": assessment.id,
             "type": assessment.type,
@@ -19,4 +19,4 @@ def get_assessment_view(request):
         for assessment in assessments
     ]
 
-    return JsonResponse(data={"items": assessments_object})
+    return JsonResponse(data={"items": assessments})

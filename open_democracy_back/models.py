@@ -121,15 +121,7 @@ class Pillar(models.Model):
         ordering = ["code"]
 
 
-@register_snippet
-class Marker(index.Indexed, models.Model):
-    pillar = models.ForeignKey(Pillar, null=True, blank=True, on_delete=models.SET_NULL)
-    name = models.CharField(verbose_name="Nom", max_length=125)
-    code = models.CharField(
-        verbose_name="Code",
-        max_length=2,
-        help_text="Correspond au numéro (ou lettre) de ce marqueur dans son pilier",
-    )
+class ReferentielFields(models.Model):
     description = RichTextField(
         null=True,
         blank=True,
@@ -138,36 +130,57 @@ class Marker(index.Indexed, models.Model):
         help_text="Description pour le référentiel",
     )
     score_1 = models.TextField(
+        blank=True,
         verbose_name="Score = 1",
         help_text="Description pour le référentiel",
         default="",
     )
     score_2 = models.TextField(
+        blank=True,
         verbose_name="Score = 2",
         help_text="Description pour le référentiel",
         default="",
     )
     score_3 = models.TextField(
+        blank=True,
         verbose_name="Score = 3",
         help_text="Description pour le référentiel",
         default="",
     )
     score_4 = models.TextField(
+        blank=True,
         verbose_name="Score = 4",
         help_text="Description pour le référentiel",
         default="",
     )
 
     panels = [
-        FieldPanel("pillar"),
-        FieldPanel("name"),
-        FieldPanel("code"),
         FieldPanel("description"),
         FieldPanel("score_1"),
         FieldPanel("score_2"),
         FieldPanel("score_3"),
         FieldPanel("score_4"),
     ]
+
+    class Meta:
+        abstract = True
+
+
+@register_snippet
+class Marker(index.Indexed, ReferentielFields):
+    pillar = models.ForeignKey(Pillar, null=True, blank=True, on_delete=models.SET_NULL)
+    name = models.CharField(verbose_name="Nom", max_length=125)
+    code = models.CharField(
+        verbose_name="Code",
+        max_length=2,
+        help_text="Correspond au numéro (ou lettre) de ce marqueur dans son pilier",
+    )
+
+    panels = [
+        FieldPanel("pillar"),
+        FieldPanel("name"),
+        FieldPanel("code"),
+    ] + ReferentielFields.panels
 
     search_fields = [
         index.SearchField("name", partial_match=True),
@@ -177,7 +190,7 @@ class Marker(index.Indexed, models.Model):
         return f"{self.get_code()}: {self.name}"
 
     def get_code(self):
-        return self.pillar.get_code() + self.code
+        return (self.pillar.get_code() if self.pillar else "") + self.code
 
     class Meta:
         verbose_name_plural = "2. Marqueurs"
@@ -203,7 +216,7 @@ class ThematicTag(TagBase):
 
 
 @register_snippet
-class Criteria(index.Indexed, models.Model):
+class Criteria(index.Indexed, ReferentielFields):
     marker = models.ForeignKey(Marker, null=True, blank=True, on_delete=models.SET_NULL)
     name = models.CharField(verbose_name="Nom", max_length=125)
     code = models.CharField(
@@ -220,7 +233,7 @@ class Criteria(index.Indexed, models.Model):
         FieldPanel("name"),
         FieldPanel("code"),
         FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
-    ]
+    ] + ReferentielFields.panels
 
     search_fields = [index.SearchField("name", partial_match=True)]
 
@@ -228,7 +241,7 @@ class Criteria(index.Indexed, models.Model):
         return f"{self.get_code()}: {self.name}"
 
     def get_code(self):
-        return self.marker.get_code() + "." + self.code
+        return (self.marker.get_code() + "." if self.marker else "") + self.code
 
     class Meta:
         verbose_name_plural = "3. Critères"

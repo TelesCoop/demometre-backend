@@ -32,6 +32,7 @@ config = getconf.ConfigGetter(
 INSTALLED_APPS = [
     "open_democracy_back",
     "search",
+    "telescoop_backup",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail_localize",
@@ -188,3 +189,9 @@ WAGTAILSEARCH_BACKENDS = {
 BASE_URL = "http://example.com"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# BACKUP
+BACKUP_ACCESS = config.getstr("backup.backup_access", None)
+BACKUP_SECRET = config.getstr("backup.backup_secret", None)
+BACKUP_BUCKET = config.getstr("backup.backup_bucket", None)
+BACKUP_REGION = config.getstr("backup.backup_region", None)

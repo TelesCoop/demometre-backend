@@ -4,5 +4,6 @@ django-model-utils==4.2.0
 getconf==1.11.1
 gunicorn==20.1.0
 ipython==8.0.1
+rollbar>=0.16,<0.17
 wagtail>=2.15,<2.16
 wagtail-localize==1.0

@@ -13,7 +13,7 @@ MIDDLEWARE.append(  # noqa: F405
 )
 
 ROLLBAR = {
-    "access_token": "979d3a9594444d33be2fc9fbc74432a1",
+    "access_token": config.getstr("bugs.rollbar_access_token"),  # noqa: F405
     "environment": "production",
     "root": BASE_DIR,  # noqa: F405
 }

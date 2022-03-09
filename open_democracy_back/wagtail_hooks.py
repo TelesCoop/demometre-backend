@@ -11,6 +11,7 @@ from wagtail.core import hooks
 from wagtail.snippets import widgets as wagtailsnippets_widgets
 
 from open_democracy_back.models import (
+    Assessment,
     Criteria,
     ProfileType,
     Question,
@@ -199,7 +200,18 @@ class ProfilingAdminGroup(ModelAdminGroup):
     )
 
 
+class AssessmentModelAdmin(ModelAdmin):
+    model = Assessment
+    menu_label = "Évaluation"
+    menu_icon = "date"
+    menu_order = 204
+    add_to_settings_menu = False
+    list_display = ["name"]
+    search_fields = ("name",)
+
+
 modeladmin_register(ThematicTagModelAdmin)
 modeladmin_register(DefinitionsModelAdmin)
 modeladmin_register(SurveyAdminGroup)
 modeladmin_register(ProfilingAdminGroup)
+modeladmin_register(AssessmentModelAdmin)

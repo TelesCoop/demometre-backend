@@ -386,7 +386,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
             heading="Valeurs extrêmes possibles",
             help_text="Ne renseigner que si cela à un sens par rapport au type de question",
         ),
-        InlinePanel("related_definition_ordered", label="Ordre des définitions"),
+        InlinePanel("related_definition_ordered", label="Définitions"),
         FieldPanel("use_case"),
         FieldPanel("legal_frame"),
         FieldPanel("resources"),
@@ -613,6 +613,7 @@ class AssessmentType(models.TextChoices):
 
 @register_snippet
 class Assessment(TimeStampedModel, ClusterableModel):
+    name = models.CharField(max_length=125, default="")
     type = models.CharField(
         max_length=32,
         choices=AssessmentType.choices,
@@ -620,12 +621,16 @@ class Assessment(TimeStampedModel, ClusterableModel):
     )
 
     panels = [
+        FieldPanel("name"),
         FieldPanel("type"),
         InlinePanel(
             "zip_codes",
             label="Code postaux",
         ),
     ]
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = "Évaluation"

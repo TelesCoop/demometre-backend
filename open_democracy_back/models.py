@@ -364,7 +364,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     search_fields = [
         index.SearchField("question_statement", partial_match=True),
         index.SearchField("name", partial_match=True),
-        index.SearchField("__str__", partial_match=True),
     ]
 
     panels = [
@@ -433,6 +432,11 @@ class QuestionnaireQuestion(Question):
         FieldPanel("method"),
     ]
 
+    search_fields = [
+        *Question.search_fields,
+        index.FilterField("profiling_question"),
+    ]
+
     def save(self, **kwargs):
         self.profiling_question = False
         super().save(**kwargs)
@@ -455,6 +459,12 @@ class ProfilingQuestion(Question):
     panels = [
         *Question.panels,
         FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
+    ]
+
+    # TODO : the search not works because filter on profiling_question=True
+    search_fields = [
+        *Question.search_fields,
+        index.FilterField("profiling_question"),
     ]
 
     def save(self, **kwargs):

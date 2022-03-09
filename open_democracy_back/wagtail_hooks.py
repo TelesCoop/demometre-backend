@@ -97,7 +97,6 @@ class ThematicTagModelAdmin(ModelAdmin):
     menu_order = 200
     form_fields_exclude = ("slug",)
     add_to_settings_menu = False
-    list_display = ["name"]
     search_fields = ("name",)
 
 
@@ -107,7 +106,6 @@ class DefinitionsModelAdmin(ModelAdmin):
     menu_icon = "openquote"
     menu_order = 201
     add_to_settings_menu = False
-    list_display = ["word"]
     search_fields = ("word",)
 
 
@@ -116,8 +114,7 @@ class PillarModelAdmin(ModelAdmin):
     menu_label = "Pillier"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_display = ["name"]
-    search_fields = ("name",)
+    search_fields = ("name", "code")
 
 
 class MarkerModelAdmin(ModelAdmin):
@@ -125,8 +122,7 @@ class MarkerModelAdmin(ModelAdmin):
     menu_label = "Marqueur"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_display = ["name"]
-    search_fields = ("name",)
+    search_fields = ("name", "code", "pillar__name")
 
 
 class CriteriaModelAdmin(ModelAdmin):
@@ -134,8 +130,7 @@ class CriteriaModelAdmin(ModelAdmin):
     menu_label = "Critère"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_display = ["name"]
-    search_fields = ("name",)
+    search_fields = ("name", "code", "marker__name", "marker__pillar__name")
 
 
 class QuestionnaireQuestionModelAdmin(ModelAdmin):
@@ -144,8 +139,14 @@ class QuestionnaireQuestionModelAdmin(ModelAdmin):
     menu_label = "Question"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_display = ["name"]
-    search_fields = ("name",)
+    search_fields = (
+        "name",
+        "question_statement",
+        "code",
+        "criteria__name",
+        "criteria__marker__name",
+        "criteria__marker__pillar__name",
+    )
 
 
 class SurveyAdminGroup(ModelAdminGroup):
@@ -165,7 +166,6 @@ class RoleModelAdmin(ModelAdmin):
     menu_label = "Rôle"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_display = ["name"]
     search_fields = ("name",)
 
 
@@ -175,7 +175,6 @@ class ProfileTypeModelAdmin(ModelAdmin):
     menu_label = "Type de profil"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_display = ["name"]
     search_fields = ("name",)
 
 
@@ -185,8 +184,7 @@ class ProfilingQuestionModelAdmin(ModelAdmin):
     menu_label = "Question de profilage"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_display = ["name"]
-    search_fields = ("name",)
+    search_fields = ("name", "question_statement")
 
 
 class ProfilingAdminGroup(ModelAdminGroup):
@@ -206,7 +204,6 @@ class AssessmentModelAdmin(ModelAdmin):
     menu_icon = "date"
     menu_order = 204
     add_to_settings_menu = False
-    list_display = ["name"]
     search_fields = ("name",)
 
 

@@ -110,10 +110,7 @@ class Pillar(models.Model):
     ]
 
     def __str__(self):
-        return f"{self.get_code()}: {self.name}"
-
-    def get_code(self):
-        return self.code
+        return f"{self.code}: {self.name}"
 
     def save(self, **kwargs):
         super().save(**kwargs)
@@ -193,15 +190,10 @@ class Marker(index.Indexed, ReferentielFields):
     ]
 
     def __str__(self):
-        return f"{self.get_code()}: {self.name}"
-
-    def get_code(self):
-        return (self.pillar.get_code() if self.pillar else "") + self.code
+        return f"{self.concatenated_code}: {self.name}"
 
     def save(self, **kwargs):
-        self.concatenated_code = (
-            self.pillar.code + self.code if self.pillar else self.code
-        )
+        self.concatenated_code = (self.pillar.code if self.pillar else "") + self.code
         super().save(**kwargs)
         child_criterias = Criteria.objects.filter(marker_id=self.id)
         [child_criteria.save() for child_criteria in child_criterias]
@@ -257,10 +249,8 @@ class Criteria(index.Indexed, ReferentielFields):
 
     def save(self, **kwargs):
         self.concatenated_code = (
-            self.marker.concatenated_code + "." + self.code
-            if self.marker
-            else self.code
-        )
+            self.marker.concatenated_code + "." if self.marker else ""
+        ) + self.code
         super().save(**kwargs)
         child_questions = QuestionnaireQuestion.objects.filter(criteria_id=self.id)
         [child_question.save() for child_question in child_questions]

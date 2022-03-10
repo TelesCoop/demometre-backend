@@ -12,6 +12,7 @@ from open_democracy_back.models import (
     Question,
     QuestionType,
     ResponseChoice,
+    Role,
     Rule,
 )
 
@@ -62,6 +63,8 @@ def get_data_for_creating_rules(model_instance):
         questions_response_by_question_id
     )
 
+    data["role_list"] = Role.objects.all()
+
     return data
 
 
@@ -71,6 +74,7 @@ def create_rule_form(data):
         profile_type=data["profile_type"],
         other_questions_list=data["other_questions_list"],
         other_profile_types=data["other_profile_types"],
+        role_list=data["role_list"],
     )
 
 
@@ -116,14 +120,20 @@ def rules_definition_view(request, pk):
         request.POST._mutable = True
         if request.POST.get("conditional_type") == "question":
             request.POST["conditional_profile_type"] = ""
+            request.POST["conditional_role"] = ""
         elif request.POST.get("conditional_type") == "profile":
             request.POST["conditional_question"] = ""
+            request.POST["conditional_role"] = ""
+        elif request.POST.get("conditional_type") == "role":
+            request.POST["conditional_question"] = ""
+            request.POST["conditional_profile_type"] = ""
         rule_form = RuleForm(
             request.POST,
             question=data["question"],
             profile_type=data["profile_type"],
             other_questions_list=data["other_questions_list"],
             other_profile_types=data["other_profile_types"],
+            role_list=data["role_list"],
         )
 
         if request.POST.get("conditional_question"):

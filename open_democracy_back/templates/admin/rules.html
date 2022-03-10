@@ -10,31 +10,33 @@
         <h1>Définition du profil : <i>{{ data.profile_type }}</i></h1>
         {% endif %}
 
-        <b>Lien logique entre les différentes conditions :</b>
-        <form id="intersection-operator-form" action="{% if data.question %} {% url 'question-intersection-operator' data.question.id %} {% elif data.profile_type %} {% url 'profile-type-intersection-operator' data.profile_type.id %} {% endif %}" method="post">
-            {% csrf_token %}
-            <div style="display: flex;">
-                <input
-                    id="toggle-or"
-                    class="toggle toggle-left"
-                    name="intersection-operator"
-                    value="or"
-                    type="radio"
-                    {% if data.rules_intersection_operator == "or" %}checked{% endif %}
-                    onclick="document.getElementById('intersection-operator-form').submit()">
-                <label for="toggle-or" class="btn">OU</label>
-                <input
-                    id="toggle-and"
-                    class="toggle toggle-right"
-                    name="intersection-operator"
-                    value="and"
-                    type="radio"
-                    {% if data.rules_intersection_operator == "and" %}checked{% endif %}
-                    onclick="document.getElementById('intersection-operator-form').submit()"
-                >
-                <label for="toggle-and" class="btn">ET</label>
-            </div>
-        </form>
+        {% if data.rules.count > 1 %}
+            <b>Lien logique entre les différentes conditions :</b>
+            <form id="intersection-operator-form" action="{% if data.question %} {% url 'question-intersection-operator' data.question.id %} {% elif data.profile_type %} {% url 'profile-type-intersection-operator' data.profile_type.id %} {% endif %}" method="post">
+                {% csrf_token %}
+                <div style="display: flex;">
+                    <input
+                        id="toggle-or"
+                        class="toggle toggle-left"
+                        name="intersection-operator"
+                        value="or"
+                        type="radio"
+                        {% if data.rules_intersection_operator == "or" %}checked{% endif %}
+                        onclick="document.getElementById('intersection-operator-form').submit()">
+                    <label for="toggle-or" class="btn">OU</label>
+                    <input
+                        id="toggle-and"
+                        class="toggle toggle-right"
+                        name="intersection-operator"
+                        value="and"
+                        type="radio"
+                        {% if data.rules_intersection_operator == "and" %}checked{% endif %}
+                        onclick="document.getElementById('intersection-operator-form').submit()"
+                    >
+                    <label for="toggle-and" class="btn">ET</label>
+                </div>
+            </form>
+        {% endif %}
 
         {% if data.rules.count > 0 %}
             {% if data.question %}
@@ -64,13 +66,18 @@
                         <fieldset class="chooser">
                             <div class="chosen">
                                 <svg class="icon icon-snippet icon" aria-hidden="true" focusable="false">
-                                    {% if rule.conditional_profile_type or rule.conditional_question.profiling_question %}
+                                    {% if rule.conditional_profile_type or rule.conditional_role or rule.conditional_question.profiling_question %}
                                     <use href="#icon-user"></use>
                                     {% else %}
                                     <use href="#icon-list-ol"></use>
                                     {% endif %}
                                 </svg>
-                                <b class="title">{{ rule.conditional_profile_type|default:rule.conditional_question }}</b>
+                                <b class="title">
+                                    {% if rule.conditional_profile_type %}{{rule.conditional_profile_type}}
+                                    {% elif rule.conditional_question %}{{rule.conditional_question}}
+                                    {% elif rule.conditional_role %}{{rule.conditional_role}}
+                                    {% endif %}
+                                </b>
                             </div>
                             <div>
                                 {% if rule.response_choices.count > 0 %}
@@ -103,8 +110,10 @@
             <div style="display: flex;">
                 <input id="toggle-conditional-question" class="toggle toggle-left" name="conditional_type" value="question" type="radio" checked>
                 <label for="toggle-conditional-question" class="btn">Question</label>
-                <input id="toggle-conditional-profile-type" class="toggle toggle-right" name="conditional_type" value="profile" type="radio">
+                <input id="toggle-conditional-profile-type" class="toggle toggle-right toggle-left" name="conditional_type" value="profile" type="radio">
                 <label for="toggle-conditional-profile-type" class="btn">Profil</label>
+                <input id="toggle-conditional-role" class="toggle toggle-right" name="conditional_type" value="role" type="radio">
+                <label for="toggle-conditional-role" class="btn">Role</label>
             </div>
 
             <div id="id_display_conditional_question" style="display: block;">
@@ -142,6 +151,13 @@
                     {{ rule_form.conditional_profile_type }}
                 </div>
             </div>
+            <div id="id_display_conditional_role" style="display: none;">
+                <div>
+                    {{ rule_form.conditional_role.error }}
+                    {{ rule_form.conditional_role.label_tag }}
+                    {{ rule_form.conditional_role }}
+                </div>
+            </div>
             <br/>
             <div class="actions">
                 <input type="submit" class="button button-small button-secondary" value="Ajouter">
@@ -165,14 +181,24 @@
 
         var display_conditional_profile_type = document.getElementById("id_display_conditional_profile_type");
 
+        var display_conditional_role = document.getElementById("id_display_conditional_role");
+
         document.getElementById("toggle-conditional-question").addEventListener("click", function() {
             display_conditional_question.style.display = "block";
             display_conditional_profile_type.style.display = "none";
+            display_conditional_role.style.display = "none";
         })
 
         document.getElementById("toggle-conditional-profile-type").addEventListener("click", function() {
             display_conditional_question.style.display = "none";
             display_conditional_profile_type.style.display = "block";
+            display_conditional_role.style.display = "none";
+        })
+
+        document.getElementById("toggle-conditional-role").addEventListener("click", function() {
+            display_conditional_question.style.display = "none";
+            display_conditional_profile_type.style.display = "none";
+            display_conditional_role.style.display = "block";
         })
 
         new_rule.addEventListener("change", function() {

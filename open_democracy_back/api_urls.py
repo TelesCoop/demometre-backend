@@ -10,13 +10,13 @@ from .views.questionnaire import (
 )
 
 urlpatterns = [
-    path("assessments", get_assessment_view),
+    path("assessments/", get_assessment_view),
     path(
         "pillars/",
         PillarView.as_view({"get": "list"}),
     ),
     path(
-        "pillars/<int:pk>",
+        "pillars/<int:pk>/",
         PillarView.as_view({"get": "retrieve"}),
     ),
     path(
@@ -24,7 +24,7 @@ urlpatterns = [
         MarkerView.as_view({"get": "list"}),
     ),
     path(
-        "markers/<int:pk>",
+        "markers/<int:pk>/",
         MarkerView.as_view({"get": "retrieve"}),
     ),
     path(
@@ -32,7 +32,7 @@ urlpatterns = [
         CriteriaView.as_view({"get": "list"}),
     ),
     path(
-        "criterias/<int:pk>",
+        "criterias/<int:pk>/",
         CriteriaView.as_view({"get": "retrieve"}),
     ),
     path(
@@ -40,7 +40,7 @@ urlpatterns = [
         QuestionnaireQuestionView.as_view({"get": "list"}),
     ),
     path(
-        "questionnaire-questions/<int:pk>",
+        "questionnaire-questions/<int:pk>/",
         QuestionnaireQuestionView.as_view({"get": "retrieve"}),
     ),
     path(
@@ -48,7 +48,7 @@ urlpatterns = [
         ProfilingQuestionView.as_view({"get": "list"}),
     ),
     path(
-        "profiling-questions/<int:pk>",
+        "profiling-questions/<int:pk>/",
         ProfilingQuestionView.as_view({"get": "retrieve"}),
     ),
 ]

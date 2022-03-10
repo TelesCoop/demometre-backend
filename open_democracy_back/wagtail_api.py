@@ -3,9 +3,7 @@ from wagtail.api.v2.router import WagtailAPIRouter
 from wagtail.images.api.v2.views import ImagesAPIViewSet
 from wagtail.documents.api.v2.views import DocumentsAPIViewSet
 
-from open_democracy_back.endpoints import (
-    ProfilingQuestionModelAPIEndpoint,
-    QuestionnaireQuestionModelAPIEndpoint,
+from open_democracy_back.wagtail_endpoints import (
     HomePagesAPIEndpoint,
 )
 
@@ -20,7 +18,3 @@ api_router.register_endpoint("homepages", HomePagesAPIEndpoint)
 api_router.register_endpoint("pages", PagesAPIViewSet)
 api_router.register_endpoint("images", ImagesAPIViewSet)
 api_router.register_endpoint("documents", DocumentsAPIViewSet)
-api_router.register_endpoint(
-    "questionnaire-questions", QuestionnaireQuestionModelAPIEndpoint
-)
-api_router.register_endpoint("profiling-questions", ProfilingQuestionModelAPIEndpoint)

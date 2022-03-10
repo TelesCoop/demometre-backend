@@ -195,3 +195,10 @@ BACKUP_ACCESS = config.getstr("backup.backup_access", None)
 BACKUP_SECRET = config.getstr("backup.backup_secret", None)
 BACKUP_BUCKET = config.getstr("backup.backup_bucket", None)
 BACKUP_REGION = config.getstr("backup.backup_region", None)
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly",
+    ),
+}

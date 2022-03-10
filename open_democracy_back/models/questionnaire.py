@@ -1,4 +1,3 @@
-from typing import List
 from django.db import models
 from django import forms
 from model_utils.models import TimeStampedModel
@@ -11,10 +10,9 @@ from wagtail.admin.edit_handlers import (
     FieldRowPanel,
     MultiFieldPanel,
 )
-from wagtail.api import APIField
 from wagtail.core.fields import RichTextField
 
-from wagtail.core.models import Page, TranslatableMixin, Orderable
+from wagtail.core.models import TranslatableMixin, Orderable
 from wagtail.search import index
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
@@ -28,42 +26,6 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "ol",
     "ul",
 ]
-
-
-class HomePage(Page):
-    # HomePage can be created only on the root
-    parent_page_types = ["wagtailcore.Page"]
-    preview_modes = None
-
-    introduction = models.CharField(max_length=255, default="")
-
-    content_panels = Page.content_panels + [
-        FieldPanel("introduction"),
-    ]
-
-    api_fields = [
-        APIField("title"),
-        APIField("introduction"),
-    ]
-
-    class Meta:
-        verbose_name = "Page d'accueil"
-
-
-class ReferentialPage(Page):
-    parent_page_types = ["HomePage"]
-    subpage_types: List[str] = []
-    max_count_per_parent = 1
-    preview_modes = None
-
-    introduction = models.CharField(max_length=255, default="")
-
-    content_panels = Page.content_panels + [
-        FieldPanel("introduction"),
-    ]
-
-    class Meta:
-        verbose_name = "Référentiel"
 
 
 @register_snippet
@@ -743,48 +705,3 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
                 self.numerical_value = None
                 self.boolean_response = None
         super().save(*args, **kwargs)
-
-
-class AssessmentType(models.TextChoices):
-    MUNICIPALITY = "municipality", "Commune"
-    INTERCOMMUNALITY = "intercommunality", "Intercommunalité"
-
-
-@register_snippet
-class Assessment(TimeStampedModel, ClusterableModel):
-    name = models.CharField(max_length=125, default="")
-    type = models.CharField(
-        max_length=32,
-        choices=AssessmentType.choices,
-        default=AssessmentType.MUNICIPALITY,
-    )
-
-    panels = [
-        FieldPanel("name"),
-        FieldPanel("type"),
-        InlinePanel(
-            "zip_codes",
-            label="Code postaux",
-        ),
-    ]
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Évaluation"
-        verbose_name_plural = "Évaluations"
-
-
-class AssessmentZipCode(Orderable):
-    assessment = ParentalKey(
-        Assessment, related_name="zip_codes", on_delete=models.CASCADE
-    )
-    zip_code = models.CharField(max_length=32, verbose_name="Code postal")
-
-    def __str__(self):
-        return self.zip_code
-
-    class Meta:
-        verbose_name_plural = "Code postaux"
-        verbose_name = "Code postal"

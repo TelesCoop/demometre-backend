@@ -1,15 +1,16 @@
 from django.conf import settings
-from django.conf.urls.i18n import i18n_patterns
 from django.urls import include, path
 from django.contrib import admin
 
 from wagtail.admin import urls as wagtailadmin_urls
-from wagtail.core import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
-from search import views as search_views
-from .api import api_router
-from .views import RuleView, intersection_operator_view, rules_definition_view
+from .wagtail_api import api_router
+from .views.wagtail_rule import (
+    RuleView,
+    intersection_operator_view,
+    rules_definition_view,
+)
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
@@ -56,14 +57,3 @@ if settings.DEBUG:
     # Serve static and media files from development server
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-
-# Translatable URLs
-# These will be available under a language code prefix. For example /en/search/
-urlpatterns += i18n_patterns(
-    path("search/", search_views.search, name="search"),
-    path("", include(wagtail_urls)),
-    # Alternatively, if you want Wagtail pages to be served from a subpath
-    # of your site, rather than the site root:
-    #    path("pages/", include(wagtail_urls)),
-)

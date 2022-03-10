@@ -9,6 +9,7 @@ from wagtail.admin.edit_handlers import (
     FieldPanel,
     InlinePanel,
     FieldRowPanel,
+    MultiFieldPanel,
 )
 from wagtail.api import APIField
 from wagtail.core.fields import RichTextField
@@ -32,6 +33,7 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
 class HomePage(Page):
     # HomePage can be created only on the root
     parent_page_types = ["wagtailcore.Page"]
+    preview_modes = None
 
     introduction = models.CharField(max_length=255, default="")
 
@@ -52,6 +54,7 @@ class ReferentialPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
     max_count_per_parent = 1
+    preview_modes = None
 
     introduction = models.CharField(max_length=255, default="")
 
@@ -311,8 +314,10 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     )
     concatenated_code = models.CharField(max_length=8, default="")
 
-    name = models.CharField(max_length=125, default="")
-    question_statement = models.TextField(default="")
+    name = models.CharField(verbose_name="Nom", max_length=125, default="")
+    question_statement = models.TextField(
+        verbose_name="Enoncé de la question", default=""
+    )
 
     type = models.CharField(
         max_length=32,
@@ -323,6 +328,40 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
     max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
+    min_label = models.CharField(
+        max_length=32,
+        verbose_name="Label de la valeur minimale",
+        default="",
+        blank=True,
+    )
+    max_label = models.CharField(
+        max_length=32,
+        verbose_name="Label de la valeur maximale",
+        default="",
+        blank=True,
+    )
+    min_associated_score = models.IntegerField(
+        verbose_name="Score associé à la valeur minimale",
+        blank=True,
+        null=True,
+    )
+    max_associated_score = models.IntegerField(
+        verbose_name="Score associé à la valeur maximale",
+        blank=True,
+        null=True,
+    )
+
+    false_associated_score = models.IntegerField(
+        verbose_name="Score associé à une réponse négative",
+        blank=True,
+        null=True,
+    )
+
+    true_associated_score = models.IntegerField(
+        verbose_name="Score associé à une réponse positive",
+        blank=True,
+        null=True,
+    )
 
     description = RichTextField(
         null=True,
@@ -391,25 +430,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         index.SearchField("name", partial_match=True),
     ]
 
-    panels = [
-        FieldPanel("code"),
-        FieldPanel("name"),
-        FieldPanel("question_statement"),
-        FieldPanel("description"),
-        FieldPanel("type"),
-        InlinePanel(
-            "response_choices",
-            label="Choix de réponses possibles",
-            help_text="Ne renseigner que si cela à un sens par rapport au type de question",
-        ),
-        FieldRowPanel(
-            [
-                FieldPanel("min"),
-                FieldPanel("max"),
-            ],
-            heading="Valeurs extrêmes possibles",
-            help_text="Ne renseigner que si cela à un sens par rapport au type de question",
-        ),
+    explanation_panels = [
         InlinePanel("related_definition_ordered", label="Définitions"),
         FieldPanel("use_case"),
         FieldPanel("legal_frame"),
@@ -447,9 +468,48 @@ class QuestionnaireQuestion(Question):
 
     panels = [
         FieldPanel("criteria"),
-        *Question.panels,
+        FieldPanel("code"),
+        FieldPanel("name"),
+        FieldPanel("question_statement"),
         FieldPanel("objectivity"),
         FieldPanel("method"),
+        FieldPanel("description"),
+        FieldPanel("type"),
+        InlinePanel(
+            "response_choices",
+            label="Choix de réponses possibles",
+        ),
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [
+                        FieldPanel("min"),
+                        FieldPanel("max"),
+                    ],
+                ),
+                FieldRowPanel(
+                    [
+                        FieldPanel("min_label"),
+                        FieldPanel("max_label"),
+                    ],
+                ),
+                FieldRowPanel(
+                    [
+                        FieldPanel("min_associated_score"),
+                        FieldPanel("max_associated_score"),
+                    ],
+                ),
+            ],
+            heading="Valeurs extrêmes possibles",
+        ),
+        FieldRowPanel(
+            [
+                FieldPanel("true_associated_score"),
+                FieldPanel("false_associated_score"),
+            ],
+            heading="Scores associés aux réponses d'une question binaire",
+        ),
+        *Question.explanation_panels,
     ]
 
     search_fields = [
@@ -480,8 +540,34 @@ class ProfilingQuestion(Question):
     objects = ProfilingQuestionManager()
 
     panels = [
-        *Question.panels,
+        FieldPanel("code"),
+        FieldPanel("name"),
+        FieldPanel("question_statement"),
         FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
+        FieldPanel("description"),
+        FieldPanel("type"),
+        InlinePanel(
+            "response_choices",
+            label="Choix de réponses possibles",
+        ),
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [
+                        FieldPanel("min"),
+                        FieldPanel("max"),
+                    ],
+                ),
+                FieldRowPanel(
+                    [
+                        FieldPanel("min_label"),
+                        FieldPanel("max_label"),
+                    ],
+                ),
+            ],
+            heading="Valeurs extrêmes possibles",
+        ),
+        *Question.explanation_panels,
     ]
 
     # TODO : the search not works because filter on profiling_question=True
@@ -507,6 +593,12 @@ class ResponseChoice(TimeStampedModel, Orderable):
 
     response_choice = models.CharField(
         max_length=510, default="", verbose_name="Réponse possible"
+    )
+
+    associated_score = models.IntegerField(
+        verbose_name="Score associé",
+        blank=True,
+        null=True,
     )
 
     def __str__(self):

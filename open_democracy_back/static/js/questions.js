@@ -4,22 +4,30 @@ if (
     || (window.location.href).indexOf('question/edit') != -1
     || (window.location.href).indexOf('question/create') != -1) {
     const typeQuestionOptions = document.getElementById("id_type");
-    var responseChoice = document.querySelector("#id_response_choices-FORMS").closest(".object")
-    var extremeBounds = document.querySelector("#id_min").closest(".object")
+    var rulesForResponseChoiceQuestions = document.querySelector("#id_response_choices-FORMS").closest(".object")
+    var rulesForClosedWithScaleQuestion = document.querySelector("#id_min").closest(".object")
+    var rulesForBinaryQuestion = document.querySelector("#id_true_associated_score").closest(".object")
 
     function responseRules(questionType) {
         if (questionType == "unique_choice" ||
             questionType == "multiple_choice" ||
             questionType == "closed_with_ranking") {
-            responseChoice.style.display = "block";
-            extremeBounds.style.display = "none";
+            rulesForResponseChoiceQuestions.style.display = "block";
+            rulesForClosedWithScaleQuestion.style.display = "none";
+            rulesForBinaryQuestion.style.display = "none";
 
         } else if (questionType == "closed_with_scale") {
-            responseChoice.style.display = "none";
-            extremeBounds.style.display = "block";
+            rulesForResponseChoiceQuestions.style.display = "none";
+            rulesForClosedWithScaleQuestion.style.display = "block";
+            rulesForBinaryQuestion.style.display = "none";
+        } else if (questionType == "boolean") {
+            rulesForResponseChoiceQuestions.style.display = "none";
+            rulesForClosedWithScaleQuestion.style.display = "none";
+            rulesForBinaryQuestion.style.display = "block";
         } else {
-            responseChoice.style.display = "none";
-            extremeBounds.style.display = "none";
+            rulesForResponseChoiceQuestions.style.display = "none";
+            rulesForClosedWithScaleQuestion.style.display = "none";
+            rulesForBinaryQuestion.style.display = "none";
         }
     }
 

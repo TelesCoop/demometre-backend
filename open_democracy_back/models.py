@@ -115,6 +115,11 @@ class Pillar(models.Model):
     def get_code(self):
         return self.code
 
+    def save(self, **kwargs):
+        super().save(**kwargs)
+        child_markers = Marker.objects.filter(pillar_id=self.id)
+        [child_marker.save() for child_marker in child_markers]
+
     class Meta:
         verbose_name_plural = "1. Piliers"
         verbose_name = "1. Pilier"
@@ -175,6 +180,7 @@ class Marker(index.Indexed, ReferentielFields):
         max_length=2,
         help_text="Correspond au numéro (ou lettre) de ce marqueur dans son pilier",
     )
+    concatenated_code = models.CharField(max_length=4, default="")
 
     panels = [
         FieldPanel("pillar"),
@@ -191,6 +197,14 @@ class Marker(index.Indexed, ReferentielFields):
 
     def get_code(self):
         return (self.pillar.get_code() if self.pillar else "") + self.code
+
+    def save(self, **kwargs):
+        self.concatenated_code = (
+            self.pillar.code + self.code if self.pillar else self.code
+        )
+        super().save(**kwargs)
+        child_criterias = Criteria.objects.filter(marker_id=self.id)
+        [child_criteria.save() for child_criteria in child_criterias]
 
     class Meta:
         verbose_name_plural = "2. Marqueurs"
@@ -224,6 +238,7 @@ class Criteria(index.Indexed, ReferentielFields):
         max_length=2,
         help_text="Correspond au numéro (ou lettre) de ce critère dans son marqueur",
     )
+    concatenated_code = models.CharField(max_length=6, default="")
     thematic_tags = models.ManyToManyField(
         ThematicTag, blank=True, verbose_name="Thématiques"
     )
@@ -238,10 +253,17 @@ class Criteria(index.Indexed, ReferentielFields):
     search_fields = [index.SearchField("name", partial_match=True)]
 
     def __str__(self):
-        return f"{self.get_code()}: {self.name}"
+        return f"{self.concatenated_code}: {self.name}"
 
-    def get_code(self):
-        return (self.marker.get_code() + "." if self.marker else "") + self.code
+    def save(self, **kwargs):
+        self.concatenated_code = (
+            self.marker.concatenated_code + "." + self.code
+            if self.marker
+            else self.code
+        )
+        super().save(**kwargs)
+        child_questions = QuestionnaireQuestion.objects.filter(criteria_id=self.id)
+        [child_question.save() for child_question in child_questions]
 
     class Meta:
         verbose_name_plural = "3. Critères"
@@ -289,6 +311,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         max_length=2,
         help_text="Correspond au numéro (ou lettre) de cette question, détermine son ordre",
     )
+    concatenated_code = models.CharField(max_length=8, default="")
 
     name = models.CharField(max_length=125, default="")
     question_statement = models.TextField(default="")
@@ -395,12 +418,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     def __str__(self):
         if self.profiling_question:
             return f"Profilage: {self.name}"
-        return f"{self.get_code()}: {self.name}"
-
-    def get_code(self):
-        if self.criteria:
-            return self.criteria.get_code() + self.code
-        return self.code
+        return f"{self.concatenated_code}: {self.name}"
 
     class Meta:
         ordering = ["code"]
@@ -439,6 +457,9 @@ class QuestionnaireQuestion(Question):
 
     def save(self, **kwargs):
         self.profiling_question = False
+        self.concatenated_code = (
+            self.criteria.concatenated_code + self.code if self.criteria else self.code
+        )
         super().save(**kwargs)
 
     class Meta(Question.Meta):

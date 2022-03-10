@@ -122,7 +122,7 @@ class MarkerModelAdmin(ModelAdmin):
     menu_label = "Marqueur"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    search_fields = ("name", "code", "pillar__name")
+    search_fields = ("name", "concatenated_code", "pillar__name")
 
 
 class CriteriaModelAdmin(ModelAdmin):
@@ -130,7 +130,12 @@ class CriteriaModelAdmin(ModelAdmin):
     menu_label = "Critère"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    search_fields = ("name", "code", "marker__name", "marker__pillar__name")
+    search_fields = (
+        "name",
+        "concatenated_code",
+        "marker__name",
+        "marker__pillar__name",
+    )
 
 
 class QuestionnaireQuestionModelAdmin(ModelAdmin):
@@ -142,7 +147,7 @@ class QuestionnaireQuestionModelAdmin(ModelAdmin):
     search_fields = (
         "name",
         "question_statement",
-        "code",
+        "concatenated_code",
         "criteria__name",
         "criteria__marker__name",
         "criteria__marker__pillar__name",

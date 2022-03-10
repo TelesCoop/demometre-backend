@@ -9,6 +9,7 @@ from open_democracy_back.models.questionnaire import (
 )
 
 QUESTION_FIELDS = [
+    "id",
     "concatenated_code",
     "name",
     "question_statement",
@@ -35,14 +36,14 @@ REFERENTIAL_FIELDS = [
 class PillarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pillar
-        fields = ["name", "code", "description"]
+        fields = ["id", "name", "code", "description"]
         read_only_fields = fields
 
 
 class MarkerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Marker
-        fields = ["pillar_id", "name", "concatenated_code"] + REFERENTIAL_FIELDS
+        fields = ["id", "pillar_id", "name", "concatenated_code"] + REFERENTIAL_FIELDS
         read_only_fields = fields
 
 
@@ -50,6 +51,7 @@ class CriteriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Criteria
         fields = fields = [
+            "id",
             "marker_id",
             "name",
             "concatenated_code",

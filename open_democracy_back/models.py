@@ -112,10 +112,9 @@ class Pillar(models.Model):
     def __str__(self):
         return f"{self.code}: {self.name}"
 
-    def save(self, **kwargs):
-        super().save(**kwargs)
-        child_markers = Marker.objects.filter(pillar_id=self.id)
-        [child_marker.save() for child_marker in child_markers]
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        [child_marker.save() for child_marker in self.markers.all()]
 
     class Meta:
         verbose_name_plural = "1. Piliers"
@@ -170,7 +169,9 @@ class ReferentielFields(models.Model):
 
 @register_snippet
 class Marker(index.Indexed, ReferentielFields):
-    pillar = models.ForeignKey(Pillar, null=True, blank=True, on_delete=models.SET_NULL)
+    pillar = models.ForeignKey(
+        Pillar, null=True, blank=True, on_delete=models.SET_NULL, related_name="markers"
+    )
     name = models.CharField(verbose_name="Nom", max_length=125)
     code = models.CharField(
         verbose_name="Code",
@@ -192,11 +193,10 @@ class Marker(index.Indexed, ReferentielFields):
     def __str__(self):
         return f"{self.concatenated_code}: {self.name}"
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         self.concatenated_code = (self.pillar.code if self.pillar else "") + self.code
-        super().save(**kwargs)
-        child_criterias = Criteria.objects.filter(marker_id=self.id)
-        [child_criteria.save() for child_criteria in child_criterias]
+        super().save(*args, **kwargs)
+        [child_criteria.save() for child_criteria in self.criterias.all()]
 
     class Meta:
         verbose_name_plural = "2. Marqueurs"
@@ -223,7 +223,13 @@ class ThematicTag(TagBase):
 
 @register_snippet
 class Criteria(index.Indexed, ReferentielFields):
-    marker = models.ForeignKey(Marker, null=True, blank=True, on_delete=models.SET_NULL)
+    marker = models.ForeignKey(
+        Marker,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="criterias",
+    )
     name = models.CharField(verbose_name="Nom", max_length=125)
     code = models.CharField(
         verbose_name="Code",
@@ -247,11 +253,13 @@ class Criteria(index.Indexed, ReferentielFields):
     def __str__(self):
         return f"{self.concatenated_code}: {self.name}"
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         self.concatenated_code = (
             self.marker.concatenated_code + "." if self.marker else ""
         ) + self.code
-        super().save(**kwargs)
+        super().save(*args, **kwargs)
+        print(self.questions.all())
+        # Use proxy QuestionnaireQuestion
         child_questions = QuestionnaireQuestion.objects.filter(criteria_id=self.id)
         [child_question.save() for child_question in child_questions]
 
@@ -355,7 +363,11 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     # TODO : question : how to behave when you delete a criteria?
     #  Delete all question or not authorize if questions are linked ?
     criteria = models.ForeignKey(
-        Criteria, null=True, blank=True, on_delete=models.SET_NULL
+        Criteria,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="questions",
     )
 
     objectivity = models.CharField(
@@ -445,12 +457,12 @@ class QuestionnaireQuestion(Question):
         index.FilterField("profiling_question"),
     ]
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         self.profiling_question = False
         self.concatenated_code = (
             self.criteria.concatenated_code + self.code if self.criteria else self.code
         )
-        super().save(**kwargs)
+        super().save(*args, **kwargs)
 
     class Meta(Question.Meta):
         verbose_name_plural = "4. Questions"
@@ -478,9 +490,9 @@ class ProfilingQuestion(Question):
         index.FilterField("profiling_question"),
     ]
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         self.profiling_question = True
-        super().save(**kwargs)
+        super().save(*args, **kwargs)
 
     class Meta(Question.Meta):
         verbose_name_plural = "Questions de Profilage"
@@ -600,7 +612,7 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
 
         return f"(ID: {str(self.id)}) {str(conditional)}, {detail}"
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         # clean data when save it
         if self.conditional_profile_type:
             self.conditional_question = None
@@ -624,7 +636,7 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
             elif self.conditional_question.type == QuestionType.BOOLEAN:
                 self.numerical_value = None
                 self.boolean_response = None
-        super().save(**kwargs)
+        super().save(*args, **kwargs)
 
 
 class AssessmentType(models.TextChoices):

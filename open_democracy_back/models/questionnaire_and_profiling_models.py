@@ -1,4 +1,3 @@
-from typing import List
 from django.db import models
 from django import forms
 from model_utils.models import TimeStampedModel
@@ -11,10 +10,9 @@ from wagtail.admin.edit_handlers import (
     FieldRowPanel,
     MultiFieldPanel,
 )
-from wagtail.api import APIField
 from wagtail.core.fields import RichTextField
 
-from wagtail.core.models import Page, TranslatableMixin, Orderable
+from wagtail.core.models import TranslatableMixin, Orderable
 from wagtail.search import index
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
@@ -28,42 +26,6 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "ol",
     "ul",
 ]
-
-
-class HomePage(Page):
-    # HomePage can be created only on the root
-    parent_page_types = ["wagtailcore.Page"]
-    preview_modes = None
-
-    introduction = models.CharField(max_length=255, default="")
-
-    content_panels = Page.content_panels + [
-        FieldPanel("introduction"),
-    ]
-
-    api_fields = [
-        APIField("title"),
-        APIField("introduction"),
-    ]
-
-    class Meta:
-        verbose_name = "Page d'accueil"
-
-
-class ReferentialPage(Page):
-    parent_page_types = ["HomePage"]
-    subpage_types: List[str] = []
-    max_count_per_parent = 1
-    preview_modes = None
-
-    introduction = models.CharField(max_length=255, default="")
-
-    content_panels = Page.content_panels + [
-        FieldPanel("introduction"),
-    ]
-
-    class Meta:
-        verbose_name = "Référentiel"
 
 
 @register_snippet
@@ -743,104 +705,3 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
                 self.numerical_value = None
                 self.boolean_response = None
         super().save(*args, **kwargs)
-
-
-class AssessmentType(models.TextChoices):
-    MUNICIPALITY = "municipality", "Commune"
-    INTERCOMMUNALITY = "intercommunality", "Intercommunalité"
-
-
-@register_snippet
-class Region(models.Model):
-    code = models.CharField(max_length=3, verbose_name="Code")
-    name = models.CharField(max_length=3, verbose_name="Nom")
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Région"
-        verbose_name_plural = "Régions"
-
-
-@register_snippet
-class Department(models.Model):
-    code = models.CharField(max_length=3, verbose_name="Code")
-    name = models.CharField(max_length=3, verbose_name="Nom")
-    region = models.ForeignKey(
-        Region, verbose_name="Région", on_delete=models.SET_NULL, null=True
-    )
-
-    def __str__(self):
-        return f"{self.name} ({self.code})"
-
-    class Meta:
-        verbose_name = "Département"
-        verbose_name_plural = "Départements"
-
-
-@register_snippet
-class Municipality(models.Model):
-    code = models.CharField(max_length=100, verbose_name="Code insee")
-    name = models.CharField(max_length=255, verbose_name="Nom")
-    department = models.ForeignKey(
-        Department, verbose_name="Département", on_delete=models.SET_NULL, null=True
-    )
-    population = models.IntegerField(verbose_name="Population", default=0)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Commune"
-        verbose_name_plural = "Communes"
-
-
-@register_snippet
-class ZipCode(models.Model):
-    code = models.CharField(max_length=100, verbose_name="Code")
-    municipality = models.ForeignKey(
-        Municipality, verbose_name="Municipalité", on_delete=models.CASCADE
-    )
-
-    def __str__(self):
-        return self.code
-
-    class Meta:
-        verbose_name = "Code postal"
-        verbose_name_plural = "Code postaux"
-
-
-@register_snippet
-class EPCI(models.Model):
-    code = models.CharField(max_length=100, verbose_name="Code insee")
-    name = models.CharField(max_length=255, verbose_name="Nom")
-    population = models.IntegerField(verbose_name="Population", default=0)
-    municipalities = models.ManyToManyField(Municipality, verbose_name="Municipalités")
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Intercommunalité"
-        verbose_name_plural = "Intercommunalités"
-
-
-@register_snippet
-class Assessment(TimeStampedModel, ClusterableModel):
-    type = models.CharField(
-        max_length=32,
-        choices=AssessmentType.choices,
-        default=AssessmentType.MUNICIPALITY,
-    )
-    municipality = models.ForeignKey(
-        Municipality, blank=True, null=True, on_delete=models.SET_NULL
-    )
-    epci = models.ForeignKey(EPCI, blank=True, null=True, on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return f"{self.type} {self.municipality}"
-
-    class Meta:
-        verbose_name = "Évaluation"
-        verbose_name_plural = "Évaluations"

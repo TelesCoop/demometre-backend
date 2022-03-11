@@ -22,6 +22,11 @@ from open_democracy_back.models import (
     Marker,
     QuestionnaireQuestion,
     ProfilingQuestion,
+    Region,
+    Department,
+    Municipality,
+    EPCI,
+    ZipCode,
 )
 
 from wagtail.contrib.modeladmin.helpers import ButtonHelper
@@ -203,17 +208,69 @@ class ProfilingAdminGroup(ModelAdminGroup):
     )
 
 
+class RegionModelAdmin(ModelAdmin):
+    model = Region
+    menu_label = "Régions"
+    menu_icon = "folder-inverse"
+    add_to_settings_menu = False
+    search_fields = ("name",)
+
+
+class DepartmentModelAdmin(ModelAdmin):
+    model = Department
+    menu_label = "Départements"
+    menu_icon = "folder-inverse"
+    add_to_settings_menu = False
+    search_fields = ("name", "code")
+
+
+class CommuneModelAdmin(ModelAdmin):
+    model = Municipality
+    menu_label = "Communes"
+    menu_icon = "folder-inverse"
+    add_to_settings_menu = False
+    search_fields = ("name",)
+
+
+class EPCIModelAdmin(ModelAdmin):
+    model = EPCI
+    menu_label = "Intercommunalités"
+    menu_icon = "folder-inverse"
+    add_to_settings_menu = False
+    search_fields = ("name",)
+
+
+class ZipCodeModelAdmin(ModelAdmin):
+    model = ZipCode
+    menu_label = "Code postaux"
+    menu_icon = "folder-inverse"
+    add_to_settings_menu = False
+    search_fields = ("code",)
+
+
+class LocalityAdminGroup(ModelAdminGroup):
+    menu_label = "Localités"
+    menu_order = 204
+    menu_icon = "home"
+    items = (
+        RegionModelAdmin,
+        DepartmentModelAdmin,
+        CommuneModelAdmin,
+        EPCIModelAdmin,
+        ZipCodeModelAdmin,
+    )
+
+
 class AssessmentModelAdmin(ModelAdmin):
     model = Assessment
     menu_label = "Évaluation"
     menu_icon = "date"
-    menu_order = 204
-    add_to_settings_menu = False
-    search_fields = ("name",)
+    menu_order = 205
 
 
 modeladmin_register(ThematicTagModelAdmin)
 modeladmin_register(DefinitionsModelAdmin)
 modeladmin_register(SurveyAdminGroup)
 modeladmin_register(ProfilingAdminGroup)
+modeladmin_register(LocalityAdminGroup)
 modeladmin_register(AssessmentModelAdmin)

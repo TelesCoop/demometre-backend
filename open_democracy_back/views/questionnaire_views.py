@@ -1,17 +1,15 @@
 from rest_framework import mixins, viewsets
 
-from open_democracy_back.models.questionnaire_models import (
+from open_democracy_back.models.questionnaire_and_profiling_models import (
     Criteria,
     Marker,
     Pillar,
-    ProfilingQuestion,
     QuestionnaireQuestion,
 )
-from open_democracy_back.serializers.questionnaire_serializers import (
+from open_democracy_back.serializers.questionnaire_and_profiling_serializers import (
     CriteriaSerializer,
     MarkerSerializer,
     PillarSerializer,
-    ProfilingQuestionSerializer,
     QuestionnaireQuestionSerializer,
 )
 
@@ -50,12 +48,3 @@ class QuestionnaireQuestionView(
 ):
     serializer_class = QuestionnaireQuestionSerializer
     queryset = QuestionnaireQuestion.objects.all()
-
-
-class ProfilingQuestionView(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
-):
-    serializer_class = ProfilingQuestionSerializer
-    queryset = ProfilingQuestion.objects.all()

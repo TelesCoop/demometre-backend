@@ -1,11 +1,11 @@
 from django.urls import path
 
 from .views.assessment_views import get_assessment_view
+from .views.profiling_views import ProfilingQuestionView
 from .views.questionnaire_views import (
     CriteriaView,
     MarkerView,
     PillarView,
-    ProfilingQuestionView,
     QuestionnaireQuestionView,
 )
 

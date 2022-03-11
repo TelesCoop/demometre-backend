@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from open_democracy_back.models.questionnaire_models import (
+from open_democracy_back.models.questionnaire_and_profiling_models import (
     Criteria,
     Marker,
     Pillar,

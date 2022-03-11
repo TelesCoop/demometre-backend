@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from open_democracy_back.models.questionnaire import (
+from open_democracy_back.models.questionnaire_models import (
     Criteria,
     Marker,
     Pillar,
@@ -35,20 +35,32 @@ REFERENTIAL_FIELDS = [
 
 
 class PillarSerializer(serializers.ModelSerializer):
+    markers = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
     class Meta:
         model = Pillar
-        fields = ["id", "name", "code", "description"]
+        fields = ["id", "name", "code", "description", "markers"]
         read_only_fields = fields
 
 
 class MarkerSerializer(serializers.ModelSerializer):
+    criterias = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
     class Meta:
         model = Marker
-        fields = ["id", "pillar_id", "name", "concatenated_code"] + REFERENTIAL_FIELDS
+        fields = [
+            "id",
+            "pillar_id",
+            "name",
+            "concatenated_code",
+            "criterias",
+        ] + REFERENTIAL_FIELDS
         read_only_fields = fields
 
 
 class CriteriaSerializer(serializers.ModelSerializer):
+    questions = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
     class Meta:
         model = Criteria
         fields = fields = [
@@ -56,6 +68,7 @@ class CriteriaSerializer(serializers.ModelSerializer):
             "marker_id",
             "name",
             "concatenated_code",
+            "questions",
             "thematic_tags",
         ] + REFERENTIAL_FIELDS
         read_only_fields = fields

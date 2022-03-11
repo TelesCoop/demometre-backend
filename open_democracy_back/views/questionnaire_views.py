@@ -1,13 +1,13 @@
 from rest_framework import mixins, viewsets
 
-from open_democracy_back.models.questionnaire import (
+from open_democracy_back.models.questionnaire_models import (
     Criteria,
     Marker,
     Pillar,
     ProfilingQuestion,
     QuestionnaireQuestion,
 )
-from open_democracy_back.serializers.questionnaire import (
+from open_democracy_back.serializers.questionnaire_serializers import (
     CriteriaSerializer,
     MarkerSerializer,
     PillarSerializer,

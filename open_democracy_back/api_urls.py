@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views.assessment import get_assessment_view
-from .views.questionnaire import (
+from .views.assessment_views import get_assessment_view
+from .views.questionnaire_views import (
     CriteriaView,
     MarkerView,
     PillarView,

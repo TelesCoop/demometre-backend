@@ -6,7 +6,7 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
 from .wagtail_api import api_router
-from .views.wagtail_rule import (
+from .views.wagtail_rule_views import (
     RuleView,
     intersection_operator_view,
     rules_definition_view,

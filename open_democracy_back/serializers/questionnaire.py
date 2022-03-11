@@ -6,6 +6,7 @@ from open_democracy_back.models.questionnaire import (
     Pillar,
     ProfilingQuestion,
     QuestionnaireQuestion,
+    ResponseChoice,
 )
 
 QUESTION_FIELDS = [
@@ -60,7 +61,16 @@ class CriteriaSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class ResponseChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResponseChoice
+        fields = ["id", "response_choice"]
+        read_only_fields = fields
+
+
 class QuestionnaireQuestionSerializer(serializers.ModelSerializer):
+    response_choices = ResponseChoiceSerializer(many=True, read_only=True)
+
     class Meta:
         model = QuestionnaireQuestion
         fields = ["criteria_id", "objectivity", "method"] + QUESTION_FIELDS
@@ -68,6 +78,8 @@ class QuestionnaireQuestionSerializer(serializers.ModelSerializer):
 
 
 class ProfilingQuestionSerializer(serializers.ModelSerializer):
+    response_choices = ResponseChoiceSerializer(many=True, read_only=True)
+
     class Meta:
         model = ProfilingQuestion
         fields = ["roles"] + QUESTION_FIELDS

@@ -653,7 +653,7 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
         blank=True,
     )
 
-    # Only one of conditional_question or conditional_profile_type must be filled
+    # Only one of conditional_question or conditional_profile_type conditional_role must be filled
     conditional_question = models.ForeignKey(
         Question,
         on_delete=models.CASCADE,
@@ -667,6 +667,15 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
         ProfileType,
         on_delete=models.CASCADE,
         verbose_name="Filtre par type de profile",
+        related_name="rules_that_depend_on_me",
+        null=True,
+        blank=True,
+    )
+
+    conditional_role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        verbose_name="Filtre par rôle",
         related_name="rules_that_depend_on_me",
         null=True,
         blank=True,
@@ -706,13 +715,18 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
 
     def save(self, *args, **kwargs):
         # clean data when save it
-        if self.conditional_profile_type:
+        if self.conditional_profile_type or self.conditional_role:
             self.conditional_question = None
             self.numerical_operator = None
             self.numerical_value = None
             self.boolean_response = None
+            if self.conditional_role:
+                self.conditional_profile_type = None
+            if self.conditional_profile_type:
+                self.conditional_role = None
         elif self.conditional_question:
             self.conditional_profile_type = None
+            self.conditional_role = None
             if (
                 self.conditional_question.type == QuestionType.MULTIPLE_CHOICE
                 or self.conditional_question.type == QuestionType.UNIQUE_CHOICE

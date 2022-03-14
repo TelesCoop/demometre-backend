@@ -102,3 +102,39 @@ class ProfilingQuestionSerializer(serializers.ModelSerializer):
         model = ProfilingQuestion
         fields = ["roles"] + QUESTION_FIELDS
         read_only_fields = fields
+
+
+# Nested view serializers
+class EndpointCriteriaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Criteria
+        fields = [
+            "id",
+            "name",
+            "concatenated_code",
+            "thematic_tags",
+        ] + REFERENTIAL_FIELDS
+        read_only_fields = fields
+
+
+class NestedMarkerSerializer(serializers.ModelSerializer):
+    criterias = EndpointCriteriaSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Marker
+        fields = [
+            "id",
+            "name",
+            "concatenated_code",
+            "criterias",
+        ] + REFERENTIAL_FIELDS
+        read_only_fields = fields
+
+
+class NestedPillarSerializer(serializers.ModelSerializer):
+    markers = NestedMarkerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Pillar
+        fields = ["id", "name", "code", "description", "markers"]
+        read_only_fields = fields

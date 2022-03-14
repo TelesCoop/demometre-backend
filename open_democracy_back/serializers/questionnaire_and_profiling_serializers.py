@@ -68,7 +68,7 @@ class CriteriaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Criteria
-        fields = fields = [
+        fields = [
             "id",
             "marker_id",
             "name",

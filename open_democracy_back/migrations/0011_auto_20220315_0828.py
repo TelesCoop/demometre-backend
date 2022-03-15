@@ -16,12 +16,19 @@ def addMunicipalityOrderByEPCI(apps, _):
     for epci in epcis:
         for municipality in epci.municipalities.all():
             MunicipalityOrderByEPCI(epci=epci, municipality=municipality).save()
+        epci.municipalities.clear()
 
 
 def removeMunicipalityOrderByEPCI(apps, _):
-    apps.get_model(
+    MunicipalityOrderByEPCI = apps.get_model(
         "open_democracy_back", "MunicipalityOrderByEPCI"
-    ).objects.all().delete()
+    )
+    municipalitiyOrderByEPCIs = MunicipalityOrderByEPCI.objects.all()
+    for municipalitiyOrderByEPCI in municipalitiyOrderByEPCIs:
+        municipalitiyOrderByEPCI.epci.municipalities.add(
+            municipalitiyOrderByEPCI.municipality
+        )
+    municipalitiyOrderByEPCIs.delete()
 
 
 class Migration(migrations.Migration):

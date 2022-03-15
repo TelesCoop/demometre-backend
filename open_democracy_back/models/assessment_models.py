@@ -6,6 +6,7 @@ from wagtail.admin.edit_handlers import InlinePanel, FieldPanel
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 
 from wagtail.core.models import Orderable
+from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
 
@@ -15,9 +16,13 @@ class AssessmentType(models.TextChoices):
 
 
 @register_snippet
-class Region(models.Model):
+class Region(index.Indexed, models.Model):
     code = models.CharField(max_length=3, verbose_name="Code")
     name = models.CharField(max_length=3, verbose_name="Nom")
+
+    search_fields = [
+        index.SearchField("name", partial_match=True),
+    ]
 
     def __str__(self):
         return self.name
@@ -28,12 +33,16 @@ class Region(models.Model):
 
 
 @register_snippet
-class Department(models.Model):
+class Department(index.Indexed, models.Model):
     code = models.CharField(max_length=3, verbose_name="Code")
     name = models.CharField(max_length=3, verbose_name="Nom")
     region = models.ForeignKey(
         Region, verbose_name="Région", on_delete=models.SET_NULL, null=True
     )
+
+    search_fields = [
+        index.SearchField("name", partial_match=True),
+    ]
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -44,7 +53,7 @@ class Department(models.Model):
 
 
 @register_snippet
-class Municipality(ClusterableModel):
+class Municipality(index.Indexed, ClusterableModel):
     code = models.CharField(max_length=100, verbose_name="Code insee")
     name = models.CharField(max_length=255, verbose_name="Nom")
     department = models.ForeignKey(
@@ -61,6 +70,10 @@ class Municipality(ClusterableModel):
             "zip_codes",
             label="Code postal",
         ),
+    ]
+
+    search_fields = [
+        index.SearchField("name", partial_match=True),
     ]
 
     def __str__(self):
@@ -89,7 +102,7 @@ class ZipCode(models.Model):
 
 
 @register_snippet
-class EPCI(ClusterableModel):
+class EPCI(index.Indexed, ClusterableModel):
     code = models.CharField(max_length=100, verbose_name="Code insee")
     name = models.CharField(max_length=255, verbose_name="Nom")
     population = models.IntegerField(verbose_name="Population", default=0)
@@ -99,6 +112,10 @@ class EPCI(ClusterableModel):
         FieldPanel("name"),
         FieldPanel("population"),
         InlinePanel("related_municipalities_ordered", label="Ordre des marqueurs"),
+    ]
+
+    search_fields = [
+        index.SearchField("name", partial_match=True),
     ]
 
     def __str__(self):
@@ -127,9 +144,25 @@ class Assessment(TimeStampedModel, ClusterableModel):
         default=AssessmentType.MUNICIPALITY,
     )
     municipality = models.ForeignKey(
-        Municipality, blank=True, null=True, on_delete=models.SET_NULL
+        Municipality,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Commune",
     )
-    epci = models.ForeignKey(EPCI, blank=True, null=True, on_delete=models.SET_NULL)
+    epci = models.ForeignKey(
+        EPCI,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Intercommunalité",
+    )
+
+    panels = [
+        FieldPanel("type"),
+        SnippetChooserPanel("municipality"),
+        SnippetChooserPanel("epci"),
+    ]
 
     def __str__(self):
         return f"{self.type} {self.municipality}"

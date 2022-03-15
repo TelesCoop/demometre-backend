@@ -181,6 +181,7 @@ WAGTAIL_SITE_NAME = "open_democracy_back"
 WAGTAILSEARCH_BACKENDS = {
     "default": {
         "BACKEND": "wagtail.search.backends.database",
+        "AUTO_UPDATE": True,
     }
 }
 

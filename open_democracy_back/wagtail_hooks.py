@@ -26,7 +26,6 @@ from open_democracy_back.models import (
     Department,
     Municipality,
     EPCI,
-    ZipCode,
 )
 
 from wagtail.contrib.modeladmin.helpers import ButtonHelper
@@ -240,14 +239,6 @@ class EPCIModelAdmin(ModelAdmin):
     search_fields = ("name",)
 
 
-class ZipCodeModelAdmin(ModelAdmin):
-    model = ZipCode
-    menu_label = "Code postaux"
-    menu_icon = "folder-inverse"
-    add_to_settings_menu = False
-    search_fields = ("code",)
-
-
 class LocalityAdminGroup(ModelAdminGroup):
     menu_label = "Localités"
     menu_order = 204
@@ -257,7 +248,6 @@ class LocalityAdminGroup(ModelAdminGroup):
         DepartmentModelAdmin,
         CommuneModelAdmin,
         EPCIModelAdmin,
-        ZipCodeModelAdmin,
     )
 
 

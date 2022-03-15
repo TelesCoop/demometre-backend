@@ -45,12 +45,17 @@ class PillarSerializer(serializers.ModelSerializer):
 
 class MarkerSerializer(serializers.ModelSerializer):
     criterias = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    pillar_name = serializers.SerializerMethodField()
+
+    def get_pillar_name(self, obj):
+        return obj.pillar.name
 
     class Meta:
         model = Marker
         fields = [
             "id",
             "pillar_id",
+            "pillar_name",
             "name",
             "concatenated_code",
             "criterias",

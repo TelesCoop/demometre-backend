@@ -1,7 +1,11 @@
 from django.db import models
 from model_utils.models import TimeStampedModel
 from modelcluster.models import ClusterableModel
+from modelcluster.fields import ParentalKey
+from wagtail.admin.edit_handlers import InlinePanel, FieldPanel
+from wagtail.snippets.edit_handlers import SnippetChooserPanel
 
+from wagtail.core.models import Orderable
 from wagtail.snippets.models import register_snippet
 
 
@@ -40,13 +44,24 @@ class Department(models.Model):
 
 
 @register_snippet
-class Municipality(models.Model):
+class Municipality(ClusterableModel):
     code = models.CharField(max_length=100, verbose_name="Code insee")
     name = models.CharField(max_length=255, verbose_name="Nom")
     department = models.ForeignKey(
         Department, verbose_name="Département", on_delete=models.SET_NULL, null=True
     )
     population = models.IntegerField(verbose_name="Population", default=0)
+
+    panels = [
+        FieldPanel("code"),
+        FieldPanel("name"),
+        FieldPanel("department"),
+        FieldPanel("population"),
+        InlinePanel(
+            "zip_codes",
+            label="Code postal",
+        ),
+    ]
 
     def __str__(self):
         return self.name
@@ -56,11 +71,13 @@ class Municipality(models.Model):
         verbose_name_plural = "Communes"
 
 
-@register_snippet
 class ZipCode(models.Model):
     code = models.CharField(max_length=100, verbose_name="Code")
-    municipality = models.ForeignKey(
-        Municipality, verbose_name="Municipalité", on_delete=models.CASCADE
+    municipality = ParentalKey(
+        Municipality,
+        verbose_name="Municipalité",
+        on_delete=models.CASCADE,
+        related_name="zip_codes",
     )
 
     def __str__(self):
@@ -72,11 +89,17 @@ class ZipCode(models.Model):
 
 
 @register_snippet
-class EPCI(models.Model):
+class EPCI(ClusterableModel):
     code = models.CharField(max_length=100, verbose_name="Code insee")
     name = models.CharField(max_length=255, verbose_name="Nom")
     population = models.IntegerField(verbose_name="Population", default=0)
-    municipalities = models.ManyToManyField(Municipality, verbose_name="Municipalités")
+
+    panels = [
+        FieldPanel("code"),
+        FieldPanel("name"),
+        FieldPanel("population"),
+        InlinePanel("related_municipalities_ordered", label="Ordre des marqueurs"),
+    ]
 
     def __str__(self):
         return self.name
@@ -84,6 +107,16 @@ class EPCI(models.Model):
     class Meta:
         verbose_name = "Intercommunalité"
         verbose_name_plural = "Intercommunalités"
+
+
+class MunicipalityOrderByEPCI(Orderable):
+    epci = ParentalKey(
+        EPCI, on_delete=models.CASCADE, related_name="related_municipalities_ordered"
+    )
+    municipality = models.ForeignKey(Municipality, on_delete=models.CASCADE)
+    panels = [
+        SnippetChooserPanel("municipality"),
+    ]
 
 
 @register_snippet

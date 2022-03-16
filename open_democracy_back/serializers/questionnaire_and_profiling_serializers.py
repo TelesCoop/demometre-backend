@@ -72,15 +72,15 @@ class CriteriaSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class BaseMarkerSerializer(serializers.ModelSerializer):
+class MarkerSerializer(serializers.ModelSerializer):
     criterias = CriteriaSerializer(many=True, read_only=True)
     pillar_name = serializers.SerializerMethodField()
 
-    def get_pillar_name(self, obj):
+    @staticmethod
+    def get_pillar_name(obj):
         return obj.pillar.name
 
     class Meta:
-        abstract = True
         model = Marker
         fields = [
             "id",
@@ -92,37 +92,25 @@ class BaseMarkerSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class MarkerSerializer(BaseMarkerSerializer):
-    class Meta(BaseMarkerSerializer.Meta):
-        abstract = False
+class FullMarkerSerializer(MarkerSerializer):
 
-
-class FullMarkerSerializer(BaseMarkerSerializer):
-    class Meta(BaseMarkerSerializer.Meta):
-        fields = BaseMarkerSerializer.Meta.fields + ["criterias"]
+    class Meta(MarkerSerializer.Meta):
+        fields = MarkerSerializer.Meta.fields + ["criterias"]
         read_only_fields = fields
-        abstract = False
 
 
-class BasePillarSerializer(serializers.ModelSerializer):
+class PillarSerializer(serializers.ModelSerializer):
     markers = FullMarkerSerializer(many=True, read_only=True)
 
     class Meta:
-        abstract = True
         model = Pillar
         fields = ["id", "name", "code", "description"]
         read_only_fields = fields
 
 
-class FullPillarSerializer(BasePillarSerializer):
+class FullPillarSerializer(PillarSerializer):
     markers = FullMarkerSerializer(many=True, read_only=True)
 
-    class Meta(BasePillarSerializer.Meta):
-        abstract = False
-        fields = BasePillarSerializer.Meta.fields + ["markers"]
+    class Meta(PillarSerializer.Meta):
+        fields = PillarSerializer.Meta.fields + ["markers"]
         read_only_fields = fields
-
-
-class PillarSerializer(BasePillarSerializer):
-    class Meta(BasePillarSerializer.Meta):
-        abstract = False

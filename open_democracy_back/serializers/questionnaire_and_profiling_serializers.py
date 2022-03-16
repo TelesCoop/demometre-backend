@@ -34,51 +34,6 @@ REFERENTIAL_FIELDS = [
 ]
 
 
-class PillarSerializer(serializers.ModelSerializer):
-    markers = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
-    class Meta:
-        model = Pillar
-        fields = ["id", "name", "code", "description", "markers"]
-        read_only_fields = fields
-
-
-class MarkerSerializer(serializers.ModelSerializer):
-    criterias = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    pillar_name = serializers.SerializerMethodField()
-
-    def get_pillar_name(self, obj):
-        return obj.pillar.name
-
-    class Meta:
-        model = Marker
-        fields = [
-            "id",
-            "pillar_id",
-            "pillar_name",
-            "name",
-            "concatenated_code",
-            "criterias",
-        ] + REFERENTIAL_FIELDS
-        read_only_fields = fields
-
-
-class CriteriaSerializer(serializers.ModelSerializer):
-    questions = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
-    class Meta:
-        model = Criteria
-        fields = [
-            "id",
-            "marker_id",
-            "name",
-            "concatenated_code",
-            "questions",
-            "thematic_tags",
-        ] + REFERENTIAL_FIELDS
-        read_only_fields = fields
-
-
 class ResponseChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResponseChoice
@@ -104,12 +59,12 @@ class ProfilingQuestionSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-# Nested view serializers
-class EndpointCriteriaSerializer(serializers.ModelSerializer):
+class CriteriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Criteria
         fields = [
             "id",
+            "marker_id",
             "name",
             "concatenated_code",
             "thematic_tags",
@@ -117,24 +72,55 @@ class EndpointCriteriaSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class NestedMarkerSerializer(serializers.ModelSerializer):
-    criterias = EndpointCriteriaSerializer(many=True, read_only=True)
+class BaseMarkerSerializer(serializers.ModelSerializer):
+    criterias = CriteriaSerializer(many=True, read_only=True)
+    pillar_name = serializers.SerializerMethodField()
 
+    def get_pillar_name(self, obj):
+        return obj.pillar.name
+    
     class Meta:
+        abstract = True
         model = Marker
         fields = [
             "id",
+            "pillar_id",
+            "pillar_name",
             "name",
-            "concatenated_code",
-            "criterias",
+            "concatenated_code"
         ] + REFERENTIAL_FIELDS
+
+
+class MarkerSerializer(BaseMarkerSerializer):
+    class Meta(BaseMarkerSerializer.Meta):
+        abstract = False
+
+
+class FullMarkerSerializer(BaseMarkerSerializer):
+    class Meta(BaseMarkerSerializer.Meta):
+        fields = BaseMarkerSerializer.Meta.fields + ["criterias"]
         read_only_fields = fields
+        abstract = False
 
 
-class NestedPillarSerializer(serializers.ModelSerializer):
-    markers = NestedMarkerSerializer(many=True, read_only=True)
+class BasePillarSerializer(serializers.ModelSerializer):
+    markers = FullMarkerSerializer(many=True, read_only=True)
 
     class Meta:
+        abstract = True
         model = Pillar
-        fields = ["id", "name", "code", "description", "markers"]
+        fields = ["id", "name", "code", "description"]
+
+
+class FullPillarSerializer(BasePillarSerializer):
+    markers = FullMarkerSerializer(many=True, read_only=True)
+
+    class Meta(BasePillarSerializer.Meta):
+        abstract = False
+        fields = BasePillarSerializer.Meta.fields + ["markers"]
         read_only_fields = fields
+
+
+class PillarSerializer(BasePillarSerializer):
+    class Meta(BasePillarSerializer.Meta):
+        abstract = False

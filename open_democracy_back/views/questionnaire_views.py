@@ -11,7 +11,7 @@ from open_democracy_back.serializers.questionnaire_and_profiling_serializers imp
     MarkerSerializer,
     PillarSerializer,
     QuestionnaireQuestionSerializer,
-    NestedPillarSerializer,
+    FullPillarSerializer,
 )
 
 
@@ -20,7 +20,7 @@ class QuestionnaireStructureView(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    serializer_class = NestedPillarSerializer
+    serializer_class = FullPillarSerializer
     queryset = Pillar.objects.all()
 
 

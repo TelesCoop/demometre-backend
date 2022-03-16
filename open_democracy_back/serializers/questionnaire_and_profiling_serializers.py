@@ -78,7 +78,7 @@ class BaseMarkerSerializer(serializers.ModelSerializer):
 
     def get_pillar_name(self, obj):
         return obj.pillar.name
-    
+
     class Meta:
         abstract = True
         model = Marker
@@ -87,8 +87,9 @@ class BaseMarkerSerializer(serializers.ModelSerializer):
             "pillar_id",
             "pillar_name",
             "name",
-            "concatenated_code"
+            "concatenated_code",
         ] + REFERENTIAL_FIELDS
+        read_only_fields = fields
 
 
 class MarkerSerializer(BaseMarkerSerializer):
@@ -110,6 +111,7 @@ class BasePillarSerializer(serializers.ModelSerializer):
         abstract = True
         model = Pillar
         fields = ["id", "name", "code", "description"]
+        read_only_fields = fields
 
 
 class FullPillarSerializer(BasePillarSerializer):

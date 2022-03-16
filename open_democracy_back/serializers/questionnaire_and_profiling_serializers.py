@@ -60,6 +60,10 @@ class ProfilingQuestionSerializer(serializers.ModelSerializer):
 
 
 class CriteriaSerializer(serializers.ModelSerializer):
+    question_ids = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True, source="questions"
+    )
+
     class Meta:
         model = Criteria
         fields = [
@@ -67,13 +71,16 @@ class CriteriaSerializer(serializers.ModelSerializer):
             "marker_id",
             "name",
             "concatenated_code",
+            "question_ids",
             "thematic_tags",
         ] + REFERENTIAL_FIELDS
         read_only_fields = fields
 
 
 class MarkerSerializer(serializers.ModelSerializer):
-    criterias = CriteriaSerializer(many=True, read_only=True)
+    criteria_ids = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True, source="criterias"
+    )
     pillar_name = serializers.SerializerMethodField()
 
     @staticmethod
@@ -88,11 +95,13 @@ class MarkerSerializer(serializers.ModelSerializer):
             "pillar_name",
             "name",
             "concatenated_code",
+            "criteria_ids",
         ] + REFERENTIAL_FIELDS
         read_only_fields = fields
 
 
 class FullMarkerSerializer(MarkerSerializer):
+    criterias = CriteriaSerializer(many=True, read_only=True)
 
     class Meta(MarkerSerializer.Meta):
         fields = MarkerSerializer.Meta.fields + ["criterias"]
@@ -100,11 +109,13 @@ class FullMarkerSerializer(MarkerSerializer):
 
 
 class PillarSerializer(serializers.ModelSerializer):
-    markers = FullMarkerSerializer(many=True, read_only=True)
+    marker_ids = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True, source="markers"
+    )
 
     class Meta:
         model = Pillar
-        fields = ["id", "name", "code", "description"]
+        fields = ["id", "name", "code", "description", "marker_ids"]
         read_only_fields = fields
 
 

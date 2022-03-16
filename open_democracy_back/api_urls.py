@@ -7,10 +7,14 @@ from .views.questionnaire_views import (
     MarkerView,
     PillarView,
     QuestionnaireQuestionView,
+    QuestionnaireStructureView,
 )
 
 urlpatterns = [
     path("assessments/", get_assessment_view),
+    path(
+        "questionnaire-structure/", QuestionnaireStructureView.as_view({"get": "list"})
+    ),
     path(
         "pillars/",
         PillarView.as_view({"get": "list"}),

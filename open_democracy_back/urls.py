@@ -15,6 +15,7 @@ from .views.wagtail_rule_views import (
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("api/cms/", api_router.urls),
+    path("api/auth/", include("my_auth.urls")),
     path("api/", include("open_democracy_back.api_urls")),
     path(
         "admin/question/<int:pk>/edit-intersection-operator/",

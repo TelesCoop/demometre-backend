@@ -1,11 +1,16 @@
 from typing import List
 from django.db import models
+from wagtail.core.fields import RichTextField
 from wagtail.admin.edit_handlers import (
     FieldPanel,
 )
 from wagtail.api import APIField
 
 from wagtail.core.models import Page
+
+from open_democracy_back.models.questionnaire_and_profiling_models import (
+    SIMPLE_RICH_TEXT_FIELD_FEATURE,
+)
 
 
 class HomePage(Page):
@@ -42,3 +47,26 @@ class ReferentialPage(Page):
 
     class Meta:
         verbose_name = "Référentiel"
+
+
+class EvaluationIntroPage(Page):
+    parent_page_types = ["HomePage"]
+    subpage_types: List[str] = []
+    max_count_per_parent = 1
+    preview_modes = None
+
+    introduction = models.TextField(default="")
+    data_consent = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Consentement sur les données personnelles",
+        help_text="Demande de consentement à conserver les données personnelles demandées, RGPD",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("introduction"),
+        FieldPanel("data_consent"),
+    ]
+
+    class Meta:
+        verbose_name = "Intro à l'évaluation"

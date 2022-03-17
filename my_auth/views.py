@@ -1,12 +1,10 @@
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .emails import email_user_activation
+
 from .serializers import AuthSerializer
 
 
@@ -32,8 +30,7 @@ def frontend_signup(request):
     """
     user = AuthSerializer(data=request.data)
     user.is_valid(raise_exception=True)
-    user = user.save()
-    email_user_activation(request, user)
+    user.save()
 
     return Response(status=201)
 
@@ -85,22 +82,3 @@ def who_am_i(request):
         return Response(status=400)
 
     return Response(AuthSerializer(request.user).data)
-
-
-@api_view(["POST"])
-@permission_classes([])
-def user_activation(request):
-    """Active user"""
-    try:
-        user = User.objects.get(
-            email=request.data.get("email"),
-            activation_key=request.data.get("activation_key"),
-        )
-    except User.DoesNotExist:
-        return Response(status=404)
-
-    if not user.is_active:
-        user.is_active = True
-        user.save()
-
-    return Response(status=200)

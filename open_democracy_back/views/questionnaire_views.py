@@ -5,6 +5,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Marker,
     Pillar,
     QuestionnaireQuestion,
+    Definition,
 )
 from open_democracy_back.serializers.questionnaire_and_profiling_serializers import (
     CriteriaSerializer,
@@ -12,6 +13,7 @@ from open_democracy_back.serializers.questionnaire_and_profiling_serializers imp
     PillarSerializer,
     QuestionnaireQuestionSerializer,
     FullPillarSerializer,
+    DefinitionSerializer,
 )
 
 
@@ -58,3 +60,10 @@ class QuestionnaireQuestionView(
 ):
     serializer_class = QuestionnaireQuestionSerializer
     queryset = QuestionnaireQuestion.objects.all()
+
+
+class DefinitionView(
+    mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet
+):
+    queryset = Definition.objects.all()
+    serializer_class = DefinitionSerializer

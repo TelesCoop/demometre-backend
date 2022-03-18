@@ -51,10 +51,20 @@ class ResponseChoiceSerializer(serializers.ModelSerializer):
 
 class QuestionnaireQuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
+    definition_ids = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_definition_ids(obj: QuestionnaireQuestion):
+        return obj.related_definition_ordered.values_list("definition_id", flat=True)
 
     class Meta:
         model = QuestionnaireQuestion
-        fields = ["criteria_id", "objectivity", "method"] + QUESTION_FIELDS
+        fields = [
+            "criteria_id",
+            "objectivity",
+            "method",
+            "definition_ids",
+        ] + QUESTION_FIELDS
         read_only_fields = fields
 
 

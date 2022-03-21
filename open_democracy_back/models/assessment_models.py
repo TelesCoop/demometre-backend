@@ -103,7 +103,7 @@ class ZipCode(models.Model):
 
 @register_snippet
 class EPCI(index.Indexed, ClusterableModel):
-    code = models.CharField(max_length=100, verbose_name="Code insee")
+    code = models.CharField(max_length=100, verbose_name="Code siren")
     name = models.CharField(max_length=255, verbose_name="Nom")
     population = models.IntegerField(verbose_name="Population", default=0)
 
@@ -111,7 +111,7 @@ class EPCI(index.Indexed, ClusterableModel):
         FieldPanel("code"),
         FieldPanel("name"),
         FieldPanel("population"),
-        InlinePanel("related_municipalities_ordered", label="Ordre des marqueurs"),
+        InlinePanel("related_municipalities_ordered", label="Liste des communes"),
     ]
 
     search_fields = [
@@ -130,7 +130,9 @@ class MunicipalityOrderByEPCI(Orderable):
     epci = ParentalKey(
         EPCI, on_delete=models.CASCADE, related_name="related_municipalities_ordered"
     )
-    municipality = models.ForeignKey(Municipality, on_delete=models.CASCADE)
+    municipality = models.ForeignKey(
+        Municipality, on_delete=models.CASCADE, verbose_name="Commune"
+    )
     panels = [
         SnippetChooserPanel("municipality"),
     ]

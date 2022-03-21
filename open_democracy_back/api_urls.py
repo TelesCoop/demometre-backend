@@ -14,6 +14,7 @@ from .views.questionnaire_views import (
     PillarView,
     QuestionnaireQuestionView,
     QuestionnaireStructureView,
+    DefinitionView,
 )
 
 urlpatterns = [
@@ -73,4 +74,6 @@ urlpatterns = [
         "evaluation-intro-pages/",
         EvaluationIntroPageView.as_view({"get": "list"}),
     ),
+    path("definitions/", DefinitionView.as_view({"get": "list"})),
+    path("definitions/<int:pk>/", DefinitionView.as_view({"get": "retrieve"})),
 ]

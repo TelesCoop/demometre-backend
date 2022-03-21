@@ -7,6 +7,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     ProfilingQuestion,
     QuestionnaireQuestion,
     ResponseChoice,
+    Definition,
 )
 
 QUESTION_FIELDS = [
@@ -34,19 +35,36 @@ REFERENTIAL_FIELDS = [
 ]
 
 
+class DefinitionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Definition
+        fields = ["id", "word", "explanation"]
+        read_only_fields = fields
+
+
 class ResponseChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResponseChoice
-        fields = ["id", "response_choice"]
+        fields = ["id", "response_choice", "description"]
         read_only_fields = fields
 
 
 class QuestionnaireQuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
+    definition_ids = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_definition_ids(obj: QuestionnaireQuestion):
+        return obj.related_definition_ordered.values_list("definition_id", flat=True)
 
     class Meta:
         model = QuestionnaireQuestion
-        fields = ["criteria_id", "objectivity", "method"] + QUESTION_FIELDS
+        fields = [
+            "criteria_id",
+            "objectivity",
+            "method",
+            "definition_ids",
+        ] + QUESTION_FIELDS
         read_only_fields = fields
 
 

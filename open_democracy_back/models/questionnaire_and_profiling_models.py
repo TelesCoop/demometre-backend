@@ -557,6 +557,14 @@ class ResponseChoice(TimeStampedModel, Orderable):
         max_length=510, default="", verbose_name="Réponse possible"
     )
 
+    description = models.TextField(
+        default="",
+        null=True,
+        blank=True,
+        verbose_name="Description de la réponse",
+        help_text="Texte précisant la réponse (définition, exemple, reformulation).",
+    )
+
     associated_score = models.IntegerField(
         verbose_name="Score associé",
         blank=True,

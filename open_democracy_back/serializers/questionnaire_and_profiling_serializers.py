@@ -45,7 +45,7 @@ class DefinitionSerializer(serializers.ModelSerializer):
 class ResponseChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResponseChoice
-        fields = ["id", "response_choice"]
+        fields = ["id", "response_choice", "description"]
         read_only_fields = fields
 
 

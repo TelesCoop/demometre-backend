@@ -10,34 +10,36 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
 )
 
 
-class Participant(models.Model):
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE, null=True, related_name="participant"
+class Participation(models.Model):
+    # TODO : on delete : remove participation or clean personnal data and keep responses ?
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="participations"
     )
-    evaluation = models.ForeignKey(
+    assessment = models.ForeignKey(
         Assessment,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name="participants",
+        on_delete=models.CASCADE,
+        related_name="participations",
     )
     role = models.ForeignKey(
         Role,
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        related_name="participants",
+        related_name="participations",
     )
-    profiles = models.ManyToManyField(ProfileType, related_name="participants")
+    profiles = models.ManyToManyField(ProfileType, related_name="participations")
     consent = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
 
+    class Meta:
+        unique_together = ["user", "assessment"]
+
 
 class Response(models.Model):
-    participant = models.ForeignKey(
-        Participant, on_delete=models.CASCADE, related_name="responses"
+    participation = models.ForeignKey(
+        Participation, on_delete=models.CASCADE, related_name="responses"
     )
     question = models.ForeignKey(
         Question, on_delete=models.CASCADE, related_name="responses"

@@ -6,7 +6,12 @@ if (
     const typeQuestionOptions = document.getElementById("id_type");
     var rulesForResponseChoiceQuestions = document.querySelector("#id_response_choices-FORMS").closest(".object")
     var rulesForClosedWithScaleQuestion = document.querySelector("#id_min").closest(".object")
-    var rulesForBinaryQuestion = document.querySelector("#id_true_associated_score").closest(".object")
+    try {
+        var rulesForBinaryQuestion = document.querySelector("#id_true_associated_score").closest(".object")
+    } catch {
+        var rulesForBinaryQuestion = document.createElement("div");
+    }
+
 
     function responseRules(questionType) {
         if (questionType == "unique_choice" ||

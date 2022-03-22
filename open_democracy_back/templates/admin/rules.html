@@ -110,8 +110,10 @@
             <div style="display: flex;">
                 <input id="toggle-conditional-question" class="toggle toggle-left" name="conditional_type" value="question" type="radio" checked>
                 <label for="toggle-conditional-question" class="btn">Question</label>
+                {% if not data.profiling_question %}
                 <input id="toggle-conditional-profile-type" class="toggle toggle-right toggle-left" name="conditional_type" value="profile" type="radio">
                 <label for="toggle-conditional-profile-type" class="btn">Profil</label>
+                {% endif %}
                 <input id="toggle-conditional-role" class="toggle toggle-right" name="conditional_type" value="role" type="radio">
                 <label for="toggle-conditional-role" class="btn">Role</label>
             </div>
@@ -189,11 +191,13 @@
             display_conditional_role.style.display = "none";
         })
 
-        document.getElementById("toggle-conditional-profile-type").addEventListener("click", function() {
-            display_conditional_question.style.display = "none";
-            display_conditional_profile_type.style.display = "block";
-            display_conditional_role.style.display = "none";
-        })
+        if(document.getElementById("toggle-conditional-profile-type")) {
+            document.getElementById("toggle-conditional-profile-type").addEventListener("click", function() {
+                display_conditional_question.style.display = "none";
+                display_conditional_profile_type.style.display = "block";
+                display_conditional_role.style.display = "none";
+            })
+        }
 
         document.getElementById("toggle-conditional-role").addEventListener("click", function() {
             display_conditional_question.style.display = "none";

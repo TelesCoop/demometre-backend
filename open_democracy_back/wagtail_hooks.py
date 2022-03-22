@@ -40,10 +40,12 @@ class RulesButtonHelper(ButtonHelper):
         # Define a label for our button
         if isinstance(obj, Question):
             text = "Condition d'affichage de la question"
+            url = "/admin/question/" + str(obj.id) + "/rules/"
         if isinstance(obj, ProfileType):
             text = "Définir ce profil"
+            url = "/admin/profile-type/" + str(obj.id) + "/rules/"
         return {
-            "url": "/admin/question/" + str(obj.id) + "/rules/",
+            "url": url,
             "label": text,
             "classname": self.finalise_classname(self.view_button_classnames),
             "title": text,

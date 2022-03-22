@@ -4,7 +4,6 @@ from wagtail.core.fields import RichTextField
 from wagtail.admin.edit_handlers import (
     FieldPanel,
 )
-from wagtail.api import APIField
 
 from wagtail.core.models import Page
 
@@ -22,11 +21,6 @@ class HomePage(Page):
 
     content_panels = Page.content_panels + [
         FieldPanel("introduction"),
-    ]
-
-    api_fields = [
-        APIField("title"),
-        APIField("introduction"),
     ]
 
     class Meta:

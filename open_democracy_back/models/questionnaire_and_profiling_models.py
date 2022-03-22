@@ -348,19 +348,25 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         null=True,
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Cas d'usage",
+        verbose_name="Exemples inspirants",
     )
-    resources = RichTextField(
+    sources = RichTextField(
         null=True,
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Ressources",
+        verbose_name="Sources",
+    )
+    to_go_further = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Pour aller plus loin",
     )
     comments = RichTextField(
         null=True,
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Commentaires",
+        verbose_name="Commentaires (pour l'interne)",
         help_text="Indication affichée uniquement pour les administrateurs.",
     )
 
@@ -399,9 +405,10 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     explanation_panels = [
         InlinePanel("related_definition_ordered", label="Définitions"),
-        FieldPanel("use_case"),
         FieldPanel("legal_frame"),
-        FieldPanel("resources"),
+        FieldPanel("sources"),
+        FieldPanel("to_go_further"),
+        FieldPanel("use_case"),
         FieldPanel("comments"),
     ]
 

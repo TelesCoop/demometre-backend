@@ -1,3 +1,4 @@
 from .pages_models import *  # noqa: F403, F401
 from .assessment_models import *  # noqa: F403, F401
 from .questionnaire_and_profiling_models import *  # noqa: F403, F401
+from .participant_models import *  # noqa: F403, F401

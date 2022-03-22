@@ -20,7 +20,11 @@ from open_democracy_back.models import (
 def get_data_for_creating_rules(model_instance):
     data = {}
     if isinstance(model_instance, Question):
-        data["other_questions_list"] = Question.objects.filter(
+        data["profiling_question"] = model_instance.profiling_question
+        question_instance = (
+            ProfilingQuestion if data["profiling_question"] else Question
+        )
+        data["other_questions_list"] = question_instance.objects.filter(
             ~Q(id=model_instance.id)
             & ~Q(type=QuestionType.OPEN)
             & ~Q(type=QuestionType.CLOSED_WITH_RANKING)
@@ -28,9 +32,6 @@ def get_data_for_creating_rules(model_instance):
         data["other_profile_types"] = ProfileType.objects.all()
         data["profile_type"] = None
         data["question"] = model_instance
-        data["rules_intersection_operator"] = data[
-            "question"
-        ].rules_intersection_operator
         data["rules"] = Rule.objects.filter(question_id=model_instance.id)
     elif isinstance(model_instance, ProfileType):
         data["other_questions_list"] = ProfilingQuestion.objects.filter(
@@ -41,10 +42,9 @@ def get_data_for_creating_rules(model_instance):
         )
         data["profile_type"] = model_instance
         data["question"] = None
-        data["rules_intersection_operator"] = data[
-            "profile_type"
-        ].rules_intersection_operator
         data["rules"] = Rule.objects.filter(profile_type_id=model_instance.id)
+
+    data["rules_intersection_operator"] = model_instance.rules_intersection_operator
 
     questions_response_by_question_id = defaultdict(
         lambda: {"type": "", "min": 0, "max": 0, "responses": {}}

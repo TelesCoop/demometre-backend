@@ -59,6 +59,11 @@ class Pillar(models.Model):
         max_length=2,
         help_text="Correspond au numéro (ou lettre) de ce pilier",
     )
+    order = models.IntegerField(
+        verbose_name="Ordre",
+        help_text="Permet de ranger dans l'ordre voulu les piliers",
+        default="1",
+    )
 
     description = RichTextField(
         null=True,
@@ -84,7 +89,7 @@ class Pillar(models.Model):
     class Meta:
         verbose_name_plural = "1. Piliers"
         verbose_name = "1. Pilier"
-        ordering = ["code"]
+        ordering = ["order"]
 
 
 class ReferentielFields(models.Model):

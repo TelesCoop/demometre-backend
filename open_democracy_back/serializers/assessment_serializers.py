@@ -1,0 +1,65 @@
+from rest_framework import serializers
+
+from open_democracy_back.models.assessment_models import EPCI, Assessment, Municipality
+
+
+class MunicipalitySerializer(serializers.ModelSerializer):
+    zip_codes = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_zip_codes(obj: Municipality):
+        return obj.zip_codes.values_list("code", flat=True)
+
+    class Meta:
+        model = Municipality
+        fields = [
+            "id",
+            "name",
+            "population",
+            "zip_codes",
+        ]
+        read_only_fields = fields
+
+
+class EpciSerializer(serializers.ModelSerializer):
+    zip_codes = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_zip_codes(obj: EPCI):
+        zip_codes = []
+        for municipality_order in obj.related_municipalities_ordered.all():
+            zip_codes += [
+                municipality_order.municipality.zip_codes.values_list("code", flat=True)
+            ]
+        return zip_codes
+
+    class Meta:
+        model = EPCI
+        fields = [
+            "id",
+            "name",
+            "population",
+            "zip_codes",
+        ]
+        read_only_fields = fields
+
+
+class AssessmentSerializer(serializers.ModelSerializer):
+    epci = EpciSerializer(many=False, read_only=True)
+    municipality = MunicipalitySerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Assessment
+        fields = [
+            "id",
+            "type",
+            "initiated_by",
+            "is_initiated_by_locality",
+            "carried_by",
+            "is_carried_by_locality",
+            "initialization_date",
+            "end_date",
+            "municipality",
+            "epci",
+        ]
+        read_only_fields = fields

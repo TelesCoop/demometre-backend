@@ -24,7 +24,8 @@ QUESTION_FIELDS = [
     "max_label",
     "legal_frame",
     "use_case",
-    "resources",
+    "sources",
+    "to_go_further",
 ]
 REFERENTIAL_FIELDS = [
     "description",

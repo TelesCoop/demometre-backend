@@ -47,6 +47,11 @@ class EpciSerializer(serializers.ModelSerializer):
 class AssessmentSerializer(serializers.ModelSerializer):
     epci = EpciSerializer(many=False, read_only=True)
     municipality = MunicipalitySerializer(many=False, read_only=True)
+    participation_nb = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_participation_nb(obj: Assessment):
+        return obj.participations.count()
 
     class Meta:
         model = Assessment
@@ -61,5 +66,6 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "end_date",
             "municipality",
             "epci",
+            "participation_nb",
         ]
         read_only_fields = fields

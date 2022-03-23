@@ -1,22 +1,59 @@
-from django.http import JsonResponse
+import logging
+from rest_framework import mixins, viewsets
+from rest_framework.response import Response
 
 from open_democracy_back.models import Assessment
+from open_democracy_back.models.assessment_models import (
+    EPCI,
+    LocalityType,
+    Municipality,
+)
+from open_democracy_back.serializers.assessment_serializers import AssessmentSerializer
 
 
-def get_assessment_view(request):
-    zip_code = request.GET.get("zip_code")
-    assessments = Assessment.objects.filter(
-        zip_codes__zip_code=zip_code
-    ).prefetch_related("zip_codes")
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
-    assessments = [
-        {
-            "id": assessment.id,
-            "type": assessment.type,
-            "type_display": assessment.get_type_display(),
-            "zip_codes": [zip_code.zip_code for zip_code in assessment.zip_codes.all()],
-        }
-        for assessment in assessments
-    ]
 
-    return JsonResponse(data={"items": assessments})
+class AssessmentView(
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = AssessmentSerializer
+    queryset = Assessment.objects.all()
+
+    def get_or_create(self, request):
+        zip_code = request.GET.get("zip_code")
+        locality_type = request.GET.get("locality_type")
+        assessment = None
+        if locality_type == LocalityType.MUNICIPALITY:
+
+            municipality = Municipality.objects.filter(
+                zip_codes__code__contains=zip_code
+            )
+            if municipality.count() > 1:
+                logger.warning(
+                    f"There is several municipality corresponding to zip_code: {zip_code} (we are using the first occurence)"
+                )
+            assessment = Assessment.objects.get_or_create(
+                type=locality_type, municipality=municipality.first()
+            )
+        elif locality_type == LocalityType.INTERCOMMUNALITY:
+            epci = EPCI.objects.filter(
+                related_municipalities_ordered__municipality__zip_codes__code__contains=zip_code
+            )
+            if epci.count() > 1:
+                logger.warning(
+                    f"There is several EPCI corresponding to zip_code: {zip_code} (we are using the first occurence)"
+                )
+            assessment = Assessment.objects.get_or_create(
+                type=locality_type, epci=epci.first()
+            )
+
+        else:
+            logger.error("locality_type received not correct")
+            return Response(status=400)
+
+        # breakpoint()
+
+        return Response(status=200, data=self.serializer_class(assessment[0]).data)

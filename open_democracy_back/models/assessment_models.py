@@ -1,4 +1,6 @@
+from django.utils import timezone
 from django.db import models
+from django.contrib.auth.models import User
 from model_utils.models import TimeStampedModel
 from modelcluster.models import ClusterableModel
 from modelcluster.fields import ParentalKey
@@ -10,7 +12,7 @@ from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
 
-class AssessmentType(models.TextChoices):
+class LocalityType(models.TextChoices):
     MUNICIPALITY = "municipality", "Commune"
     INTERCOMMUNALITY = "intercommunality", "Intercommunalité"
 
@@ -142,8 +144,8 @@ class MunicipalityOrderByEPCI(Orderable):
 class Assessment(TimeStampedModel, ClusterableModel):
     type = models.CharField(
         max_length=32,
-        choices=AssessmentType.choices,
-        default=AssessmentType.MUNICIPALITY,
+        choices=LocalityType.choices,
+        default=LocalityType.MUNICIPALITY,
     )
     municipality = models.ForeignKey(
         Municipality,
@@ -159,11 +161,51 @@ class Assessment(TimeStampedModel, ClusterableModel):
         on_delete=models.SET_NULL,
         verbose_name="Intercommunalité",
     )
+    initiated_by = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Initialisé par",
+        related_name="initiated_assessments",
+        help_text="Si l'évaluation est initié au nom de la localité, quelqu'un peut tout de même être à la source",
+    )
+    is_initiated_by_locality = models.BooleanField(
+        default=False, verbose_name="Est initialisé par la localité ?"
+    )
+    carried_by = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Porté par",
+        related_name="carried_assessments",
+        help_text="Si l'évaluation est porté par la localité, qui en est responsable",
+    )
+    is_carried_by_locality = models.BooleanField(
+        default=False, verbose_name="Est porté par la localité ?"
+    )
+    initialization_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Date d'initialisation",
+        help_text="Si il n'y a pas de date d'initialisation, c'est que le début de l'évaluation n'a pas été confirmée",
+    )
+    last_participation_date = models.DateTimeField(
+        default=timezone.now, verbose_name="Date de dernière participation"
+    )
+    end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
 
     panels = [
         FieldPanel("type"),
         SnippetChooserPanel("municipality"),
         SnippetChooserPanel("epci"),
+        FieldPanel("initiated_by"),
+        FieldPanel("is_initiated_by_locality"),
+        FieldPanel("carried_by"),
+        FieldPanel("is_carried_by_locality"),
+        FieldPanel("initialization_date"),
+        FieldPanel("end_date"),
     ]
 
     def __str__(self):

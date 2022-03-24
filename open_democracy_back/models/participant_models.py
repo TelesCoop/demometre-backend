@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 from open_democracy_back.models.assessment_models import Assessment
 from open_democracy_back.models.questionnaire_and_profiling_models import (
+    Category,
     ProfileType,
     Question,
     ResponseChoice,
@@ -54,7 +55,6 @@ class Response(models.Model):
     multiple_choice_response = models.ManyToManyField(ResponseChoice)
     boolean_response = models.BooleanField(blank=True, null=True)
     numerical_response = models.IntegerField(blank=True, null=True)
-    closed_with_scale_response = models.IntegerField(blank=True, null=True)
 
 
 class ClosedWithRankingResponse(models.Model):
@@ -67,3 +67,18 @@ class ClosedWithRankingResponse(models.Model):
 
     class Meta:
         order_with_respect_to = "response"
+
+
+class ClosedWithScaleCategoryResponse(models.Model):
+    response = models.ForeignKey(
+        Response,
+        on_delete=models.CASCADE,
+        related_name="closed_with_scale_response_categories",
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name="closed_with_scale_category_responses",
+        blank=True,
+    )
+    response_value = models.IntegerField(blank=True, null=True)

@@ -323,7 +323,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         blank=True,
         null=True,
     )
-
     true_associated_score = models.IntegerField(
         verbose_name="Score associé à une réponse positive",
         blank=True,
@@ -386,11 +385,13 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         max_length=32,
         choices=[("objective", "Objective"), ("subjective", "Subjective")],
         default="subjective",
+        verbose_name="Objective / Subjective",
     )
     method = models.CharField(
         max_length=32,
         choices=[("quantitative", "Quantitative"), ("qualitative", "Qualitative")],
         blank=True,
+        verbose_name="Methode",
     )
 
     # Profiling questions fields
@@ -473,8 +474,12 @@ class QuestionnaireQuestion(Question):
                         FieldPanel("max_associated_score"),
                     ],
                 ),
+                InlinePanel(
+                    "categories",
+                    label="Catégorie",
+                ),
             ],
-            heading="Valeurs extrêmes possibles",
+            heading="Information à fournir pour une question fermée à échelle",
         ),
         FieldRowPanel(
             [
@@ -589,6 +594,25 @@ class ResponseChoice(TimeStampedModel, Orderable):
     class Meta:
         verbose_name_plural = "Choix de réponse"
         verbose_name = "Choix de réponse"
+
+
+class Category(TimeStampedModel, Orderable):
+    question = ParentalKey(
+        Question, on_delete=models.CASCADE, related_name="categories"
+    )
+
+    category = models.CharField(
+        max_length=64,
+        default="",
+        verbose_name="Categorie",
+        help_text="Permet de répondre à la même question pour différentes catégories",
+    )
+
+    def __str__(self):
+        return self.category
+
+    class Meta:
+        verbose_name = "Catégorie"
 
 
 @register_snippet

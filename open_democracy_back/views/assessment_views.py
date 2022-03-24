@@ -28,9 +28,11 @@ class AssessmentView(
         assessment = None
         if locality_type == LocalityType.MUNICIPALITY:
 
-            municipality = Municipality.objects.filter(
-                zip_codes__code__contains=zip_code
-            )
+            municipality = Municipality.objects.filter(zip_codes__code=zip_code)
+            if municipality.count() == 0:
+                return Response(
+                    status=400, data="Aucune commune ne correspond à ce code postal"
+                )
             if municipality.count() > 1:
                 logger.warning(
                     f"There is several municipality corresponding to zip_code: {zip_code} (we are using the first occurence)"
@@ -40,8 +42,13 @@ class AssessmentView(
             )
         elif locality_type == LocalityType.INTERCOMMUNALITY:
             epci = EPCI.objects.filter(
-                related_municipalities_ordered__municipality__zip_codes__code__contains=zip_code
+                related_municipalities_ordered__municipality__zip_codes__code=zip_code
             )
+            if epci.count() == 0:
+                return Response(
+                    status=400,
+                    data="Aucune intercommunalité ne correspond à ce code postal",
+                )
             if epci.count() > 1:
                 logger.warning(
                     f"There is several EPCI corresponding to zip_code: {zip_code} (we are using the first occurence)"
@@ -53,7 +60,5 @@ class AssessmentView(
         else:
             logger.error("locality_type received not correct")
             return Response(status=400)
-
-        # breakpoint()
 
         return Response(status=200, data=self.serializer_class(assessment[0]).data)

@@ -19,6 +19,15 @@ Les questions ne sont pas configurés comme des pages ............
     python manage.py makemigrations
     python manage.py migrate
 
+### Mettre à jour l'index pour la fonction de recherche
+
+To update the index and make work de search function :
+
+```bash
+python manage.py update_index
+```
+
+
 ### Mettre à jour les traductions :
 
 - Créer ou mettre à jour un fichier de traductions :

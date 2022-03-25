@@ -7,98 +7,176 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('open_democracy_back', '0008_rule_conditional_role'),
+        ("open_democracy_back", "0008_rule_conditional_role"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Department',
+            name="Department",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=3, verbose_name='Code')),
-                ('name', models.CharField(max_length=3, verbose_name='Nom')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code", models.CharField(max_length=3, verbose_name="Code")),
+                ("name", models.CharField(max_length=64, verbose_name="Nom")),
             ],
             options={
-                'verbose_name': 'Département',
-                'verbose_name_plural': 'Départements',
+                "verbose_name": "Département",
+                "verbose_name_plural": "Départements",
             },
         ),
         migrations.CreateModel(
-            name='EPCI',
+            name="EPCI",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=100, verbose_name='Code insee')),
-                ('name', models.CharField(max_length=255, verbose_name='Nom')),
-                ('population', models.IntegerField(default=0, verbose_name='Population')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code", models.CharField(max_length=100, verbose_name="Code insee")),
+                ("name", models.CharField(max_length=255, verbose_name="Nom")),
+                (
+                    "population",
+                    models.IntegerField(default=0, verbose_name="Population"),
+                ),
             ],
             options={
-                'verbose_name': 'Intercommunalité',
-                'verbose_name_plural': 'Intercommunalités',
+                "verbose_name": "Intercommunalité",
+                "verbose_name_plural": "Intercommunalités",
             },
         ),
         migrations.CreateModel(
-            name='Municipality',
+            name="Municipality",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=100, verbose_name='Code insee')),
-                ('name', models.CharField(max_length=255, verbose_name='Nom')),
-                ('population', models.IntegerField(default=0, verbose_name='Population')),
-                ('department', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='open_democracy_back.department', verbose_name='Département')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code", models.CharField(max_length=100, verbose_name="Code insee")),
+                ("name", models.CharField(max_length=255, verbose_name="Nom")),
+                (
+                    "population",
+                    models.IntegerField(default=0, verbose_name="Population"),
+                ),
+                (
+                    "department",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="open_democracy_back.department",
+                        verbose_name="Département",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Commune',
-                'verbose_name_plural': 'Communes',
+                "verbose_name": "Commune",
+                "verbose_name_plural": "Communes",
             },
         ),
         migrations.CreateModel(
-            name='Region',
+            name="Region",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=3, verbose_name='Code')),
-                ('name', models.CharField(max_length=3, verbose_name='Nom')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code", models.CharField(max_length=3, verbose_name="Code")),
+                ("name", models.CharField(max_length=64, verbose_name="Nom")),
             ],
             options={
-                'verbose_name': 'Région',
-                'verbose_name_plural': 'Régions',
+                "verbose_name": "Région",
+                "verbose_name_plural": "Régions",
             },
         ),
         migrations.CreateModel(
-            name='ZipCode',
+            name="ZipCode",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=100, verbose_name='Code')),
-                ('municipality', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='open_democracy_back.municipality', verbose_name='Municipalité')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code", models.CharField(max_length=100, verbose_name="Code")),
+                (
+                    "municipality",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="open_democracy_back.municipality",
+                        verbose_name="Municipalité",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Code postal',
-                'verbose_name_plural': 'Code postaux',
+                "verbose_name": "Code postal",
+                "verbose_name_plural": "Code postaux",
             },
         ),
         migrations.RemoveField(
-            model_name='assessment',
-            name='name',
+            model_name="assessment",
+            name="name",
         ),
         migrations.DeleteModel(
-            name='AssessmentZipCode',
+            name="AssessmentZipCode",
         ),
         migrations.AddField(
-            model_name='epci',
-            name='municipalities',
-            field=models.ManyToManyField(to='open_democracy_back.Municipality', verbose_name='Municipalités'),
+            model_name="epci",
+            name="municipalities",
+            field=models.ManyToManyField(
+                to="open_democracy_back.Municipality", verbose_name="Municipalités"
+            ),
         ),
         migrations.AddField(
-            model_name='department',
-            name='region',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='open_democracy_back.region', verbose_name='Région'),
+            model_name="department",
+            name="region",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="open_democracy_back.region",
+                verbose_name="Région",
+            ),
         ),
         migrations.AddField(
-            model_name='assessment',
-            name='epci',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='open_democracy_back.epci'),
+            model_name="assessment",
+            name="epci",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="open_democracy_back.epci",
+            ),
         ),
         migrations.AddField(
-            model_name='assessment',
-            name='municipality',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='open_democracy_back.municipality'),
+            model_name="assessment",
+            name="municipality",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="open_democracy_back.municipality",
+            ),
         ),
     ]

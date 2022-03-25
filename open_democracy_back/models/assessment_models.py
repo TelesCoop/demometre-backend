@@ -20,7 +20,7 @@ class LocalityType(models.TextChoices):
 @register_snippet
 class Region(index.Indexed, models.Model):
     code = models.CharField(max_length=3, verbose_name="Code")
-    name = models.CharField(max_length=3, verbose_name="Nom")
+    name = models.CharField(max_length=64, verbose_name="Nom")
 
     search_fields = [
         index.SearchField("name", partial_match=True),
@@ -37,7 +37,7 @@ class Region(index.Indexed, models.Model):
 @register_snippet
 class Department(index.Indexed, models.Model):
     code = models.CharField(max_length=3, verbose_name="Code")
-    name = models.CharField(max_length=3, verbose_name="Nom")
+    name = models.CharField(max_length=64, verbose_name="Nom")
     region = models.ForeignKey(
         Region, verbose_name="Région", on_delete=models.SET_NULL, null=True
     )

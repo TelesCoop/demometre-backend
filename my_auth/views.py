@@ -54,7 +54,7 @@ def frontend_login(request):
     """
 
     data = request.data
-    username, password = data["username"].lower(), data["password"]
+    username, password = data["email"].lower(), data["password"]
 
     user = authenticate(username=username, password=password)
 

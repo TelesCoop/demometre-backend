@@ -32,8 +32,17 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
 class Role(TranslatableMixin, ClusterableModel):
     name = models.CharField(verbose_name="Nom", max_length=125)
 
+    description = models.TextField(
+        default="",
+        null=True,
+        blank=True,
+        verbose_name="Description du rôle",
+        help_text="Texte précisant le rôle (définition, exemple, reformulation).",
+    )
+
     panels = [
         FieldPanel("name"),
+        FieldPanel("description"),
         InlinePanel("related_markers_ordered", label="Ordre des marqueurs"),
     ]
 

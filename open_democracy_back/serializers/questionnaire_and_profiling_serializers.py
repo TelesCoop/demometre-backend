@@ -8,6 +8,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     QuestionnaireQuestion,
     ResponseChoice,
     Definition,
+    Role,
 )
 
 QUESTION_FIELDS = [
@@ -34,6 +35,13 @@ REFERENTIAL_FIELDS = [
     "score_3",
     "score_4",
 ]
+
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ["id", "name", "description"]
+        read_only_fields = fields
 
 
 class DefinitionSerializer(serializers.ModelSerializer):

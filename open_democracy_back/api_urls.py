@@ -5,9 +5,10 @@ from open_democracy_back.views.page_views import (
     HomePageView,
     ReferentialPageView,
 )
+from open_democracy_back.views.participation_views import ParticipationView
 
 from .views.assessment_views import AssessmentView
-from .views.profiling_views import ProfilingQuestionView
+from .views.profiling_views import ProfilingQuestionView, RoleView
 from .views.questionnaire_views import (
     CriteriaView,
     MarkerView,
@@ -46,4 +47,10 @@ urlpatterns = [
     path("evaluation-intro-pages/", EvaluationIntroPageView.as_view({"get": "list"})),
     path("definitions/", DefinitionView.as_view({"get": "list"})),
     path("definitions/<int:pk>/", DefinitionView.as_view({"get": "retrieve"})),
+    path("roles/", RoleView.as_view({"get": "list"})),
+    path("participation/", ParticipationView.as_view({"post": "create"})),
+    path(
+        "participation/<int:pk>/",
+        ParticipationView.as_view({"patch": "partial_update"}),
+    ),
 ]

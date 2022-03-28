@@ -29,6 +29,7 @@ def frontend_signup(request):
             AuthSerializer
     """
     user = AuthSerializer(data=request.data)
+    user.username = user.email
     user.is_valid(raise_exception=True)
     user.save()
 
@@ -54,9 +55,9 @@ def frontend_login(request):
     """
 
     data = request.data
-    username, password = data["email"].lower(), data["password"]
+    email, password = data["email"].lower(), data["password"]
 
-    user = authenticate(username=username, password=password)
+    user = authenticate(username=email, password=password)
 
     if user is not None:
         user.backend = AUTHENTICATION_BACKENDS[0]

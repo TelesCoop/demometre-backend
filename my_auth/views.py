@@ -72,15 +72,27 @@ def frontend_login(request):
 
     data = request.data
     email, password = data["email"].lower(), data["password"]
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response(
+            data={
+                "message": "Cet email ne correspond à aucun utilisateur",
+                "field": "email",
+            },
+            status=400,
+        )
 
-    user = authenticate(username=email, password=password)
+    user_auth = authenticate(username=user.username, password=password)
 
-    if user is not None:
-        user.backend = AUTHENTICATION_BACKENDS[0]
-        login(request, user)
-        return Response(AuthSerializer(user).data)
+    if user_auth is not None:
+        user_auth.backend = AUTHENTICATION_BACKENDS[0]
+        login(request, user_auth)
+        return Response(AuthSerializer(user_auth).data)
     else:
-        return HttpResponse("Email et mot de passe ne correspondent pas", status=400)
+        return Response(
+            data={"message": "Email et mot de passe ne correspondent pas"}, status=400
+        )
 
 
 @api_view(["POST"])

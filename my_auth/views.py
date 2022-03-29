@@ -1,3 +1,6 @@
+import uuid
+from datetime import datetime, timezone
+
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -5,6 +8,9 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+
+from my_auth.emails import email_reset_password_link
+from my_auth.models import UserResetKey
 
 from .serializers import AuthSerializer
 
@@ -93,3 +99,42 @@ def who_am_i(request):
         return Response(status=400)
 
     return Response(AuthSerializer(request.user).data)
+
+
+@api_view(["POST"])
+@permission_classes([])
+def front_end_reset_password_link(request):
+    """Send a reset password link"""
+    try:
+        user = User.objects.get(email=request.data.get("email"))
+    except User.DoesNotExist:
+        return Response(status=404)
+    if UserResetKey.objects.get(user=user):
+        UserResetKey.objects.get(user=user).delete()
+    UserResetKey.objects.create(
+        user=user, reset_key=uuid.uuid4(), reset_key_datetime=datetime.now()
+    )
+    email_reset_password_link(request, user)
+    return Response(status=200)
+
+
+@api_view(["POST"])
+@permission_classes([])
+def front_end_reset_password(request):
+    """Send a reset password"""
+    try:
+        user = User.objects.get(
+            reset_key__reset_key=request.data.get("reset_key"),
+        )
+    except User.DoesNotExist:
+        return Response(status=403)
+
+    is_valid_key = datetime.now(timezone.utc) - user.reset_key.reset_key_datetime
+    if is_valid_key.days != 0:
+        return Response(status=400)
+
+    user.set_password(request.data.get("password"))
+    user.save()
+    user.reset_key.reset_key = None
+    user.reset_key.save()
+    return Response(status=200)

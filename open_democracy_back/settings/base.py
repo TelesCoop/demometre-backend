@@ -31,6 +31,7 @@ config = getconf.ConfigGetter(
 
 INSTALLED_APPS = [
     "open_democracy_back",
+    "my_auth",
     "search",
     "telescoop_backup",
     "wagtail.contrib.forms",

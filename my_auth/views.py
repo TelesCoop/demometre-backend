@@ -1,5 +1,6 @@
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view, permission_classes
@@ -28,12 +29,21 @@ def frontend_signup(request):
         JSON object::
             AuthSerializer
     """
-    user = AuthSerializer(data=request.data)
-    user.username = user.email
+    data = request.data
+    if User.objects.filter(email=request.data["email"]).count():
+        return Response(
+            data={"message": "Le mail est déjà utilisé", "field": "email"}, status=400
+        )
+    data["username"] = request.data["email"]
+    user = AuthSerializer(data=data)
     user.is_valid(raise_exception=True)
     user.save()
 
-    return Response(status=201)
+    userAuth = authenticate(username=data["username"], password=data["password"])
+    userAuth.backend = AUTHENTICATION_BACKENDS[0]
+    login(request, userAuth)
+
+    return Response(status=201, data=AuthSerializer(userAuth).data)
 
 
 @api_view(["POST"])

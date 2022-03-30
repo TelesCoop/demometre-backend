@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from open_democracy_back.models.assessment_models import EPCI, Assessment, Municipality
+from open_democracy_back.serializers.user_serializers import UserSerializer
 
 
 class MunicipalitySerializer(serializers.ModelSerializer):
@@ -48,6 +49,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
     epci = EpciSerializer(many=False, read_only=True)
     municipality = MunicipalitySerializer(many=False, read_only=True)
     participation_nb = serializers.SerializerMethodField()
+    initiated_by = UserSerializer()
 
     @staticmethod
     def get_participation_nb(obj: Assessment):

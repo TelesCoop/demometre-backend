@@ -15,7 +15,7 @@ from open_democracy_back.serializers.assessment_serializers import AssessmentSer
 logger = logging.getLogger(__name__)
 
 
-class AssessmentView(
+class AssessmentsView(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
@@ -62,3 +62,11 @@ class AssessmentView(
             return Response(status=400)
 
         return Response(status=200, data=self.serializer_class(assessment[0]).data)
+
+
+class AssessmentView(
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = AssessmentSerializer
+    queryset = Assessment.objects.all()

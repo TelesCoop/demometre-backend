@@ -7,7 +7,7 @@ from open_democracy_back.views.page_views import (
 )
 from open_democracy_back.views.participation_views import ParticipationView
 
-from .views.assessment_views import AssessmentView
+from .views.assessment_views import AssessmentView, AssessmentsView
 from .views.profiling_views import ProfilingQuestionView, RoleView
 from .views.questionnaire_views import (
     CriteriaView,
@@ -19,8 +19,9 @@ from .views.questionnaire_views import (
 )
 
 urlpatterns = [
-    path("assessments/", AssessmentView.as_view({"get": "list"})),
-    path("assessments/by-locality/", AssessmentView.as_view({"get": "get_or_create"})),
+    path("assessments/", AssessmentsView.as_view({"get": "list"})),
+    path("assessments/<int:pk>", AssessmentView.as_view({"get": "retrieve"})),
+    path("assessments/by-locality/", AssessmentsView.as_view({"get": "get_or_create"})),
     path(
         "questionnaire-structure/", QuestionnaireStructureView.as_view({"get": "list"})
     ),

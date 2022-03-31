@@ -1,7 +1,24 @@
 from smtplib import SMTPException
 
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+
+
+def email_reset_password_link(request, user):
+    data = {
+        "title": "Vérifier votre email",
+        "url": (
+            f"{settings.FRONT_END_URL}/nouveau-mdp?reset_key={user.reset_key.reset_key}"
+        ),
+    }
+    send_email(
+        template_directory="my_auth",
+        file_name="reset_password_link",
+        subject=data["title"],
+        data=data,
+        receiver=[user.email],
+    )
 
 
 def send_email(
@@ -13,8 +30,8 @@ def send_email(
     data=None,
     attachment=None,
 ):
-    txt = render_to_string(f"{template_directory}/emails/txt/{file_name}.html", data)
     html = render_to_string(f"{template_directory}/emails/html/{file_name}.html", data)
+    txt = render_to_string(f"{template_directory}/emails/txt/{file_name}.txt", data)
     try:
         msg = EmailMultiAlternatives(
             subject=subject_id + subject,

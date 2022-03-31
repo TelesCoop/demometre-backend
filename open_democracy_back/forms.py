@@ -12,7 +12,6 @@ class RuleForm(forms.ModelForm):
             "profile_type",
             "conditional_question",
             "conditional_profile_type",
-            "conditional_role",
             "response_choices",
             "numerical_operator",
             "numerical_value",
@@ -30,13 +29,11 @@ class RuleForm(forms.ModelForm):
         profile_type = kwargs.pop("profile_type")
         other_questions_list = kwargs.pop("other_questions_list")
         other_profile_types = kwargs.pop("other_profile_types")
-        role_list = kwargs.pop("role_list")
         super().__init__(*args, **kwargs)
         self.fields["question"].initial = question
         self.fields["profile_type"].initial = profile_type
         self.fields["conditional_question"].queryset = other_questions_list
         self.fields["conditional_profile_type"].queryset = other_profile_types
-        self.fields["conditional_role"].queryset = role_list
 
     def clean(self):
         cd = self.cleaned_data

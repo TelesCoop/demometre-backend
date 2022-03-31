@@ -406,11 +406,24 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     # Profiling questions fields
     profiling_question = models.BooleanField(default=False)
 
-    roles = models.ManyToManyField(Role, blank=True)
+    roles = models.ManyToManyField(
+        Role,
+        blank=True,
+        verbose_name="Rôles concernés",
+        help_text="Si aucun rôle n'est sélectionné c'est comme si tous l'étaient",
+    )
 
     search_fields = [
         index.SearchField("question_statement", partial_match=True),
         index.SearchField("name", partial_match=True),
+    ]
+
+    principal_panels = [
+        FieldPanel("code"),
+        FieldPanel("name"),
+        FieldPanel("question_statement"),
+        FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
+        FieldPanel("description"),
     ]
 
     explanation_panels = [
@@ -452,12 +465,9 @@ class QuestionnaireQuestion(Question):
 
     panels = [
         FieldPanel("criteria"),
-        FieldPanel("code"),
-        FieldPanel("name"),
-        FieldPanel("question_statement"),
+        *Question.principal_panels,
         FieldPanel("objectivity"),
         FieldPanel("method"),
-        FieldPanel("description"),
         FieldPanel("type"),
         InlinePanel(
             "response_choices",
@@ -529,10 +539,7 @@ class ProfilingQuestion(Question):
 
     panels = [
         FieldPanel("code"),
-        FieldPanel("name"),
-        FieldPanel("question_statement"),
-        FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
-        FieldPanel("description"),
+        *Question.principal_panels,
         FieldPanel("type"),
         InlinePanel(
             "response_choices",
@@ -687,15 +694,6 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
         blank=True,
     )
 
-    conditional_role = models.ForeignKey(
-        Role,
-        on_delete=models.CASCADE,
-        verbose_name="Filtre par rôle",
-        related_name="rules_that_depend_on_me",
-        null=True,
-        blank=True,
-    )
-
     # if conditional question is unique or multiple choices type
     response_choices = models.ManyToManyField(ResponseChoice)
 
@@ -730,18 +728,13 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
 
     def save(self, *args, **kwargs):
         # clean data when save it
-        if self.conditional_profile_type or self.conditional_role:
+        if self.conditional_profile_type:
             self.conditional_question = None
             self.numerical_operator = None
             self.numerical_value = None
             self.boolean_response = None
-            if self.conditional_role:
-                self.conditional_profile_type = None
-            if self.conditional_profile_type:
-                self.conditional_role = None
         elif self.conditional_question:
             self.conditional_profile_type = None
-            self.conditional_role = None
             if (
                 self.conditional_question.type == QuestionType.MULTIPLE_CHOICE
                 or self.conditional_question.type == QuestionType.UNIQUE_CHOICE

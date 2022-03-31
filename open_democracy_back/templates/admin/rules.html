@@ -66,7 +66,7 @@
                         <fieldset class="chooser">
                             <div class="chosen">
                                 <svg class="icon icon-snippet icon" aria-hidden="true" focusable="false">
-                                    {% if rule.conditional_profile_type or rule.conditional_role or rule.conditional_question.profiling_question %}
+                                    {% if rule.conditional_profile_type or rule.conditional_question.profiling_question %}
                                     <use href="#icon-user"></use>
                                     {% else %}
                                     <use href="#icon-list-ol"></use>
@@ -75,7 +75,6 @@
                                 <b class="title">
                                     {% if rule.conditional_profile_type %}{{rule.conditional_profile_type}}
                                     {% elif rule.conditional_question %}{{rule.conditional_question}}
-                                    {% elif rule.conditional_role %}{{rule.conditional_role}}
                                     {% endif %}
                                 </b>
                             </div>
@@ -114,8 +113,6 @@
                 <input id="toggle-conditional-profile-type" class="toggle toggle-right toggle-left" name="conditional_type" value="profile" type="radio">
                 <label for="toggle-conditional-profile-type" class="btn">Profil</label>
                 {% endif %}
-                <input id="toggle-conditional-role" class="toggle toggle-right" name="conditional_type" value="role" type="radio">
-                <label for="toggle-conditional-role" class="btn">Role</label>
             </div>
 
             <div id="id_display_conditional_question" style="display: block;">
@@ -153,13 +150,6 @@
                     {{ rule_form.conditional_profile_type }}
                 </div>
             </div>
-            <div id="id_display_conditional_role" style="display: none;">
-                <div>
-                    {{ rule_form.conditional_role.error }}
-                    {{ rule_form.conditional_role.label_tag }}
-                    {{ rule_form.conditional_role }}
-                </div>
-            </div>
             <br/>
             <div class="actions">
                 <input type="submit" class="button button-small button-secondary" value="Ajouter">
@@ -183,27 +173,17 @@
 
         var display_conditional_profile_type = document.getElementById("id_display_conditional_profile_type");
 
-        var display_conditional_role = document.getElementById("id_display_conditional_role");
-
         document.getElementById("toggle-conditional-question").addEventListener("click", function() {
             display_conditional_question.style.display = "block";
             display_conditional_profile_type.style.display = "none";
-            display_conditional_role.style.display = "none";
         })
 
         if(document.getElementById("toggle-conditional-profile-type")) {
             document.getElementById("toggle-conditional-profile-type").addEventListener("click", function() {
                 display_conditional_question.style.display = "none";
                 display_conditional_profile_type.style.display = "block";
-                display_conditional_role.style.display = "none";
             })
         }
-
-        document.getElementById("toggle-conditional-role").addEventListener("click", function() {
-            display_conditional_question.style.display = "none";
-            display_conditional_profile_type.style.display = "none";
-            display_conditional_role.style.display = "block";
-        })
 
         new_rule.addEventListener("change", function() {
             const new_rule_type = QUESTIONS_RESPONSE_BY_QUESTION_ID[new_rule.value].type

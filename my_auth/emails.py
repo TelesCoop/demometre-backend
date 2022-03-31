@@ -31,7 +31,7 @@ def send_email(
     attachment=None,
 ):
     html = render_to_string(f"{template_directory}/emails/html/{file_name}.html", data)
-    txt = render_to_string(f"{template_directory}/emails/txt/{file_name}.html", data)
+    txt = render_to_string(f"{template_directory}/emails/txt/{file_name}.txt", data)
     try:
         msg = EmailMultiAlternatives(
             subject=subject_id + subject,

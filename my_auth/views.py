@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
 from django.contrib.auth import authenticate, login, logout
@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 from my_auth.emails import email_reset_password_link
 from my_auth.models import UserResetKey
@@ -16,7 +17,6 @@ from .serializers import AuthSerializer
 
 
 @api_view(["POST"])
-@permission_classes([])
 def frontend_signup(request):
     """
     Sign up user
@@ -53,7 +53,6 @@ def frontend_signup(request):
 
 
 @api_view(["POST"])
-@permission_classes([])
 def frontend_login(request):
     """
     Log in a user
@@ -96,6 +95,7 @@ def frontend_login(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def frontend_logout(request):
     """Log out view."""
     logout(request)
@@ -104,7 +104,6 @@ def frontend_logout(request):
 
 @api_view(["GET"])
 @ensure_csrf_cookie
-@permission_classes([])
 def who_am_i(request):
     """Returns information about the current user."""
     if request.user.is_anonymous:
@@ -114,7 +113,6 @@ def who_am_i(request):
 
 
 @api_view(["POST"])
-@permission_classes([])
 def front_end_reset_password_link(request):
     """Send a reset password link"""
     try:
@@ -131,7 +129,6 @@ def front_end_reset_password_link(request):
 
 
 @api_view(["POST"])
-@permission_classes([])
 def front_end_reset_password(request):
     """Send a reset password"""
     try:
@@ -141,7 +138,7 @@ def front_end_reset_password(request):
     except User.DoesNotExist:
         return Response(status=403)
 
-    is_valid_key = datetime.now(timezone.utc) - user.reset_key.reset_key_datetime
+    is_valid_key = datetime.now() - user.reset_key.reset_key_datetime
     if is_valid_key.days != 0:
         return Response(status=400)
 

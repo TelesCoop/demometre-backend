@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.utils.html import format_html_join
 from django.templatetags.static import static
 from wagtail.contrib.modeladmin.options import (
@@ -5,6 +6,7 @@ from wagtail.contrib.modeladmin.options import (
     modeladmin_register,
     ModelAdminGroup,
 )
+from wagtail.contrib.modeladmin.helpers import PermissionHelper
 
 from wagtail.core import hooks
 
@@ -260,9 +262,37 @@ class AssessmentModelAdmin(ModelAdmin):
     menu_order = 205
 
 
+class MyPermissionHelper(PermissionHelper):
+    def user_can_edit_obj(self, user, obj):
+        return False
+
+
+class UserAdmin(ModelAdmin):
+    model = User
+    menu_label = "Administrateurs"
+    menu_icon = "user"
+    menu_order = 200
+    add_to_settings_menu = True
+    exclude_from_explorer = True
+    list_display = (
+        "username",
+        "email",
+        "last_login",
+    )
+    search_fields = "username"
+
+    permission_helper_class = MyPermissionHelper
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Only show admin user
+        return qs.filter(is_superuser=True)
+
+
 modeladmin_register(ThematicTagModelAdmin)
 modeladmin_register(DefinitionsModelAdmin)
 modeladmin_register(SurveyAdminGroup)
 modeladmin_register(ProfilingAdminGroup)
 modeladmin_register(LocalityAdminGroup)
 modeladmin_register(AssessmentModelAdmin)
+modeladmin_register(UserAdmin)

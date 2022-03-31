@@ -28,3 +28,12 @@ ROLLBAR = {
 }
 
 rollbar.init(**ROLLBAR)
+
+ANYMAIL = {
+    "MAILGUN_API_KEY": config.getstr("mail.api_key"),  # noqa: F405
+    "MAILGUN_API_URL": "https://api.eu.mailgun.net/v3",
+    "MAILGUN_SENDER_DOMAIN": "mail.telescoop.fr",
+}
+EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@telescoop.fr"
+SERVER_EMAIL = "no-reply@telescoop.fr"

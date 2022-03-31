@@ -31,6 +31,7 @@ config = getconf.ConfigGetter(
 
 INSTALLED_APPS = [
     "open_democracy_back",
+    "my_auth",
     "search",
     "telescoop_backup",
     "wagtail.contrib.forms",
@@ -58,6 +59,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "anymail",
 ]
 
 MIDDLEWARE = [
@@ -199,9 +201,7 @@ BACKUP_REGION = config.getstr("backup.backup_region", None)
 
 
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
     "DEFAULT_RENDERER_CLASSES": (
         "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
         "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",

@@ -1,5 +1,7 @@
-# from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from rest_framework import mixins, viewsets
+from rest_framework.permissions import IsAuthenticated
+from open_democracy_back.models.participation_models import Participation
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     ProfilingQuestion,
@@ -24,15 +26,16 @@ class ParticipationProfilingQuestionView(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
+    permission_classes = [IsAuthenticated]
     serializer_class = ProfilingQuestionSerializer
-    queryset = ProfilingQuestion.objects.all()
 
-    # def get_queryset(self) -> QuerySet:
-    #     role = self.kwargs.get("participation_pk")
-    # return ProfilingQuestion.objects.filter(
-    #      question_filters__ = role
-    #     ),
-    # )
+    def get_queryset(self) -> QuerySet:
+        participation = Participation.objects.get(
+            id=self.kwargs.get("participation_pk")
+        )
+        return ProfilingQuestion.objects.filter(
+            Q(roles=participation.role) | Q(roles=None),
+        )
 
 
 class RoleView(

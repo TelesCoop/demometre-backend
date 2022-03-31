@@ -10,6 +10,7 @@ from open_democracy_back.models import (
     ProfileType,
     ProfilingQuestion,
     Question,
+    QuestionnaireQuestion,
     QuestionType,
     ResponseChoice,
     Rule,
@@ -21,7 +22,7 @@ def get_data_for_creating_rules(model_instance):
     if isinstance(model_instance, Question):
         data["profiling_question"] = model_instance.profiling_question
         question_instance = (
-            ProfilingQuestion if data["profiling_question"] else Question
+            ProfilingQuestion if data["profiling_question"] else QuestionnaireQuestion
         )
         data["other_questions_list"] = question_instance.objects.filter(
             ~Q(id=model_instance.id)

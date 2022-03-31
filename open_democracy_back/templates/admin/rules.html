@@ -80,9 +80,9 @@
                             </div>
                             <div>
                                 {% if rule.response_choices.count > 0 %}
-                                    (Lien logique : ou)
+                                    réponse =
                                     {% for response_choice in rule.response_choices.all %}
-                                        réponse = {{ response_choice }}
+                                        {{ response_choice }} {% if forloop.counter < rule.response_choices.count %} OU{% endif %}
                                     {% endfor %}
                                 {% elif rule.numerical_operator %}
                                     réponse {{ rule.numerical_operator }} {{ rule.numerical_value }}
@@ -110,7 +110,7 @@
                 <input id="toggle-conditional-question" class="toggle toggle-left" name="conditional_type" value="question" type="radio" checked>
                 <label for="toggle-conditional-question" class="btn">Question</label>
                 {% if not data.profiling_question %}
-                <input id="toggle-conditional-profile-type" class="toggle toggle-right toggle-left" name="conditional_type" value="profile" type="radio">
+                <input id="toggle-conditional-profile-type" class="toggle toggle-right" name="conditional_type" value="profile" type="radio">
                 <label for="toggle-conditional-profile-type" class="btn">Profil</label>
                 {% endif %}
             </div>

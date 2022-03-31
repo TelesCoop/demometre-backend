@@ -538,7 +538,6 @@ class ProfilingQuestion(Question):
     objects = ProfilingQuestionManager()
 
     panels = [
-        FieldPanel("code"),
         *Question.principal_panels,
         FieldPanel("type"),
         InlinePanel(
@@ -653,16 +652,20 @@ class ProfileType(models.Model):
 
 class Rule(TimeStampedModel, Orderable, ClusterableModel):
     """
-    Manage filtering of question (if the question must be shown) depending on conditional question answer or conditional profile type
+    Manage drawer questions :
+    A rule can define if a profiling question must be show depending on another profiling question answer
+    A rule can define if a questionnaire question must be show depending on another questionnaire question answer
+    A rule can define if a questionnaire question must be show depending on profile type
     OR
-    Define profile type depending on conditional question answer
+    Define profile type :
+    A rule can define the definition of a profile type depending on profiling question answer
     """
 
     # Only one of question or profile_type must be filled
     question = models.ForeignKey(
         Question,
         on_delete=models.CASCADE,
-        related_name="question_filters",
+        related_name="rules",
         null=True,
         blank=True,
     )
@@ -670,12 +673,12 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
     profile_type = models.ForeignKey(
         ProfileType,
         on_delete=models.CASCADE,
-        related_name="definitions",
+        related_name="rules",
         null=True,
         blank=True,
     )
 
-    # Only one of conditional_question or conditional_profile_type conditional_role must be filled
+    # Only one of conditional_question or conditional_profile_type must be filled
     conditional_question = models.ForeignKey(
         Question,
         on_delete=models.CASCADE,
@@ -705,6 +708,10 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
 
     # if conditional question is boolean
     boolean_response = models.BooleanField(blank=True, null=True)
+
+    @property
+    def type(self):
+        return self
 
     def __str__(self):
         conditional = (

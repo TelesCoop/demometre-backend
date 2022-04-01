@@ -9,7 +9,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     ResponseChoice,
     Definition,
     Role,
-    Rule,
+    GenericRule,
 )
 
 QUESTION_FIELDS = [
@@ -72,7 +72,7 @@ class RuleSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Rule
+        model = GenericRule
         fields = [
             "id",
             "conditional_question_id",

@@ -7,9 +7,12 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from .wagtail_api import api_router
 from .views.wagtail_rule_views import (
-    RuleView,
-    intersection_operator_view,
-    rules_definition_view,
+    ProfileDefinitionView,
+    QuestionRuleView,
+    profile_definition_view,
+    profile_intersection_operator_view,
+    question_intersection_operator_view,
+    question_rules_view,
 )
 
 urlpatterns = [
@@ -19,30 +22,28 @@ urlpatterns = [
     path("api/", include("open_democracy_back.api_urls")),
     path(
         "admin/question/<int:pk>/edit-intersection-operator/",
-        intersection_operator_view,
+        question_intersection_operator_view,
         name="question-intersection-operator",
     ),
-    path(
-        "admin/question/<int:pk>/rules/", rules_definition_view, name="question-filter"
-    ),
+    path("admin/question/<int:pk>/rules/", question_rules_view, name="question-filter"),
     path(
         "admin/question/<int:pk>/rule/<int:rule_pk>/delete",
-        RuleView.as_view(),
+        QuestionRuleView.as_view(),
         name="delete-question-filter",
     ),
     path(
         "admin/profile-type/<int:pk>/edit-intersection-operator/",
-        intersection_operator_view,
+        profile_intersection_operator_view,
         name="profile-type-intersection-operator",
     ),
     path(
         "admin/profile-type/<int:pk>/rules/",
-        rules_definition_view,
+        profile_definition_view,
         name="profile-type-definition",
     ),
     path(
         "admin/profile-type/<int:pk>/rule/<int:rule_pk>/delete",
-        RuleView.as_view(),
+        ProfileDefinitionView.as_view(),
         name="delete-profile-type-definition",
     ),
     path("admin/", include(wagtailadmin_urls)),

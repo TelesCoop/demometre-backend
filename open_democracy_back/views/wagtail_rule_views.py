@@ -209,7 +209,7 @@ class QuestionRuleView(BaseDeleteView):
         return QuestionRule.objects.get(id=self.kwargs.get("rule_pk"))
 
     def get_success_url(self):
-        return reverse("question-filter", args=(str(self.kwargs.get("pk"))))
+        return reverse("question-filter", kwargs={"pk": str(self.kwargs.get("pk"))})
 
 
 class ProfileDefinitionView(BaseDeleteView):
@@ -219,4 +219,6 @@ class ProfileDefinitionView(BaseDeleteView):
         return ProfileDefinition.objects.get(id=self.kwargs.get("rule_pk"))
 
     def get_success_url(self):
-        return reverse("profile-type-definition", args=(str(self.kwargs.get("pk"))))
+        return reverse(
+            "profile-type-definition", kwargs={"pk": str(self.kwargs.get("pk"))}
+        )

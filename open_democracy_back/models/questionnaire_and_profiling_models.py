@@ -406,11 +406,24 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     # Profiling questions fields
     profiling_question = models.BooleanField(default=False)
 
-    roles = models.ManyToManyField(Role, blank=True)
+    roles = models.ManyToManyField(
+        Role,
+        blank=True,
+        verbose_name="Rôles concernés",
+        help_text="Si aucun rôle n'est sélectionné c'est comme si tous l'étaient",
+    )
 
     search_fields = [
         index.SearchField("question_statement", partial_match=True),
         index.SearchField("name", partial_match=True),
+    ]
+
+    principal_panels = [
+        FieldPanel("code"),
+        FieldPanel("name"),
+        FieldPanel("question_statement"),
+        FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
+        FieldPanel("description"),
     ]
 
     explanation_panels = [
@@ -452,12 +465,9 @@ class QuestionnaireQuestion(Question):
 
     panels = [
         FieldPanel("criteria"),
-        FieldPanel("code"),
-        FieldPanel("name"),
-        FieldPanel("question_statement"),
+        *Question.principal_panels,
         FieldPanel("objectivity"),
         FieldPanel("method"),
-        FieldPanel("description"),
         FieldPanel("type"),
         InlinePanel(
             "response_choices",
@@ -528,11 +538,7 @@ class ProfilingQuestion(Question):
     objects = ProfilingQuestionManager()
 
     panels = [
-        FieldPanel("code"),
-        FieldPanel("name"),
-        FieldPanel("question_statement"),
-        FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
-        FieldPanel("description"),
+        *Question.principal_panels,
         FieldPanel("type"),
         InlinePanel(
             "response_choices",
@@ -644,54 +650,19 @@ class ProfileType(models.Model):
         verbose_name = "Type de profil"
 
 
-class Rule(TimeStampedModel, Orderable, ClusterableModel):
+class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     """
-    Manage filtering of question (if the question must be shown) depending on conditional question answer or conditional profile type
-    OR
-    Define profile type depending on conditional question answer
+    GenericRule define the response that must be done to a conditional question
     """
 
-    # Only one of question or profile_type must be filled
-    question = models.ForeignKey(
-        Question,
-        on_delete=models.CASCADE,
-        related_name="question_filters",
-        null=True,
-        blank=True,
-    )
+    class Meta:
+        abstract = True
 
-    profile_type = models.ForeignKey(
-        ProfileType,
-        on_delete=models.CASCADE,
-        related_name="definitions",
-        null=True,
-        blank=True,
-    )
-
-    # Only one of conditional_question or conditional_profile_type conditional_role must be filled
     conditional_question = models.ForeignKey(
         Question,
         on_delete=models.CASCADE,
         verbose_name="Filtre par question",
-        related_name="rules_that_depend_on_me",
-        null=True,
-        blank=True,
-    )
-
-    conditional_profile_type = models.ForeignKey(
-        ProfileType,
-        on_delete=models.CASCADE,
-        verbose_name="Filtre par type de profile",
-        related_name="rules_that_depend_on_me",
-        null=True,
-        blank=True,
-    )
-
-    conditional_role = models.ForeignKey(
-        Role,
-        on_delete=models.CASCADE,
-        verbose_name="Filtre par rôle",
-        related_name="rules_that_depend_on_me",
+        related_name="%(class)s_that_depend_on_me",
         null=True,
         blank=True,
     )
@@ -708,53 +679,119 @@ class Rule(TimeStampedModel, Orderable, ClusterableModel):
     # if conditional question is boolean
     boolean_response = models.BooleanField(blank=True, null=True)
 
+    def condition_question_str(self):
+        # helper function for __str__
+        condition_question_str = ""
+        if self.conditional_question:
+            if self.boolean_response:
+                condition_question_str = "réponse=" + str(self.boolean_response)
+            elif self.numerical_operator:
+                condition_question_str = (
+                    f"réponse{str(self.numerical_operator)}{str(self.numerical_value)}"
+                )
+            elif self.response_choices:
+                for response_choice in self.response_choices.all():
+                    condition_question_str += f"réponse={str(response_choice)}, "
+        return condition_question_str
+
+    def clean_condition_question(self):
+        # Make sure the data is consistent
+        if (
+            self.conditional_question.type == QuestionType.MULTIPLE_CHOICE
+            or self.conditional_question.type == QuestionType.UNIQUE_CHOICE
+        ):
+            self.numerical_operator = None
+            self.numerical_value = None
+            self.boolean_response = None
+        elif (
+            self.conditional_question.type == QuestionType.NUMERICAL
+            or self.conditional_question.type == QuestionType.CLOSED_WITH_SCALE
+        ):
+            self.boolean_response = None
+        elif self.conditional_question.type == QuestionType.BOOLEAN:
+            self.numerical_value = None
+            self.boolean_response = None
+
+
+class QuestionRule(GenericRule):
+    """
+    Manage drawer questions :
+    A QuestionRule can define if a profiling question must be show depending on another profiling question answer
+    A QuestionRule can define if a questionnaire question must be show depending on another questionnaire question answer
+    A QuestionRule can define if a questionnaire question must be show depending on profile type
+    """
+
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name="rules",
+        null=True,
+        blank=True,
+    )
+
+    # Only one of conditional_question or conditional_profile_type must be filled
+    conditional_profile_type = models.ForeignKey(
+        ProfileType,
+        on_delete=models.CASCADE,
+        verbose_name="Filtre par type de profile",
+        related_name="rules_that_depend_on_me",
+        null=True,
+        blank=True,
+    )
+
+    @property
+    def type(self):
+        if self.conditional_profile_type:
+            return "conditional_profile"
+        if self.conditional_question:
+            if self.conditional_question.type == QuestionType.UNIQUE_CHOICE:
+                return "conditional_question_unique_choice"
+            if self.conditional_question.type == QuestionType.MULTIPLE_CHOICE:
+                return "conditional_question_multiple_choice"
+            if self.conditional_question.type == QuestionType.BOOLEAN:
+                return "conditional_question_boolean"
+            if self.conditional_question.type == QuestionType.CLOSED_WITH_SCALE:
+                return "conditional_question_closed_with_scale"
+
     def __str__(self):
         conditional = (
             self.conditional_profile_type
             if self.conditional_profile_type
             else self.conditional_question
         )
-        detail = ""
-        if self.conditional_question:
-            if self.boolean_response:
-                detail = "réponse=" + str(self.boolean_response)
-            elif self.numerical_operator:
-                detail = (
-                    f"réponse{str(self.numerical_operator)}{str(self.numerical_value)}"
-                )
-            elif self.response_choices:
-                for response_choice in self.response_choices.all():
-                    detail += f"réponse={str(response_choice)}, "
+        condition_question_str = self.condition_question_str()
 
-        return f"(ID: {str(self.id)}) {str(conditional)}, {detail}"
+        return f"(ID: {str(self.id)}) {str(conditional)}, {condition_question_str}"
 
     def save(self, *args, **kwargs):
         # clean data when save it
-        if self.conditional_profile_type or self.conditional_role:
+        if self.conditional_profile_type:
             self.conditional_question = None
             self.numerical_operator = None
             self.numerical_value = None
             self.boolean_response = None
-            if self.conditional_role:
-                self.conditional_profile_type = None
-            if self.conditional_profile_type:
-                self.conditional_role = None
         elif self.conditional_question:
-            self.conditional_profile_type = None
-            self.conditional_role = None
-            if (
-                self.conditional_question.type == QuestionType.MULTIPLE_CHOICE
-                or self.conditional_question.type == QuestionType.UNIQUE_CHOICE
-            ):
-                self.numerical_operator = None
-                self.numerical_value = None
-                self.boolean_response = None
-            elif (
-                self.conditional_question.type == QuestionType.NUMERICAL
-                or self.conditional_question.type == QuestionType.CLOSED_WITH_SCALE
-            ):
-                self.boolean_response = None
-            elif self.conditional_question.type == QuestionType.BOOLEAN:
-                self.numerical_value = None
-                self.boolean_response = None
+            self.clean_condition_question()
+        super().save(*args, **kwargs)
+
+
+class ProfileDefinition(GenericRule):
+    """
+    Define profile type :
+    A ProfileDefinition can define the definition of a profile type depending on profiling question answer
+    """
+
+    profile_type = models.ForeignKey(
+        ProfileType,
+        on_delete=models.CASCADE,
+        related_name="rules",
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return f"(ID: {str(self.id)}) {str(self.conditional_question)}, {self.condition_question_str()}"
+
+    def save(self, *args, **kwargs):
+        self.clean_condition_question()
         super().save(*args, **kwargs)

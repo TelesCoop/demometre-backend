@@ -5,11 +5,11 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Marker,
     Pillar,
     ProfilingQuestion,
+    QuestionRule,
     QuestionnaireQuestion,
     ResponseChoice,
     Definition,
     Role,
-    GenericRule,
 )
 
 QUESTION_FIELDS = [
@@ -60,7 +60,7 @@ class ResponseChoiceSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class RuleSerializer(serializers.ModelSerializer):
+class QuestionRuleSerializer(serializers.ModelSerializer):
     conditional_question_id = serializers.PrimaryKeyRelatedField(
         read_only=True, source="conditional_question"
     )
@@ -72,7 +72,7 @@ class RuleSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = GenericRule
+        model = QuestionRule
         fields = [
             "id",
             "conditional_question_id",
@@ -88,7 +88,7 @@ class RuleSerializer(serializers.ModelSerializer):
 class QuestionnaireQuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
     definition_ids = serializers.SerializerMethodField()
-    rules = RuleSerializer(many=True, read_only=True)
+    rules = QuestionRuleSerializer(many=True, read_only=True)
 
     @staticmethod
     def get_definition_ids(obj: QuestionnaireQuestion):
@@ -107,7 +107,7 @@ class QuestionnaireQuestionSerializer(serializers.ModelSerializer):
 
 class ProfilingQuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
-    rules = RuleSerializer(many=True, read_only=True)
+    rules = QuestionRuleSerializer(many=True, read_only=True)
 
     class Meta:
         model = ProfilingQuestion

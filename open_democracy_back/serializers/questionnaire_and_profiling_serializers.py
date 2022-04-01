@@ -81,6 +81,7 @@ class QuestionRuleSerializer(serializers.ModelSerializer):
             "numerical_operator",
             "numerical_value",
             "boolean_response",
+            "type",
         ]
         read_only_fields = fields
 

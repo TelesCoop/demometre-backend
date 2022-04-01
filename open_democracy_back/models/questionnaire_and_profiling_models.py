@@ -680,6 +680,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     boolean_response = models.BooleanField(blank=True, null=True)
 
     def condition_question_str(self):
+        # helper function for __str__
         condition_question_str = ""
         if self.conditional_question:
             if self.boolean_response:
@@ -694,6 +695,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
         return condition_question_str
 
     def clean_condition_question(self):
+        # Make sure the data is consistent
         if (
             self.conditional_question.type == QuestionType.MULTIPLE_CHOICE
             or self.conditional_question.type == QuestionType.UNIQUE_CHOICE
@@ -739,7 +741,17 @@ class QuestionRule(GenericRule):
 
     @property
     def type(self):
-        return self
+        if self.conditional_profile_type:
+            return "conditional_profile"
+        if self.conditional_question:
+            if self.conditional_question.type == QuestionType.UNIQUE_CHOICE:
+                return "conditional_question_unique_choice"
+            if self.conditional_question.type == QuestionType.MULTIPLE_CHOICE:
+                return "conditional_question_multiple_choice"
+            if self.conditional_question.type == QuestionType.BOOLEAN:
+                return "conditional_question_boolean"
+            if self.conditional_question.type == QuestionType.CLOSED_WITH_SCALE:
+                return "conditional_question_closed_with_scale"
 
     def __str__(self):
         conditional = (

@@ -10,6 +10,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     ResponseChoice,
     Definition,
     Role,
+    Category,
 )
 
 QUESTION_FIELDS = [
@@ -28,6 +29,7 @@ QUESTION_FIELDS = [
     "use_case",
     "sources",
     "to_go_further",
+    "categories",
     "rules",
 ]
 REFERENTIAL_FIELDS = [
@@ -60,6 +62,13 @@ class ResponseChoiceSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ["id", "category"]
+        read_only_fields = fields
+
+
 class QuestionRuleSerializer(serializers.ModelSerializer):
     conditional_question_id = serializers.PrimaryKeyRelatedField(
         read_only=True, source="conditional_question"
@@ -89,6 +98,7 @@ class QuestionRuleSerializer(serializers.ModelSerializer):
 class QuestionnaireQuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
     definition_ids = serializers.SerializerMethodField()
+    categories = CategorySerializer(many=True, read_only=True)
     rules = QuestionRuleSerializer(many=True, read_only=True)
 
     @staticmethod

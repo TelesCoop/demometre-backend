@@ -5,6 +5,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Marker,
     Pillar,
     ProfilingQuestion,
+    Question,
     QuestionRule,
     QuestionnaireQuestion,
     ResponseChoice,
@@ -24,6 +25,7 @@ QUESTION_FIELDS = [
     "max",
     "min_label",
     "max_label",
+    "definition_ids",
     "legal_frame",
     "use_case",
     "sources",
@@ -86,30 +88,31 @@ class QuestionRuleSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class QuestionnaireQuestionSerializer(serializers.ModelSerializer):
+class QuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
     definition_ids = serializers.SerializerMethodField()
     rules = QuestionRuleSerializer(many=True, read_only=True)
 
     @staticmethod
-    def get_definition_ids(obj: QuestionnaireQuestion):
+    def get_definition_ids(obj: Question):
         return obj.related_definition_ordered.values_list("definition_id", flat=True)
 
+    class Meta:
+        abstract = True
+
+
+class QuestionnaireQuestionSerializer(QuestionSerializer):
     class Meta:
         model = QuestionnaireQuestion
         fields = [
             "criteria_id",
             "objectivity",
             "method",
-            "definition_ids",
         ] + QUESTION_FIELDS
         read_only_fields = fields
 
 
-class ProfilingQuestionSerializer(serializers.ModelSerializer):
-    response_choices = ResponseChoiceSerializer(many=True, read_only=True)
-    rules = QuestionRuleSerializer(many=True, read_only=True)
-
+class ProfilingQuestionSerializer(QuestionSerializer):
     class Meta:
         model = ProfilingQuestion
         fields = QUESTION_FIELDS

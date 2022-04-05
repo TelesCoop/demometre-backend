@@ -5,7 +5,10 @@ from open_democracy_back.views.page_views import (
     HomePageView,
     ReferentialPageView,
 )
-from open_democracy_back.views.participation_views import ParticipationView
+from open_democracy_back.views.participation_views import (
+    ParticipationView,
+    UserParticipationView,
+)
 
 from .views.assessment_views import AssessmentView, AssessmentsView
 from .views.profiling_views import (
@@ -60,6 +63,10 @@ urlpatterns = [
     path("participation/", ParticipationView.as_view({"post": "create"})),
     path(
         "participation/<int:pk>/",
-        ParticipationView.as_view({"patch": "partial_update"}),
+        ParticipationView.as_view({"patch": "partial_update", "get": "retrieve"}),
+    ),
+    path(
+        "participation/user/<int:user_pk>/",
+        UserParticipationView.as_view({"get": "list"}),
     ),
 ]

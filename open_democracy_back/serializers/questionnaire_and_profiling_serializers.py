@@ -32,6 +32,7 @@ QUESTION_FIELDS = [
     "sources",
     "to_go_further",
     "categories",
+    "rules_intersection_operator",
     "rules",
 ]
 REFERENTIAL_FIELDS = [
@@ -75,9 +76,6 @@ class QuestionRuleSerializer(serializers.ModelSerializer):
     conditional_question_id = serializers.PrimaryKeyRelatedField(
         read_only=True, source="conditional_question"
     )
-    conditional_profile_type_id = serializers.PrimaryKeyRelatedField(
-        read_only=True, source="conditional_profile_type"
-    )
     response_choice_ids = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, source="response_choices"
     )
@@ -87,7 +85,6 @@ class QuestionRuleSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "conditional_question_id",
-            "conditional_profile_type_id",
             "response_choice_ids",
             "numerical_operator",
             "numerical_value",

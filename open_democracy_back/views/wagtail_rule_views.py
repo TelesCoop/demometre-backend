@@ -59,8 +59,12 @@ def get_data_for_creating_question_rules(question):
         ~Q(id=question.id)
         & ~Q(type=QuestionType.OPEN)
         & ~Q(type=QuestionType.CLOSED_WITH_RANKING)
-    ).prefetch_related("response_choices")
-    data["profile_types"] = ProfileType.objects.all()
+    )
+    if not data["is_profiling_question"]:
+        data["other_questions_list"] = data["other_questions_list"].filter(
+            criteria__marker__pillar=question.criteria.marker.pillar
+        )
+    data["other_questions_list"].prefetch_related("response_choices")
     data["question"] = question
     data["rules"] = QuestionRule.objects.filter(question_id=question.id)
     data["rules_intersection_operator"] = question.rules_intersection_operator
@@ -74,7 +78,6 @@ def create_question_rule_form(data):
     return QuestionRuleForm(
         question=data["question"],
         other_questions_list=data["other_questions_list"],
-        profile_types=data["profile_types"],
     )
 
 
@@ -120,14 +123,6 @@ def question_intersection_operator_view(request, pk):
     )
 
 
-def check_data_consistency(request):
-    request.POST._mutable = True
-    if request.POST.get("conditional_type") == "question":
-        request.POST["conditional_profile_type"] = ""
-    elif request.POST.get("conditional_type") == "profile":
-        request.POST["conditional_question"] = ""
-
-
 def hidrate_form_response_choices(request, rule_form):
     # The queryset of response_choices was changed dynamically un js, rule_form use the initial queryset, so the selection is not valid
     rule_form.fields["response_choices"].queryset = ResponseChoice.objects.filter(
@@ -140,12 +135,10 @@ def question_rules_view(request, pk):
     data = get_data_for_creating_question_rules(question)
 
     if request.method == "POST":
-        check_data_consistency(request)
         rule_form = QuestionRuleForm(
             request.POST,
             question=data["question"],
             other_questions_list=data["other_questions_list"],
-            profile_types=data["profile_types"],
         )
 
         if request.POST.get("conditional_question"):
@@ -174,7 +167,6 @@ def profile_definition_view(request, pk):
     data = get_data_for_creating_profile_definition(profile_type)
 
     if request.method == "POST":
-        check_data_consistency(request)
         rule_form = ProfileDefinitionForm(
             request.POST,
             profile_type=data["profile_type"],

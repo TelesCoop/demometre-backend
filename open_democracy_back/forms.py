@@ -38,19 +38,14 @@ class GenericRuleForm(forms.ModelForm):
 class QuestionRuleForm(GenericRuleForm):
     class Meta:
         model = QuestionRule
-        fields = [
-            "question",
-            "conditional_profile_type",
-        ] + GENERIC_RULE_FIELD
+        fields = ["question"] + GENERIC_RULE_FIELD
 
     def __init__(self, *args, **kwargs):
         question = kwargs.pop("question")
         other_questions_list = kwargs.pop("other_questions_list")
-        profile_types = kwargs.pop("profile_types")
         super().__init__(*args, **kwargs)
         self.fields["question"].initial = question
         self.fields["conditional_question"].queryset = other_questions_list
-        self.fields["conditional_profile_type"].queryset = profile_types
 
 
 class ProfileDefinitionForm(GenericRuleForm):

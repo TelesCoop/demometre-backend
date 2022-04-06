@@ -753,11 +753,9 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
             self.boolean_response = None
         elif self.conditional_question.type == QuestionType.NUMERICAL:
             self.boolean_response = None
-            self.response_choices.clear()
         elif self.conditional_question.type == QuestionType.BOOLEAN:
             self.numerical_operator = None
             self.numerical_value = None
-            self.response_choices.clear()
         super().save(*args, **kwargs)
 
 

@@ -676,7 +676,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     # if conditional question is unique or multiple choices type
     response_choices = models.ManyToManyField(ResponseChoice)
 
-    # if conditional question is numerical or close with scale
+    # if conditional question is numerical
     numerical_operator = models.CharField(
         max_length=8, choices=NUMERICAL_OPERATOR, blank=True, null=True
     )
@@ -684,6 +684,10 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
 
     # if conditional question is boolean
     boolean_response = models.BooleanField(blank=True, null=True)
+
+    @property
+    def type(self):
+        return self.conditional_question.type
 
     def __str__(self):
         condition_question_str = ""
@@ -709,14 +713,13 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
             self.numerical_operator = None
             self.numerical_value = None
             self.boolean_response = None
-        elif (
-            self.conditional_question.type == QuestionType.NUMERICAL
-            or self.conditional_question.type == QuestionType.CLOSED_WITH_SCALE
-        ):
+        elif self.conditional_question.type == QuestionType.NUMERICAL:
             self.boolean_response = None
+            self.response_choices.clear()
         elif self.conditional_question.type == QuestionType.BOOLEAN:
+            self.numerical_operator = None
             self.numerical_value = None
-            self.boolean_response = None
+            self.response_choices.clear()
         super().save(*args, **kwargs)
 
 
@@ -735,10 +738,6 @@ class QuestionRule(GenericRule):
         null=True,
         blank=True,
     )
-
-    @property
-    def type(self):
-        return self.conditional_question.type
 
 
 class ProfileDefinition(GenericRule):

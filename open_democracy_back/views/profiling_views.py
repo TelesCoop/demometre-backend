@@ -33,8 +33,11 @@ class ParticipationProfilingQuestionView(
         participation = Participation.objects.get(
             id=self.kwargs.get("participation_pk")
         )
+        population = participation.assessment.population
         return ProfilingQuestion.objects.filter(
             Q(roles=participation.role) | Q(roles=None),
+            Q(population_lower_bound__lte=population) | Q(population_lower_bound=None),
+            Q(population_upper_bound__gte=population) | Q(population_upper_bound=None),
         )
 
 

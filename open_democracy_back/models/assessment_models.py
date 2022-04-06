@@ -196,6 +196,13 @@ class Assessment(TimeStampedModel, ClusterableModel):
     )
     end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
 
+    @property
+    def population(self):
+        if self.type == LocalityType.MUNICIPALITY:
+            return self.municipality.population
+        if self.type == LocalityType.INTERCOMMUNALITY:
+            return self.epci.population
+
     panels = [
         FieldPanel("type"),
         SnippetChooserPanel("municipality"),

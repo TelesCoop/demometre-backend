@@ -28,6 +28,11 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
 ]
 
 
+class BooleanOperator(models.TextChoices):
+    AND = "and", "et"
+    OR = "or", "ou"
+
+
 @register_snippet
 class Role(TranslatableMixin, ClusterableModel):
     name = models.CharField(verbose_name="Nom", max_length=125)
@@ -58,6 +63,26 @@ class Role(TranslatableMixin, ClusterableModel):
     class Meta(TranslatableMixin.Meta):
         verbose_name_plural = "Rôles"
         verbose_name = "Rôle"
+
+
+@register_snippet
+class ProfileType(models.Model):
+    name = models.CharField(max_length=125, default="")
+
+    rules_intersection_operator = models.CharField(
+        max_length=8, choices=BooleanOperator.choices, default=BooleanOperator.AND
+    )
+
+    panels = [
+        FieldPanel("name"),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Types de profil"
+        verbose_name = "Type de profil"
 
 
 @register_snippet
@@ -258,11 +283,6 @@ class QuestionType(models.TextChoices):
     NUMERICAL = "numerical", "Numérique"
 
 
-class BooleanOperator(models.TextChoices):
-    AND = "and", "et"
-    OR = "or", "ou"
-
-
 @register_snippet
 class Definition(models.Model):
     word = models.CharField(max_length=255, verbose_name="mot")
@@ -278,6 +298,7 @@ class Definition(models.Model):
         verbose_name_plural = "Définitions"
 
 
+@register_snippet
 class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     rules_intersection_operator = models.CharField(
         max_length=8, choices=BooleanOperator.choices, default=BooleanOperator.AND
@@ -300,6 +321,28 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         choices=QuestionType.choices,
         default=QuestionType.OPEN,
         help_text="Choisir le type de question",
+    )
+
+    population_lower_bound = models.IntegerField(
+        verbose_name="Borne inférieure (population min)",
+        blank=True,
+        null=True,
+        help_text="Si aucune valeur n'est renseignée, aucune borne inférieur ne sera prise en compte",
+    )
+    population_upper_bound = models.IntegerField(
+        verbose_name="Borne suppérieur (population max)",
+        blank=True,
+        null=True,
+        help_text="Si aucune valeur n'est renseignée, aucune borne suppérieur ne sera prise en compte",
+    )
+
+    allows_to_explain = models.OneToOneField(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="explained_by",
+        verbose_name="Permet d'expliciter une autre question",
     )
 
     min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
@@ -334,6 +377,12 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     )
     true_associated_score = models.IntegerField(
         verbose_name="Score associé à une réponse positive",
+        blank=True,
+        null=True,
+    )
+
+    max_multiple_choices = models.IntegerField(
+        verbose_name="Nombre maximal de choix possible",
         blank=True,
         null=True,
     )
@@ -389,7 +438,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         on_delete=models.SET_NULL,
         related_name="questions",
     )
-
     objectivity = models.CharField(
         max_length=32,
         choices=[("objective", "Objective"), ("subjective", "Subjective")],
@@ -401,6 +449,12 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         choices=[("quantitative", "Quantitative"), ("qualitative", "Qualitative")],
         blank=True,
         verbose_name="Methode",
+    )
+    profiles = models.ManyToManyField(
+        ProfileType,
+        verbose_name="Profils concernés",
+        related_name="questions_that_depend_on_me",
+        blank=True,
     )
 
     # Profiling questions fields
@@ -422,11 +476,28 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("code"),
         FieldPanel("name"),
         FieldPanel("question_statement"),
-        FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
         FieldPanel("description"),
+        FieldRowPanel(
+            [
+                FieldPanel("population_lower_bound"),
+                FieldPanel("population_upper_bound"),
+            ],
+            heading="Taille des collectivités concernées",
+        ),
+        FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
+    ]
+
+    commun_types_panels = [
+        FieldPanel("type"),
+        InlinePanel(
+            "response_choices",
+            label="Choix de réponses possibles",
+        ),
+        FieldPanel("max_multiple_choices"),
     ]
 
     explanation_panels = [
+        SnippetChooserPanel("allows_to_explain"),
         InlinePanel("related_definition_ordered", label="Définitions"),
         FieldPanel("legal_frame"),
         FieldPanel("sources"),
@@ -466,13 +537,10 @@ class QuestionnaireQuestion(Question):
     panels = [
         FieldPanel("criteria"),
         *Question.principal_panels,
+        FieldPanel("profiles", widget=forms.CheckboxSelectMultiple),
         FieldPanel("objectivity"),
         FieldPanel("method"),
-        FieldPanel("type"),
-        InlinePanel(
-            "response_choices",
-            label="Choix de réponses possibles",
-        ),
+        *Question.commun_types_panels,
         MultiFieldPanel(
             [
                 FieldRowPanel(
@@ -539,11 +607,7 @@ class ProfilingQuestion(Question):
 
     panels = [
         *Question.principal_panels,
-        FieldPanel("type"),
-        InlinePanel(
-            "response_choices",
-            label="Choix de réponses possibles",
-        ),
+        *Question.commun_types_panels,
         MultiFieldPanel(
             [
                 FieldRowPanel(
@@ -630,26 +694,6 @@ class Category(TimeStampedModel, Orderable):
         verbose_name = "Catégorie"
 
 
-@register_snippet
-class ProfileType(models.Model):
-    name = models.CharField(max_length=125, default="")
-
-    rules_intersection_operator = models.CharField(
-        max_length=8, choices=BooleanOperator.choices, default=BooleanOperator.AND
-    )
-
-    panels = [
-        FieldPanel("name"),
-    ]
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name_plural = "Types de profil"
-        verbose_name = "Type de profil"
-
-
 class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     """
     GenericRule define the response that must be done to a conditional question
@@ -670,7 +714,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     # if conditional question is unique or multiple choices type
     response_choices = models.ManyToManyField(ResponseChoice)
 
-    # if conditional question is numerical or close with scale
+    # if conditional question is numerical
     numerical_operator = models.CharField(
         max_length=8, choices=NUMERICAL_OPERATOR, blank=True, null=True
     )
@@ -679,8 +723,11 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     # if conditional question is boolean
     boolean_response = models.BooleanField(blank=True, null=True)
 
-    def condition_question_str(self):
-        # helper function for __str__
+    @property
+    def type(self):
+        return self.conditional_question.type
+
+    def __str__(self):
         condition_question_str = ""
         if self.conditional_question:
             if self.boolean_response:
@@ -692,9 +739,10 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
             elif self.response_choices:
                 for response_choice in self.response_choices.all():
                     condition_question_str += f"réponse={str(response_choice)}, "
-        return condition_question_str
 
-    def clean_condition_question(self):
+        return f"(ID: {str(self.id)}) {str(self.conditional_question)}, {condition_question_str}"
+
+    def save(self, *args, **kwargs):
         # Make sure the data is consistent
         if (
             self.conditional_question.type == QuestionType.MULTIPLE_CHOICE
@@ -703,14 +751,14 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
             self.numerical_operator = None
             self.numerical_value = None
             self.boolean_response = None
-        elif (
-            self.conditional_question.type == QuestionType.NUMERICAL
-            or self.conditional_question.type == QuestionType.CLOSED_WITH_SCALE
-        ):
+        elif self.conditional_question.type == QuestionType.NUMERICAL:
             self.boolean_response = None
+            self.response_choices.clear()
         elif self.conditional_question.type == QuestionType.BOOLEAN:
+            self.numerical_operator = None
             self.numerical_value = None
-            self.boolean_response = None
+            self.response_choices.clear()
+        super().save(*args, **kwargs)
 
 
 class QuestionRule(GenericRule):
@@ -729,51 +777,6 @@ class QuestionRule(GenericRule):
         blank=True,
     )
 
-    # Only one of conditional_question or conditional_profile_type must be filled
-    conditional_profile_type = models.ForeignKey(
-        ProfileType,
-        on_delete=models.CASCADE,
-        verbose_name="Filtre par type de profile",
-        related_name="rules_that_depend_on_me",
-        null=True,
-        blank=True,
-    )
-
-    @property
-    def type(self):
-        if self.conditional_profile_type:
-            return "conditional_profile"
-        if self.conditional_question:
-            if self.conditional_question.type == QuestionType.UNIQUE_CHOICE:
-                return "conditional_question_unique_choice"
-            if self.conditional_question.type == QuestionType.MULTIPLE_CHOICE:
-                return "conditional_question_multiple_choice"
-            if self.conditional_question.type == QuestionType.BOOLEAN:
-                return "conditional_question_boolean"
-            if self.conditional_question.type == QuestionType.CLOSED_WITH_SCALE:
-                return "conditional_question_closed_with_scale"
-
-    def __str__(self):
-        conditional = (
-            self.conditional_profile_type
-            if self.conditional_profile_type
-            else self.conditional_question
-        )
-        condition_question_str = self.condition_question_str()
-
-        return f"(ID: {str(self.id)}) {str(conditional)}, {condition_question_str}"
-
-    def save(self, *args, **kwargs):
-        # clean data when save it
-        if self.conditional_profile_type:
-            self.conditional_question = None
-            self.numerical_operator = None
-            self.numerical_value = None
-            self.boolean_response = None
-        elif self.conditional_question:
-            self.clean_condition_question()
-        super().save(*args, **kwargs)
-
 
 class ProfileDefinition(GenericRule):
     """
@@ -788,10 +791,3 @@ class ProfileDefinition(GenericRule):
         null=True,
         blank=True,
     )
-
-    def __str__(self):
-        return f"(ID: {str(self.id)}) {str(self.conditional_question)}, {self.condition_question_str()}"
-
-    def save(self, *args, **kwargs):
-        self.clean_condition_question()
-        super().save(*args, **kwargs)

@@ -280,7 +280,7 @@ class QuestionType(models.TextChoices):
     CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
     CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
     BOOLEAN = "boolean", "Binaire oui / non"
-    NUMERICAL = "numerical", "Numérique"
+    PERCENTAGE = "percentage", "Pourcentage"
 
 
 @register_snippet
@@ -541,6 +541,10 @@ class QuestionnaireQuestion(Question):
         FieldPanel("objectivity"),
         FieldPanel("method"),
         *Question.commun_types_panels,
+        InlinePanel(
+            "percentage_ranges",
+            label="Score associé aux réponses d'une question de pourcentage",
+        ),
         MultiFieldPanel(
             [
                 FieldRowPanel(
@@ -675,6 +679,45 @@ class ResponseChoice(TimeStampedModel, Orderable):
         verbose_name = "Choix de réponse"
 
 
+class PercentageRange(TimeStampedModel, Orderable):
+    question = ParentalKey(
+        Question, on_delete=models.CASCADE, related_name="percentage_ranges"
+    )
+
+    lower_bound = models.IntegerField(
+        verbose_name="Borne inférieure",
+        help_text="Si la réponse est suppérieur ou égale à",
+    )
+
+    upper_bound = models.IntegerField(
+        verbose_name="Borne suppérieure",
+        help_text="Si la réponse est inférieur ou égale à",
+    )
+
+    associated_score = models.IntegerField(
+        verbose_name="Score associé",
+        help_text="Le score sera alors de",
+    )
+    panels = [
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [FieldPanel("lower_bound"), FieldPanel("upper_bound")],
+                ),
+                FieldPanel("associated_score"),
+            ],
+            heading="Score associé à une fourchette de pourcentage",
+        ),
+    ]
+
+    def __str__(self):
+        return f"{self.question} : [{self.lower_bound}%,{self.upper_bound}%] = {self.associated_score}"
+
+    class Meta:
+        verbose_name_plural = "Scores pour les différentes fourchettes"
+        verbose_name = "Score pour une fourcette donnée"
+
+
 class Category(TimeStampedModel, Orderable):
     question = ParentalKey(
         Question, on_delete=models.CASCADE, related_name="categories"
@@ -714,7 +757,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     # if conditional question is unique or multiple choices type
     response_choices = models.ManyToManyField(ResponseChoice)
 
-    # if conditional question is numerical
+    # if conditional question is percentage
     numerical_operator = models.CharField(
         max_length=8, choices=NUMERICAL_OPERATOR, blank=True, null=True
     )
@@ -751,7 +794,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
             self.numerical_operator = None
             self.numerical_value = None
             self.boolean_response = None
-        elif self.conditional_question.type == QuestionType.NUMERICAL:
+        elif self.conditional_question.type == QuestionType.PERCENTAGE:
             self.boolean_response = None
         elif self.conditional_question.type == QuestionType.BOOLEAN:
             self.numerical_operator = None

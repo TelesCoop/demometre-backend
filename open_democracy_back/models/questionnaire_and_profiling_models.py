@@ -381,6 +381,12 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         null=True,
     )
 
+    max_multiple_choices = models.IntegerField(
+        verbose_name="Nombre maximal de choix possible",
+        blank=True,
+        null=True,
+    )
+
     description = RichTextField(
         null=True,
         blank=True,
@@ -481,6 +487,15 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
     ]
 
+    commun_types_panels = [
+        FieldPanel("type"),
+        InlinePanel(
+            "response_choices",
+            label="Choix de réponses possibles",
+        ),
+        FieldPanel("max_multiple_choices"),
+    ]
+
     explanation_panels = [
         SnippetChooserPanel("allows_to_explain"),
         InlinePanel("related_definition_ordered", label="Définitions"),
@@ -525,11 +540,7 @@ class QuestionnaireQuestion(Question):
         FieldPanel("profiles", widget=forms.CheckboxSelectMultiple),
         FieldPanel("objectivity"),
         FieldPanel("method"),
-        FieldPanel("type"),
-        InlinePanel(
-            "response_choices",
-            label="Choix de réponses possibles",
-        ),
+        *Question.commun_types_panels,
         MultiFieldPanel(
             [
                 FieldRowPanel(
@@ -596,11 +607,7 @@ class ProfilingQuestion(Question):
 
     panels = [
         *Question.principal_panels,
-        FieldPanel("type"),
-        InlinePanel(
-            "response_choices",
-            label="Choix de réponses possibles",
-        ),
+        *Question.commun_types_panels,
         MultiFieldPanel(
             [
                 FieldRowPanel(

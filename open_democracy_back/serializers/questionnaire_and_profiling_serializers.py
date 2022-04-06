@@ -22,6 +22,7 @@ QUESTION_FIELDS = [
     "description",
     "type",
     "response_choices",
+    "max_multiple_choices",
     "min",
     "max",
     "min_label",

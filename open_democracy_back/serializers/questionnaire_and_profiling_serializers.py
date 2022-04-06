@@ -5,6 +5,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Marker,
     Pillar,
     ProfilingQuestion,
+    Question,
     QuestionRule,
     QuestionnaireQuestion,
     ResponseChoice,
@@ -21,15 +22,18 @@ QUESTION_FIELDS = [
     "description",
     "type",
     "response_choices",
+    "max_multiple_choices",
     "min",
     "max",
     "min_label",
     "max_label",
+    "definition_ids",
     "legal_frame",
     "use_case",
     "sources",
     "to_go_further",
     "categories",
+    "rules_intersection_operator",
     "rules",
 ]
 REFERENTIAL_FIELDS = [
@@ -73,9 +77,6 @@ class QuestionRuleSerializer(serializers.ModelSerializer):
     conditional_question_id = serializers.PrimaryKeyRelatedField(
         read_only=True, source="conditional_question"
     )
-    conditional_profile_type_id = serializers.PrimaryKeyRelatedField(
-        read_only=True, source="conditional_profile_type"
-    )
     response_choice_ids = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, source="response_choices"
     )
@@ -85,7 +86,6 @@ class QuestionRuleSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "conditional_question_id",
-            "conditional_profile_type_id",
             "response_choice_ids",
             "numerical_operator",
             "numerical_value",
@@ -95,31 +95,32 @@ class QuestionRuleSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class QuestionnaireQuestionSerializer(serializers.ModelSerializer):
+class QuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
     definition_ids = serializers.SerializerMethodField()
     categories = CategorySerializer(many=True, read_only=True)
     rules = QuestionRuleSerializer(many=True, read_only=True)
 
     @staticmethod
-    def get_definition_ids(obj: QuestionnaireQuestion):
+    def get_definition_ids(obj: Question):
         return obj.related_definition_ordered.values_list("definition_id", flat=True)
 
+    class Meta:
+        abstract = True
+
+
+class QuestionnaireQuestionSerializer(QuestionSerializer):
     class Meta:
         model = QuestionnaireQuestion
         fields = [
             "criteria_id",
             "objectivity",
             "method",
-            "definition_ids",
         ] + QUESTION_FIELDS
         read_only_fields = fields
 
 
-class ProfilingQuestionSerializer(serializers.ModelSerializer):
-    response_choices = ResponseChoiceSerializer(many=True, read_only=True)
-    rules = QuestionRuleSerializer(many=True, read_only=True)
-
+class ProfilingQuestionSerializer(QuestionSerializer):
     class Meta:
         model = ProfilingQuestion
         fields = QUESTION_FIELDS

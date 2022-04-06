@@ -10,8 +10,6 @@
         {{ rule_form.response_choices.label_tag }}
         {{ rule_form.response_choices }}
     </div>
-    <div id="id_display_scale_response" style="display: none;">
-    </div>
     <div id="id_display_numerical_response" style="display: none;">
         {{ rule_form.numerical_operator.error }}
         {{ rule_form.numerical_operator.label_tag }}
@@ -32,7 +30,6 @@
 
     var new_rule = document.getElementById("id_conditional_question");
     var display_response_choices = document.getElementById("id_display_response_choices");
-    var display_scale_response = document.getElementById("id_display_scale_response");
     var display_numerical_response = document.getElementById("id_display_numerical_response");
     var display_boolean_response = document.getElementById("id_display_boolean_response");
 
@@ -53,20 +50,10 @@
             display_response_choices.style.display =  "none";
         }
 
-        if (new_rule_type == "numerical" || new_rule_type == "closed_with_scale") {
+        if (new_rule_type == "numerical") {
             display_numerical_response.style.display =  "block";
         } else {
             display_numerical_response.style.display =  "none";
-        }
-
-        if (new_rule_type == "closed_with_scale") {
-            display_scale_response.innerHTML = "La réponse est contenu entre "
-                + QUESTIONS_RESPONSE_BY_QUESTION_ID[new_rule.value].min
-                + " et "
-                + QUESTIONS_RESPONSE_BY_QUESTION_ID[new_rule.value].max
-            display_scale_response.style.display =  "block";
-        } else {
-            display_scale_response.style.display =  "none";
         }
 
         if (new_rule_type == "boolean") {

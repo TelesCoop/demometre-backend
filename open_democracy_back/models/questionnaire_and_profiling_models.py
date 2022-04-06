@@ -322,6 +322,19 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         help_text="Choisir le type de question",
     )
 
+    population_lower_bound = models.IntegerField(
+        verbose_name="Borne inférieure (population min)",
+        blank=True,
+        null=True,
+        help_text="Si aucune valeur n'est renseignée, aucune borne inférieur ne sera prise en compte",
+    )
+    population_upper_bound = models.IntegerField(
+        verbose_name="Borne suppérieur (population max)",
+        blank=True,
+        null=True,
+        help_text="Si aucune valeur n'est renseignée, aucune borne suppérieur ne sera prise en compte",
+    )
+
     min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
     max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
     min_label = models.CharField(
@@ -448,6 +461,13 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("name"),
         FieldPanel("question_statement"),
         FieldPanel("description"),
+        FieldRowPanel(
+            [
+                FieldPanel("population_lower_bound"),
+                FieldPanel("population_upper_bound"),
+            ],
+            heading="Taille des collectivités concernées",
+        ),
         FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
     ]
 

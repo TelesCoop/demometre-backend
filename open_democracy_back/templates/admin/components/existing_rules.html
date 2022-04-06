@@ -19,16 +19,14 @@
             <fieldset class="chooser">
                 <div class="chosen">
                     <svg class="icon icon-snippet icon" aria-hidden="true" focusable="false">
-                        {% if rule.conditional_profile_type or rule.conditional_question.profiling_question %}
+                        {% if rule.conditional_question.profiling_question %}
                         <use href="#icon-user"></use>
                         {% else %}
                         <use href="#icon-list-ol"></use>
                         {% endif %}
                     </svg>
                     <b class="title">
-                        {% if rule.conditional_profile_type %}{{rule.conditional_profile_type}}
-                        {% elif rule.conditional_question %}{{rule.conditional_question}}
-                        {% endif %}
+                        {{rule.conditional_question}}
                     </b>
                 </div>
                 <div>

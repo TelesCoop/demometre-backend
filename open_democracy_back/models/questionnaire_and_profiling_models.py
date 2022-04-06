@@ -298,6 +298,7 @@ class Definition(models.Model):
         verbose_name_plural = "Définitions"
 
 
+@register_snippet
 class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     rules_intersection_operator = models.CharField(
         max_length=8, choices=BooleanOperator.choices, default=BooleanOperator.AND
@@ -333,6 +334,15 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         blank=True,
         null=True,
         help_text="Si aucune valeur n'est renseignée, aucune borne suppérieur ne sera prise en compte",
+    )
+
+    allows_to_explain = models.OneToOneField(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="explained_by",
+        verbose_name="Permet d'expliciter une autre question",
     )
 
     min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
@@ -472,6 +482,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     ]
 
     explanation_panels = [
+        SnippetChooserPanel("allows_to_explain"),
         InlinePanel("related_definition_ordered", label="Définitions"),
         FieldPanel("legal_frame"),
         FieldPanel("sources"),

@@ -345,31 +345,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Permet d'expliciter une autre question",
     )
 
-    min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
-    max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
-    min_label = models.CharField(
-        max_length=32,
-        verbose_name="Label de la valeur minimale",
-        default="",
-        blank=True,
-    )
-    max_label = models.CharField(
-        max_length=32,
-        verbose_name="Label de la valeur maximale",
-        default="",
-        blank=True,
-    )
-    min_associated_score = models.IntegerField(
-        verbose_name="Score associé à la valeur minimale",
-        blank=True,
-        null=True,
-    )
-    max_associated_score = models.IntegerField(
-        verbose_name="Score associé à la valeur maximale",
-        blank=True,
-        null=True,
-    )
-
     false_associated_score = models.IntegerField(
         verbose_name="Score associé à une réponse négative",
         blank=True,
@@ -385,6 +360,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Nombre maximal de choix possible",
         blank=True,
         null=True,
+        help_text="Pour une question à choix multiple, indiquer le nombre maximum de choix possible",
     )
 
     description = RichTextField(
@@ -494,6 +470,10 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
             label="Choix de réponses possibles",
         ),
         FieldPanel("max_multiple_choices"),
+        InlinePanel(
+            "categories",
+            label="Catégories pour une question fermée à échelle",
+        ),
     ]
 
     explanation_panels = [
@@ -545,33 +525,6 @@ class QuestionnaireQuestion(Question):
             "percentage_ranges",
             label="Score associé aux réponses d'une question de pourcentage",
         ),
-        MultiFieldPanel(
-            [
-                FieldRowPanel(
-                    [
-                        FieldPanel("min"),
-                        FieldPanel("max"),
-                    ],
-                ),
-                FieldRowPanel(
-                    [
-                        FieldPanel("min_label"),
-                        FieldPanel("max_label"),
-                    ],
-                ),
-                FieldRowPanel(
-                    [
-                        FieldPanel("min_associated_score"),
-                        FieldPanel("max_associated_score"),
-                    ],
-                ),
-                InlinePanel(
-                    "categories",
-                    label="Catégorie",
-                ),
-            ],
-            heading="Information à fournir pour une question fermée à échelle",
-        ),
         FieldRowPanel(
             [
                 FieldPanel("true_associated_score"),
@@ -612,23 +565,6 @@ class ProfilingQuestion(Question):
     panels = [
         *Question.principal_panels,
         *Question.commun_types_panels,
-        MultiFieldPanel(
-            [
-                FieldRowPanel(
-                    [
-                        FieldPanel("min"),
-                        FieldPanel("max"),
-                    ],
-                ),
-                FieldRowPanel(
-                    [
-                        FieldPanel("min_label"),
-                        FieldPanel("max_label"),
-                    ],
-                ),
-            ],
-            heading="Valeurs extrêmes possibles",
-        ),
         *Question.explanation_panels,
     ]
 
@@ -662,7 +598,7 @@ class ResponseChoice(TimeStampedModel, Orderable):
         null=True,
         blank=True,
         verbose_name="Description de la réponse",
-        help_text="Texte précisant la réponse (définition, exemple, reformulation).",
+        help_text="Texte précisant la réponse (définition, exemple, reformulation). Si la question est fermée à échelle la description ne s'affichera pas.",
     )
 
     associated_score = models.IntegerField(

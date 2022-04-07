@@ -84,4 +84,4 @@ class ClosedWithScaleCategoryResponse(models.Model):
         related_name="closed_with_scale_category_responses",
         blank=True,
     )
-    response_value = models.IntegerField(blank=True, null=True)
+    response_choice = models.ForeignKey(ResponseChoice, on_delete=models.CASCADE)

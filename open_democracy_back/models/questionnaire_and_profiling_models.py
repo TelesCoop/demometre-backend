@@ -280,7 +280,7 @@ class QuestionType(models.TextChoices):
     CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
     CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
     BOOLEAN = "boolean", "Binaire oui / non"
-    NUMERICAL = "numerical", "Numérique"
+    PERCENTAGE = "percentage", "Pourcentage"
 
 
 @register_snippet
@@ -345,31 +345,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Permet d'expliciter une autre question",
     )
 
-    min = models.IntegerField(verbose_name="Valeur minimale", blank=True, null=True)
-    max = models.IntegerField(verbose_name="Valeur maximale", blank=True, null=True)
-    min_label = models.CharField(
-        max_length=32,
-        verbose_name="Label de la valeur minimale",
-        default="",
-        blank=True,
-    )
-    max_label = models.CharField(
-        max_length=32,
-        verbose_name="Label de la valeur maximale",
-        default="",
-        blank=True,
-    )
-    min_associated_score = models.IntegerField(
-        verbose_name="Score associé à la valeur minimale",
-        blank=True,
-        null=True,
-    )
-    max_associated_score = models.IntegerField(
-        verbose_name="Score associé à la valeur maximale",
-        blank=True,
-        null=True,
-    )
-
     false_associated_score = models.IntegerField(
         verbose_name="Score associé à une réponse négative",
         blank=True,
@@ -385,6 +360,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Nombre maximal de choix possible",
         blank=True,
         null=True,
+        help_text="Pour une question à choix multiple, indiquer le nombre maximum de choix possible",
     )
 
     description = RichTextField(
@@ -494,6 +470,10 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
             label="Choix de réponses possibles",
         ),
         FieldPanel("max_multiple_choices"),
+        InlinePanel(
+            "categories",
+            label="Catégories pour une question fermée à échelle",
+        ),
     ]
 
     explanation_panels = [
@@ -541,32 +521,9 @@ class QuestionnaireQuestion(Question):
         FieldPanel("objectivity"),
         FieldPanel("method"),
         *Question.commun_types_panels,
-        MultiFieldPanel(
-            [
-                FieldRowPanel(
-                    [
-                        FieldPanel("min"),
-                        FieldPanel("max"),
-                    ],
-                ),
-                FieldRowPanel(
-                    [
-                        FieldPanel("min_label"),
-                        FieldPanel("max_label"),
-                    ],
-                ),
-                FieldRowPanel(
-                    [
-                        FieldPanel("min_associated_score"),
-                        FieldPanel("max_associated_score"),
-                    ],
-                ),
-                InlinePanel(
-                    "categories",
-                    label="Catégorie",
-                ),
-            ],
-            heading="Information à fournir pour une question fermée à échelle",
+        InlinePanel(
+            "percentage_ranges",
+            label="Score associé aux réponses d'une question de pourcentage",
         ),
         FieldRowPanel(
             [
@@ -608,23 +565,6 @@ class ProfilingQuestion(Question):
     panels = [
         *Question.principal_panels,
         *Question.commun_types_panels,
-        MultiFieldPanel(
-            [
-                FieldRowPanel(
-                    [
-                        FieldPanel("min"),
-                        FieldPanel("max"),
-                    ],
-                ),
-                FieldRowPanel(
-                    [
-                        FieldPanel("min_label"),
-                        FieldPanel("max_label"),
-                    ],
-                ),
-            ],
-            heading="Valeurs extrêmes possibles",
-        ),
         *Question.explanation_panels,
     ]
 
@@ -658,7 +598,7 @@ class ResponseChoice(TimeStampedModel, Orderable):
         null=True,
         blank=True,
         verbose_name="Description de la réponse",
-        help_text="Texte précisant la réponse (définition, exemple, reformulation).",
+        help_text="Texte précisant la réponse (définition, exemple, reformulation). Si la question est fermée à échelle la description ne s'affichera pas.",
     )
 
     associated_score = models.IntegerField(
@@ -673,6 +613,45 @@ class ResponseChoice(TimeStampedModel, Orderable):
     class Meta:
         verbose_name_plural = "Choix de réponse"
         verbose_name = "Choix de réponse"
+
+
+class PercentageRange(TimeStampedModel, Orderable):
+    question = ParentalKey(
+        Question, on_delete=models.CASCADE, related_name="percentage_ranges"
+    )
+
+    lower_bound = models.IntegerField(
+        verbose_name="Borne inférieure",
+        help_text="Si la réponse est suppérieur ou égale à",
+    )
+
+    upper_bound = models.IntegerField(
+        verbose_name="Borne suppérieure",
+        help_text="Si la réponse est inférieur ou égale à",
+    )
+
+    associated_score = models.IntegerField(
+        verbose_name="Score associé",
+        help_text="Le score sera alors de",
+    )
+    panels = [
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [FieldPanel("lower_bound"), FieldPanel("upper_bound")],
+                ),
+                FieldPanel("associated_score"),
+            ],
+            heading="Score associé à une fourchette de pourcentage",
+        ),
+    ]
+
+    def __str__(self):
+        return f"{self.question} : [{self.lower_bound}%,{self.upper_bound}%] = {self.associated_score}"
+
+    class Meta:
+        verbose_name_plural = "Scores pour les différentes fourchettes"
+        verbose_name = "Score pour une fourcette donnée"
 
 
 class Category(TimeStampedModel, Orderable):
@@ -714,7 +693,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     # if conditional question is unique or multiple choices type
     response_choices = models.ManyToManyField(ResponseChoice)
 
-    # if conditional question is numerical
+    # if conditional question is percentage
     numerical_operator = models.CharField(
         max_length=8, choices=NUMERICAL_OPERATOR, blank=True, null=True
     )
@@ -751,7 +730,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
             self.numerical_operator = None
             self.numerical_value = None
             self.boolean_response = None
-        elif self.conditional_question.type == QuestionType.NUMERICAL:
+        elif self.conditional_question.type == QuestionType.PERCENTAGE:
             self.boolean_response = None
         elif self.conditional_question.type == QuestionType.BOOLEAN:
             self.numerical_operator = None

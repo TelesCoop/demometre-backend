@@ -6,6 +6,7 @@ from open_democracy_back.models.participation_models import Participation
 
 from open_democracy_back.serializers.participation_serializers import (
     ParticipationSerializer,
+    ResponseSerializer,
 )
 
 
@@ -29,3 +30,8 @@ class UserParticipationView(mixins.ListModelMixin, viewsets.GenericViewSet):
             user_id=self.kwargs.get("user_pk"),
             assessment__initialization_date__lt=timezone.now(),
         )
+
+
+class ResponseView(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ResponseSerializer

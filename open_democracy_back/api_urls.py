@@ -7,6 +7,7 @@ from open_democracy_back.views.page_views import (
 )
 from open_democracy_back.views.participation_views import (
     ParticipationView,
+    ResponseView,
     UserParticipationView,
 )
 
@@ -68,5 +69,9 @@ urlpatterns = [
     path(
         "participation/user/<int:user_pk>/",
         UserParticipationView.as_view({"get": "list"}),
+    ),
+    path(
+        "response/",
+        ResponseView.as_view({"post": "create"}),
     ),
 ]

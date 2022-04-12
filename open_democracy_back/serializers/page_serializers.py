@@ -34,5 +34,9 @@ class ReferentialPageSerializer(PageSerialiserWithLocale):
 class EvaluationIntroPageSerializer(PageSerialiserWithLocale):
     class Meta:
         model = EvaluationIntroPage
-        fields = PAGE_FIELDS + ["data_consent"]
+        fields = PAGE_FIELDS + [
+            "data_consent",
+            "account_incentive",
+            "account_incentive_title",
+        ]
         read_only_fields = fields

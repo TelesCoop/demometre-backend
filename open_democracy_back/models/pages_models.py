@@ -55,6 +55,8 @@ class EvaluationIntroPage(Page):
     max_count_per_parent = 1
     preview_modes = None
 
+    account_incentive_title = models.CharField(max_length=68, default="")
+    account_incentive = models.CharField(max_length=255, default="")
     introduction = models.TextField(default="")
     data_consent = RichTextField(
         default="",
@@ -64,6 +66,8 @@ class EvaluationIntroPage(Page):
     )
 
     content_panels = Page.content_panels + [
+        FieldPanel("account_incentive_title"),
+        FieldPanel("account_incentive"),
         FieldPanel("introduction"),
         FieldPanel("data_consent"),
     ]

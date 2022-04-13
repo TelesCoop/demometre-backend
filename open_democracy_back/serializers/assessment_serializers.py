@@ -1,6 +1,12 @@
 from rest_framework import serializers
+from open_democracy_back.models.representativity_models import (
+    RepresentativityCriteria,
+)
 
 from open_democracy_back.models.assessment_models import EPCI, Assessment, Municipality
+from open_democracy_back.serializers.representativity_serializers import (
+    AssessmentRepresentativityCriteriaSerializer,
+)
 from open_democracy_back.serializers.user_serializers import UserSerializer
 
 
@@ -50,6 +56,20 @@ class AssessmentSerializer(serializers.ModelSerializer):
     municipality = MunicipalitySerializer(many=False, read_only=True)
     participation_nb = serializers.SerializerMethodField()
     initiated_by = UserSerializer()
+    representativity = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_representativity(obj: Assessment):
+        representativity = []
+        for representativity_criteria in RepresentativityCriteria.objects.all():
+            representativity.append(
+                AssessmentRepresentativityCriteriaSerializer(
+                    representativity_criteria,
+                    read_only=True,
+                    context={"assessment_id": obj.id},
+                ).data
+            )
+        return representativity
 
     @staticmethod
     def get_participation_nb(obj: Assessment):
@@ -69,5 +89,6 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "municipality",
             "epci",
             "participation_nb",
+            "representativity",
         ]
         read_only_fields = fields

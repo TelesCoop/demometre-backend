@@ -6,8 +6,8 @@ from open_democracy_back.views.page_views import (
     ReferentialPageView,
 )
 from open_democracy_back.views.participation_views import (
-    ParticipationView,
-    ResponseView,
+    ParticipationsView,
+    ResponsesView,
     UserParticipationView,
 )
 
@@ -61,17 +61,19 @@ urlpatterns = [
     path("definitions/", DefinitionView.as_view({"get": "list"})),
     path("definitions/<int:pk>/", DefinitionView.as_view({"get": "retrieve"})),
     path("roles/", RoleView.as_view({"get": "list"})),
-    path("participation/", ParticipationView.as_view({"post": "create"})),
+    path(
+        "participations/", ParticipationsView.as_view({"get": "list", "post": "create"})
+    ),
     path(
         "participation/<int:pk>/",
-        ParticipationView.as_view({"patch": "partial_update", "get": "retrieve"}),
+        ParticipationsView.as_view({"patch": "partial_update", "get": "retrieve"}),
     ),
     path(
         "participation/user/<int:user_pk>/",
         UserParticipationView.as_view({"get": "list"}),
     ),
     path(
-        "response/",
-        ResponseView.as_view({"post": "create"}),
+        "responses/",
+        ResponsesView.as_view({"get": "list", "post": "create"}),
     ),
 ]

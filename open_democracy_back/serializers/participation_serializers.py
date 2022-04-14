@@ -4,6 +4,8 @@ from open_democracy_back.models.assessment_models import Assessment
 from open_democracy_back.models.participation_models import Participation, Response
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Role,
+    Question,
+    ResponseChoice,
 )
 from django.contrib.auth.models import User
 
@@ -28,12 +30,19 @@ class ResponseSerializer(serializers.ModelSerializer):
     participation_id = serializers.PrimaryKeyRelatedField(
         read_only=True, source="participation"
     )
-    question_id = serializers.PrimaryKeyRelatedField(read_only=True, source="question")
+    question_id = serializers.PrimaryKeyRelatedField(
+        source="question", queryset=Question.objects.all()
+    )
     unique_choice_response_id = serializers.PrimaryKeyRelatedField(
-        read_only=True, source="unique_choice_response"
+        source="unique_choice_response",
+        queryset=ResponseChoice.objects.all(),
+        required=False,
     )
     multiple_choice_response_ids = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True, source="unique_choice_response"
+        many=True,
+        source="multiple_choice_response",
+        queryset=ResponseChoice.objects.all(),
+        required=False,
     )
 
     class Meta:
@@ -42,6 +51,12 @@ class ResponseSerializer(serializers.ModelSerializer):
             "id",
             "participation_id",
             "question_id",
+            "unique_choice_response_id",
+            "multiple_choice_response_ids",
+            "boolean_response",
+            "percentage_response",
+        ]
+        optional_fields = [
             "unique_choice_response_id",
             "multiple_choice_response_ids",
             "boolean_response",

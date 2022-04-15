@@ -1,4 +1,7 @@
+from django.utils import timezone
 from rest_framework import serializers
+
+from open_democracy_back.fields import FilteredPrimaryKeyRelatedField
 from open_democracy_back.models.assessment_models import Assessment
 
 from open_democracy_back.models.participation_models import Participation, Response
@@ -26,10 +29,16 @@ class ParticipationSerializer(serializers.ModelSerializer):
         fields = ["id", "user_id", "assessment_id", "role_id", "consent"]
 
 
+def get_participation_queryset(self):
+    return Participation.objects.filter(
+        user_id=self.context.get("request").user.id,
+        assessment__initialization_date__lt=timezone.now(),
+    )
+
+
 class ResponseSerializer(serializers.ModelSerializer):
-    # TODO S'assurer que la participation lui appartient bien
-    participation_id = serializers.PrimaryKeyRelatedField(
-        source="participation", queryset=Participation.objects.all()
+    participation_id = FilteredPrimaryKeyRelatedField(
+        source="participation", get_queryset_fn=get_participation_queryset
     )
     question_id = serializers.PrimaryKeyRelatedField(
         source="question", queryset=Question.objects.all()
@@ -63,3 +72,11 @@ class ResponseSerializer(serializers.ModelSerializer):
             "boolean_response",
             "percentage_response",
         ]
+
+    def create(self, validated_data):
+        response, created = Response.objects.update_or_create(
+            question=validated_data.get("question"),
+            participation=validated_data.get("participation"),
+            defaults=validated_data,
+        )
+        return response

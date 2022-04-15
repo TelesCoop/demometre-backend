@@ -62,11 +62,3 @@ class ResponseSerializer(serializers.ModelSerializer):
             "boolean_response",
             "percentage_response",
         ]
-
-    def create(self, validated_data):
-        response, created = Response.objects.update_or_create(
-            question=validated_data.get("question"),
-            participation=validated_data.get("participation"),
-            defaults=validated_data,
-        )
-        return response

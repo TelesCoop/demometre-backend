@@ -32,6 +32,10 @@ from open_democracy_back.models import (
 
 from wagtail.contrib.modeladmin.helpers import ButtonHelper
 
+from open_democracy_back.models.representativity_models import (
+    RepresentativityCriteria,
+)
+
 
 class RulesButtonHelper(ButtonHelper):
 
@@ -211,6 +215,15 @@ class ProfilingAdminGroup(ModelAdminGroup):
     )
 
 
+class RepresentativityModelAdmin(ModelAdmin):
+    model = RepresentativityCriteria
+    menu_label = "Représentativité"
+    menu_icon = "password"
+    menu_order = 204
+    add_to_settings_menu = False
+    search_fields = ("name",)
+
+
 class RegionModelAdmin(ModelAdmin):
     model = Region
     menu_label = "Régions"
@@ -245,7 +258,7 @@ class EPCIModelAdmin(ModelAdmin):
 
 class LocalityAdminGroup(ModelAdminGroup):
     menu_label = "Localités"
-    menu_order = 204
+    menu_order = 205
     menu_icon = "home"
     items = (
         RegionModelAdmin,
@@ -259,7 +272,7 @@ class AssessmentModelAdmin(ModelAdmin):
     model = Assessment
     menu_label = "Évaluation"
     menu_icon = "date"
-    menu_order = 205
+    menu_order = 206
 
 
 class MyPermissionHelper(PermissionHelper):
@@ -293,6 +306,7 @@ modeladmin_register(ThematicTagModelAdmin)
 modeladmin_register(DefinitionsModelAdmin)
 modeladmin_register(SurveyAdminGroup)
 modeladmin_register(ProfilingAdminGroup)
+modeladmin_register(RepresentativityModelAdmin)
 modeladmin_register(LocalityAdminGroup)
 modeladmin_register(AssessmentModelAdmin)
 modeladmin_register(UserAdmin)

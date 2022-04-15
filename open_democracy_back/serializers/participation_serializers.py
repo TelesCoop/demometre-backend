@@ -1,7 +1,6 @@
-from django.utils import timezone
 from rest_framework import serializers
 
-from open_democracy_back.fields import FilteredPrimaryKeyRelatedField
+from open_democracy_back.fields.participation_fields import ParticipationField
 from open_democracy_back.models.assessment_models import Assessment
 
 from open_democracy_back.models.participation_models import Participation, Response
@@ -29,17 +28,8 @@ class ParticipationSerializer(serializers.ModelSerializer):
         fields = ["id", "user_id", "assessment_id", "role_id", "consent"]
 
 
-def get_participation_queryset(self):
-    return Participation.objects.filter(
-        user_id=self.context.get("request").user.id,
-        assessment__initialization_date__lt=timezone.now(),
-    )
-
-
 class ResponseSerializer(serializers.ModelSerializer):
-    participation_id = FilteredPrimaryKeyRelatedField(
-        source="participation", get_queryset_fn=get_participation_queryset
-    )
+    participation_id = ParticipationField(source="participation")
     question_id = serializers.PrimaryKeyRelatedField(
         source="question", queryset=Question.objects.all()
     )

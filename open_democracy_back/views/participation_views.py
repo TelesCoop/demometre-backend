@@ -47,3 +47,12 @@ class ResponsesView(
     permission_classes = [IsAuthenticated]
     serializer_class = ResponseSerializer
     queryset = Response.objects.all()
+
+    def create(self, validated_data):
+        data = validated_data.data
+        response, created = Response.objects.update_or_create(
+            question_id=data.get("question_id"),
+            participation_id=data.get("participation_id"),
+            defaults={**data},
+        )
+        return response

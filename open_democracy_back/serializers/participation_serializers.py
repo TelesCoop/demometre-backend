@@ -27,8 +27,9 @@ class ParticipationSerializer(serializers.ModelSerializer):
 
 
 class ResponseSerializer(serializers.ModelSerializer):
+    # TODO S'assurer que la participation lui appartient bien
     participation_id = serializers.PrimaryKeyRelatedField(
-        read_only=True, source="participation"
+        source="participation", queryset=Participation.objects.all()
     )
     question_id = serializers.PrimaryKeyRelatedField(
         source="question", queryset=Question.objects.all()

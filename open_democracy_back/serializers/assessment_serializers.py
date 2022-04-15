@@ -56,20 +56,20 @@ class AssessmentSerializer(serializers.ModelSerializer):
     municipality = MunicipalitySerializer(many=False, read_only=True)
     participation_nb = serializers.SerializerMethodField()
     initiated_by = UserSerializer()
-    representativity = serializers.SerializerMethodField()
+    representativities = serializers.SerializerMethodField()
 
     @staticmethod
-    def get_representativity(obj: Assessment):
-        representativity = []
+    def get_representativities(obj: Assessment):
+        representativities = []
         for representativity_criteria in RepresentativityCriteria.objects.all():
-            representativity.append(
+            representativities.append(
                 AssessmentRepresentativityCriteriaSerializer(
                     representativity_criteria,
                     read_only=True,
                     context={"assessment_id": obj.id},
                 ).data
             )
-        return representativity
+        return representativities
 
     @staticmethod
     def get_participation_nb(obj: Assessment):
@@ -89,6 +89,6 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "municipality",
             "epci",
             "participation_nb",
-            "representativity",
+            "representativities",
         ]
         read_only_fields = fields

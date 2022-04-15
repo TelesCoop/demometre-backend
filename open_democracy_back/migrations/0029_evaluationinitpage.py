@@ -8,21 +8,45 @@ import wagtail.core.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wagtailcore', '0066_collection_management_permissions'),
-        ('open_democracy_back', '0028_auto_20220412_0928'),
+        ("wagtailcore", "0066_collection_management_permissions"),
+        ("open_democracy_back", "0029_auto_20220413_1558"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='EvaluationInitPage',
+            name="EvaluationInitPage",
             fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-                ('description', wagtail.core.fields.RichTextField(default='', help_text="Expliquer qu'aucune évaluation n'existe dans cette localité là, que des questions sur la vie politique de la ville précise seront posées, qu'il faut être connecté pour pouvoir initer une évaluation etc", verbose_name="Explication de l'initialisation")),
-                ('public_name_question', models.TextField(default='', help_text='Question RGPD - La réponse est oui / non', verbose_name='Enoncé de la question pour la publication ou non du nom de la personne')),
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+                (
+                    "description",
+                    wagtail.core.fields.RichTextField(
+                        default="",
+                        help_text="Expliquer qu'aucune évaluation n'existe dans cette localité là, que des questions sur la vie politique de la ville précise seront posées, qu'il faut être connecté pour pouvoir initer une évaluation etc",
+                        verbose_name="Explication de l'initialisation",
+                    ),
+                ),
+                (
+                    "public_name_question",
+                    models.TextField(
+                        default="",
+                        help_text="Question RGPD - La réponse est oui / non",
+                        verbose_name="Enoncé de la question pour la publication ou non du nom de la personne",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': "Initialisation d'une évaluation",
+                "verbose_name": "Initialisation d'une évaluation",
             },
-            bases=('wagtailcore.page',),
+            bases=("wagtailcore.page",),
         ),
     ]

@@ -1,6 +1,7 @@
 from django.urls import path
 
 from open_democracy_back.views.page_views import (
+    EvaluationInitPageView,
     EvaluationIntroPageView,
     HomePageView,
     ReferentialPageView,
@@ -57,6 +58,7 @@ urlpatterns = [
     path("home-pages/", HomePageView.as_view({"get": "list"})),
     path("referential-pages/", ReferentialPageView.as_view({"get": "list"})),
     path("evaluation-intro-pages/", EvaluationIntroPageView.as_view({"get": "list"})),
+    path("evaluation-init-pages/", EvaluationInitPageView.as_view({"get": "list"})),
     path("definitions/", DefinitionView.as_view({"get": "list"})),
     path("definitions/<int:pk>/", DefinitionView.as_view({"get": "retrieve"})),
     path("roles/", RoleView.as_view({"get": "list"})),

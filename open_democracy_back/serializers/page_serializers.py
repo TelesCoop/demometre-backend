@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from open_democracy_back.models import HomePage, EvaluationIntroPage, ReferentialPage
+from open_democracy_back.models.pages_models import EvaluationInitPage
 
 
 PAGE_FIELDS = ["id", "title", "introduction", "locale_code"]
@@ -39,4 +40,11 @@ class EvaluationIntroPageSerializer(PageSerialiserWithLocale):
             "account_incentive",
             "account_incentive_title",
         ]
+        read_only_fields = fields
+
+
+class EvaluationInitPageSerializer(PageSerialiserWithLocale):
+    class Meta:
+        model = EvaluationInitPage
+        fields = PAGE_FIELDS + ["public_name_question"]
         read_only_fields = fields

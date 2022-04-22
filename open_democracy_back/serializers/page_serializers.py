@@ -46,5 +46,11 @@ class EvaluationIntroPageSerializer(PageSerialiserWithLocale):
 class EvaluationInitPageSerializer(PageSerialiserWithLocale):
     class Meta:
         model = EvaluationInitPage
-        fields = PAGE_FIELDS + ["public_name_question"]
+        fields = PAGE_FIELDS + [
+            "public_name_question",
+            "public_name_question_description",
+            "representativity_title",
+            "representativity_description",
+            "initialization_validation",
+        ]
         read_only_fields = fields

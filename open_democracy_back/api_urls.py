@@ -14,7 +14,11 @@ from open_democracy_back.views.representativity_views import (
     RepresentativityCriteriaView,
 )
 
-from .views.assessment_views import AssessmentView, AssessmentsView
+from .views.assessment_views import (
+    AssessmentView,
+    AssessmentsView,
+    initialize_assessment,
+)
 from .views.profiling_views import (
     ParticipationProfilingQuestionView,
     ProfilingQuestionView,
@@ -31,8 +35,9 @@ from .views.questionnaire_views import (
 
 urlpatterns = [
     path("assessments/", AssessmentsView.as_view({"get": "list"})),
-    path("assessments/<int:pk>/", AssessmentView.as_view({"get": "retrieve"})),
     path("assessments/by-locality/", AssessmentsView.as_view({"get": "get_or_create"})),
+    path("assessments/<int:pk>/", AssessmentView.as_view({"get": "retrieve"})),
+    path("assessments/<int:pk>/initialization/", initialize_assessment),
     path(
         "questionnaire-structure/", QuestionnaireStructureView.as_view({"get": "list"})
     ),
@@ -75,7 +80,7 @@ urlpatterns = [
         UserParticipationView.as_view({"get": "list"}),
     ),
     path(
-        "representativity/",
+        "representativity-criterias/",
         RepresentativityCriteriaView.as_view({"get": "list"}),
     ),
 ]

@@ -90,14 +90,44 @@ class EvaluationInitPage(Page):
     )
 
     public_name_question = models.TextField(
-        verbose_name="Enoncé de la question pour la publication ou non du nom de l'initateur",
+        verbose_name="Enoncé de la question sur la publication ou non du nom de l'initateur",
         default="",
         help_text="Question RGPD - La réponse est oui / non - Si l'évaluation est faite au nom d'une association alors c'est le nom de cette association qui sera affichée",
+    )
+
+    public_name_question_description = models.TextField(
+        verbose_name="Description de la question sur la publication ou non du nom de l'initateur",
+        default="",
+        help_text="Expliciter à l'utilisateur ce qu'implique ou non d'autoriser à publier son nom",
+    )
+
+    representativity_title = models.TextField(
+        verbose_name="Titre pour les questions sur les seuils d'acceptabilité de la représentativité",
+        default="",
+        help_text="Correspond à la partie où seront posées les questions sur les seuils d'acceptabilité de la représentativité",
+    )
+
+    representativity_description = RichTextField(
+        verbose_name="Description de la question sur la limite de représentativité",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        help_text="Permet à la personne de mieux comprendre les questions sur les représentativités, et lui donne des éléments de réponse",
+    )
+
+    initialization_validation = RichTextField(
+        verbose_name="Texte de validation de l'initialisation d'une évaluation",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        help_text="S'affichera une fois l'initialisation de l'évaluation terminée",
     )
 
     content_panels = Page.content_panels + [
         FieldPanel("introduction"),
         FieldPanel("public_name_question"),
+        FieldPanel("public_name_question_description"),
+        FieldPanel("representativity_title"),
+        FieldPanel("representativity_description"),
+        FieldPanel("initialization_validation"),
     ]
 
     class Meta:

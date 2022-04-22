@@ -49,6 +49,12 @@ class RepresentativityCriteriaSerializer(serializers.ModelSerializer):
     profiling_question_id = serializers.PrimaryKeyRelatedField(
         read_only=True, source="profiling_question"
     )
+    response_choice_statements = serializers.SerializerMethodField()
+
+    def get_response_choice_statements(self, obj: RepresentativityCriteria):
+        return obj.profiling_question.response_choices.all().values_list(
+            "response_choice", flat=True
+        )
 
     class Meta:
         model = RepresentativityCriteria
@@ -57,5 +63,6 @@ class RepresentativityCriteriaSerializer(serializers.ModelSerializer):
             "name",
             "profiling_question_id",
             "min_rate",
+            "response_choice_statements",
         ]
         read_only_fields = fields

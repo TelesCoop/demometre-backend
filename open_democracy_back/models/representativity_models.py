@@ -3,6 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
+from open_democracy_back.models.assessment_models import Assessment
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     ProfilingQuestion,
@@ -21,8 +22,7 @@ class RepresentativityCriteria(index.Indexed, models.Model):
         limit_choices_to={"type": QuestionType.UNIQUE_CHOICE},
     )
     min_rate = models.IntegerField(
-        blank=True,
-        null=True,
+        default=0,
         validators=[MinValueValidator(1), MaxValueValidator(100)],
         verbose_name="Taux (en %) minimum acceptable pour la publication des résultats",
         help_text="En dessous de ce taux (%) la publication des résultats est interdite",
@@ -38,3 +38,20 @@ class RepresentativityCriteria(index.Indexed, models.Model):
     class Meta:
         verbose_name = "Critère de représentativité"
         verbose_name_plural = "Critères de représentativité"
+
+
+class AssessmentRepresentativity(models.Model):
+    assessment = models.ForeignKey(
+        Assessment, on_delete=models.CASCADE, related_name="representativites"
+    )
+    representativity_criteria = models.ForeignKey(
+        RepresentativityCriteria,
+        on_delete=models.CASCADE,
+        related_name="representativites",
+    )
+    acceptability_threshold = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(100)],
+        verbose_name="Seuil d'acceptabilité",
+    )

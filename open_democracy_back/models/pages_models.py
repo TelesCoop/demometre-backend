@@ -55,8 +55,12 @@ class EvaluationIntroPage(Page):
     max_count_per_parent = 1
     preview_modes = None
 
-    account_incentive_title = models.CharField(max_length=68, default="")
-    account_incentive = models.CharField(max_length=255, default="")
+    account_incentive_title = models.CharField(
+        max_length=68, default="", verbose_name="Titre pour l'incitation à la connexion"
+    )
+    account_incentive = models.CharField(
+        max_length=255, default="", verbose_name="Incitation à la connexion"
+    )
     introduction = models.TextField(default="")
     data_consent = RichTextField(
         default="",

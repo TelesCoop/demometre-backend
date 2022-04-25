@@ -108,7 +108,6 @@ class Pillar(models.Model):
     )
 
     panels = [
-        FieldPanel("name"),
         FieldPanel("code"),
         FieldPanel("description"),
     ]

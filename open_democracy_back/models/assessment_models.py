@@ -17,6 +17,11 @@ class LocalityType(models.TextChoices):
     INTERCOMMUNALITY = "intercommunality", "Intercommunalité"
 
 
+class InitiatorType(models.TextChoices):
+    COLLECTIVITY = "collectivity", "La collectivité"
+    ASSOCIATION = "association", "Une association"
+
+
 @register_snippet
 class Region(index.Indexed, models.Model):
     code = models.CharField(max_length=3, verbose_name="Code")
@@ -161,7 +166,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         on_delete=models.SET_NULL,
         verbose_name="Intercommunalité",
     )
-    initiated_by = models.ForeignKey(
+    initiated_by_user = models.ForeignKey(
         User,
         blank=True,
         null=True,
@@ -170,21 +175,20 @@ class Assessment(TimeStampedModel, ClusterableModel):
         related_name="initiated_assessments",
         help_text="Si l'évaluation est initié au nom de la localité, quelqu'un peut tout de même être à la source",
     )
-    is_initiated_by_locality = models.BooleanField(
-        default=False, verbose_name="Est initialisé par la localité ?"
-    )
-    carried_by = models.ForeignKey(
-        User,
+    initiator_type = models.CharField(
+        max_length=32,
+        choices=InitiatorType.choices,
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
-        verbose_name="Porté par",
-        related_name="carried_assessments",
-        help_text="Si l'évaluation est porté par la localité, qui en est responsable",
     )
-    is_carried_by_locality = models.BooleanField(
-        default=False, verbose_name="Est porté par la localité ?"
+    initialized_to_the_name_of = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Initialisé au nom de",
+        help_text="Utile quand l'évaluation n'est pas initialisé par la collectivité",
     )
+    public_initiator = models.BooleanField(default=False)
     initialization_date = models.DateField(
         null=True,
         blank=True,
@@ -203,14 +207,20 @@ class Assessment(TimeStampedModel, ClusterableModel):
         if self.type == LocalityType.INTERCOMMUNALITY:
             return self.epci.population
 
+    @property
+    def collectivity_name(self):
+        if self.type == LocalityType.MUNICIPALITY:
+            return self.municipality.name
+        if self.type == LocalityType.INTERCOMMUNALITY:
+            return self.epci.name
+
     panels = [
         FieldPanel("type"),
         SnippetChooserPanel("municipality"),
         SnippetChooserPanel("epci"),
-        FieldPanel("initiated_by"),
-        FieldPanel("is_initiated_by_locality"),
-        FieldPanel("carried_by"),
-        FieldPanel("is_carried_by_locality"),
+        FieldPanel("initiated_by_user"),
+        FieldPanel("initiator_type"),
+        FieldPanel("initialized_to_the_name_of"),
         FieldPanel("initialization_date"),
         FieldPanel("end_date"),
     ]

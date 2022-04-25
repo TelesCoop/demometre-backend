@@ -55,7 +55,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
     epci = EpciSerializer(many=False, read_only=True)
     municipality = MunicipalitySerializer(many=False, read_only=True)
     participation_nb = serializers.SerializerMethodField()
-    initiated_by = UserSerializer()
+    initiated_by_user = UserSerializer()
     representativities = serializers.SerializerMethodField()
 
     @staticmethod
@@ -80,10 +80,10 @@ class AssessmentSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "type",
-            "initiated_by",
-            "is_initiated_by_locality",
-            "carried_by",
-            "is_carried_by_locality",
+            "initiated_by_user",
+            "initiator_type",
+            "initialized_to_the_name_of",
+            "public_initiator",
             "initialization_date",
             "end_date",
             "municipality",

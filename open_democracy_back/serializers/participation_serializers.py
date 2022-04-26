@@ -1,7 +1,9 @@
+from django.utils import timezone
 from rest_framework import serializers
 
+from open_democracy_back.fields.assessment_fields import AssessmentField
 from open_democracy_back.fields.participation_fields import ParticipationField
-from open_democracy_back.models.assessment_models import Assessment
+from open_democracy_back.fields.user_fields import CurrentUserField
 
 from open_democracy_back.models.participation_models import Participation, Response
 from open_democracy_back.models.questionnaire_and_profiling_models import (
@@ -13,15 +15,17 @@ from django.contrib.auth.models import User
 
 
 class ParticipationSerializer(serializers.ModelSerializer):
-    user_id = serializers.PrimaryKeyRelatedField(
-        source="user", queryset=User.objects.all()
-    )
-    assessment_id = serializers.PrimaryKeyRelatedField(
-        source="assessment", queryset=Assessment.objects.all()
-    )
+    user_id = CurrentUserField(source="user", queryset=User.objects.all())
+    assessment_id = AssessmentField(source="assessment")
     role_id = serializers.PrimaryKeyRelatedField(
         source="role", queryset=Role.objects.all()
     )
+
+    def validate(self, data):
+        if Participation.objects.filter(
+            user_id=data["user_id"], assessment__initialization_date__lt=timezone.now()
+        ).exists():
+            raise serializers.ValidationError("You already have a participation.")
 
     class Meta:
         model = Participation

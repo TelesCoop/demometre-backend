@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
 
 from open_democracy_back.views.page_views import (
     EvaluationIntroPageView,
@@ -6,9 +7,8 @@ from open_democracy_back.views.page_views import (
     ReferentialPageView,
 )
 from open_democracy_back.views.participation_views import (
-    ParticipationsView,
     ResponseView,
-    UserParticipationView,
+    ParticipationView,
 )
 
 from .views.assessment_views import AssessmentView, AssessmentsView
@@ -25,6 +25,11 @@ from .views.questionnaire_views import (
     QuestionnaireStructureView,
     DefinitionView,
 )
+
+router = routers.DefaultRouter()
+router.register(r"participations", ParticipationView, basename="Participation")
+router.register(r"responses", ResponseView, basename="Response")
+
 
 urlpatterns = [
     path("assessments/", AssessmentsView.as_view({"get": "list"})),
@@ -61,19 +66,5 @@ urlpatterns = [
     path("definitions/", DefinitionView.as_view({"get": "list"})),
     path("definitions/<int:pk>/", DefinitionView.as_view({"get": "retrieve"})),
     path("roles/", RoleView.as_view({"get": "list"})),
-    path(
-        "participations/", ParticipationsView.as_view({"get": "list", "post": "create"})
-    ),
-    path(
-        "participation/<int:pk>/",
-        ParticipationsView.as_view({"patch": "partial_update", "get": "retrieve"}),
-    ),
-    path(
-        "participation/user/<int:user_pk>/",
-        UserParticipationView.as_view({"get": "list"}),
-    ),
-    path(
-        "responses/",
-        ResponseView.as_view({"get": "list", "post": "create"}),
-    ),
+    path("", include(router.urls)),
 ]

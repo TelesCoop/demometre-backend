@@ -31,6 +31,7 @@ QUESTION_FIELDS = [
     "categories",
     "rules_intersection_operator",
     "rules",
+    "survey_type",
 ]
 REFERENTIAL_FIELDS = [
     "description",

@@ -443,6 +443,10 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         help_text="Si aucun rôle n'est sélectionné c'est comme si tous l'étaient",
     )
 
+    @property
+    def survey_type(self):
+        return "profiling" if self.profiling_question else "survey"
+
     search_fields = [
         index.SearchField("question_statement", partial_match=True),
         index.SearchField("name", partial_match=True),

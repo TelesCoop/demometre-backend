@@ -85,7 +85,7 @@ class AssessmentsView(
     queryset = Assessment.objects.all()
 
     def get_or_create(self, request):
-        zip_code = request.GET.get("zip_code")
+        zip_code = request.GET.get("zip_code").replace(" ", "")
         locality_type = request.GET.get("locality_type")
         assessment = None
         if locality_type == LocalityType.MUNICIPALITY:

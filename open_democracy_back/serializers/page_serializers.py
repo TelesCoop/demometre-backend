@@ -21,7 +21,17 @@ class PageSerialiserWithLocale(serializers.ModelSerializer):
 class HomePageSerializer(PageSerialiserWithLocale):
     class Meta:
         model = HomePage
-        fields = PAGE_FIELDS
+        fields = PAGE_FIELDS + [
+            "tag_line",
+            "feedback_block_title",
+            "feedback_block_intro",
+            "blog_block_title",
+            "blog_block_intro",
+            "resources_block_title",
+            "resources_block_intro",
+            "partner_block_title",
+            "partner_block_intro",
+        ]
         read_only_fields = fields
 
 

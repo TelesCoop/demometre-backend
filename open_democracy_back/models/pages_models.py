@@ -1,11 +1,7 @@
 from typing import List
 from django.db import models
 from wagtail.core.fields import RichTextField
-from wagtail.admin.edit_handlers import (
-    FieldPanel,
-)
-from wagtail.api import APIField
-
+from wagtail.admin.edit_handlers import FieldPanel, MultiFieldPanel
 from wagtail.core.models import Page
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
@@ -18,15 +14,80 @@ class HomePage(Page):
     parent_page_types = ["wagtailcore.Page"]
     preview_modes = None
 
-    introduction = models.CharField(max_length=255, default="")
+    tag_line = models.CharField(
+        max_length=255, default="", verbose_name="Phrase d'accroche"
+    )
+    introduction = RichTextField(
+        default="", features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Introduction"
+    )
+    feedback_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre du bloc retours d'expérience",
+        blank=True,
+        help_text="Si ce champ est vide les retours d'expérience ne s'afficheront pas sur l'accueil",
+    )
+    feedback_block_intro = models.CharField(
+        max_length=255, verbose_name="Intro du bloc retours d'expérience", blank=True
+    )
+    blog_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre du bloc Blog",
+        blank=True,
+        help_text="Si ce champ est vide les articles de blog ne s'afficheront pas sur l'accueil",
+    )
+    blog_block_intro = models.CharField(
+        max_length=255, verbose_name="Intro du bloc Blog", blank=True
+    )
+    resources_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre du bloc Ressources",
+        blank=True,
+        help_text="Si ce champ est vide bloc Ressources ne s'afficheront pas sur l'accueil",
+    )
+    resources_block_intro = models.CharField(
+        max_length=255, verbose_name="Intro du bloc Ressources", blank=True
+    )
+    partner_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre du bloc Partenaires",
+        blank=True,
+        help_text="Si ce champ est vide le bloc Partenaires ne s'afficheront pas sur l'accueil",
+    )
+    partner_block_intro = models.CharField(
+        max_length=255, verbose_name="Intro du bloc Partenaires", blank=True
+    )
 
     content_panels = Page.content_panels + [
+        FieldPanel("tag_line"),
         FieldPanel("introduction"),
-    ]
-
-    api_fields = [
-        APIField("title"),
-        APIField("introduction"),
+        MultiFieldPanel(
+            [
+                FieldPanel("feedback_block_title"),
+                FieldPanel("feedback_block_intro"),
+            ],
+            heading="Retour d'expérience",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("blog_block_title"),
+                FieldPanel("blog_block_intro"),
+            ],
+            heading="Blog",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("resources_block_title"),
+                FieldPanel("resources_block_intro"),
+            ],
+            heading="Ressources",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("partner_block_title"),
+                FieldPanel("partner_block_intro"),
+            ],
+            heading="Partenaires",
+        ),
     ]
 
     class Meta:

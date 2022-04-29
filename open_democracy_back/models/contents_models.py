@@ -66,12 +66,16 @@ class Article(index.Indexed, models.Model):
     short_description = models.CharField(
         max_length=510, blank=True, null=True, verbose_name="Description courte"
     )
+    external_link = models.CharField(
+        verbose_name="lien externe", blank=True, null=True, max_length=300
+    )
 
     panels = [
         FieldPanel("title"),
         ImageChooserPanel("image"),
         FieldPanel("publication_date"),
         FieldPanel("short_description"),
+        FieldPanel("external_link"),
     ]
 
     search_fields = [
@@ -103,7 +107,7 @@ class Resource(Article):
 @register_snippet
 class Partner(index.Indexed, models.Model):
     name = models.CharField(max_length=64, verbose_name="Nom")
-    lago_image = models.ForeignKey(
+    logo_image = models.ForeignKey(
         "wagtailimages.Image",
         verbose_name="Logo du partenaire",
         on_delete=models.CASCADE,
@@ -112,7 +116,7 @@ class Partner(index.Indexed, models.Model):
 
     panels = [
         FieldPanel("name"),
-        ImageChooserPanel("lago_image"),
+        ImageChooserPanel("logo_image"),
     ]
 
     search_fields = [

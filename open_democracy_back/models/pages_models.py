@@ -2,6 +2,7 @@ from typing import List
 from django.db import models
 from wagtail.core.fields import RichTextField
 from wagtail.admin.edit_handlers import FieldPanel, MultiFieldPanel
+from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.core.models import Page
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
@@ -19,6 +20,14 @@ class HomePage(Page):
     )
     introduction = RichTextField(
         default="", features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Introduction"
+    )
+    intro_image = models.ForeignKey(
+        "wagtailimages.Image",
+        verbose_name="Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
     )
     feedback_block_title = models.CharField(
         max_length=68,
@@ -60,6 +69,7 @@ class HomePage(Page):
     content_panels = Page.content_panels + [
         FieldPanel("tag_line"),
         FieldPanel("introduction"),
+        ImageChooserPanel("intro_image"),
         MultiFieldPanel(
             [
                 FieldPanel("feedback_block_title"),

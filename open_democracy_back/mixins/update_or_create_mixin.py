@@ -7,6 +7,7 @@ from rest_framework.response import Response
 class UpdateOrCreateModelMixin(CreateModelMixin):
     """
     Update or create a model instance.
+    Use `get_or_update_object` to retrieve the instance that you want to update.
     """
 
     def create(self, request, *args, **kwargs):

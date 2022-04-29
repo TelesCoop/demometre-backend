@@ -22,12 +22,10 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
 
 def get_question_response_by_question_id(question_list):
     questions_response_by_question_id = defaultdict(
-        lambda: {"type": "", "min": 0, "max": 0, "responses": {}}
+        lambda: {"type": "", "responses": {}}
     )
     for question in question_list:
         questions_response_by_question_id[question.id]["type"] = question.type
-        questions_response_by_question_id[question.id]["min"] = question.min
-        questions_response_by_question_id[question.id]["max"] = question.max
         for response_choice in question.response_choices.all():
             questions_response_by_question_id[question.id]["responses"][
                 response_choice.id

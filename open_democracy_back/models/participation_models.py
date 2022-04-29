@@ -59,6 +59,9 @@ class Response(models.Model):
         blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(100)]
     )
 
+    class Meta:
+        unique_together = ["participation", "question"]
+
 
 class ClosedWithRankingResponse(models.Model):
     response = models.ForeignKey(

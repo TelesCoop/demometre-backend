@@ -108,7 +108,6 @@ class Pillar(models.Model):
     )
 
     panels = [
-        FieldPanel("name"),
         FieldPanel("code"),
         FieldPanel("description"),
     ]
@@ -182,7 +181,7 @@ class Marker(index.Indexed, ReferentielFields):
         max_length=2,
         help_text="Correspond au numéro (ou lettre) de ce marqueur dans son pilier",
     )
-    concatenated_code = models.CharField(max_length=4, default="")
+    concatenated_code = models.CharField(max_length=5, default="")
 
     panels = [
         FieldPanel("pillar"),
@@ -198,7 +197,9 @@ class Marker(index.Indexed, ReferentielFields):
         return f"{self.concatenated_code}: {self.name}"
 
     def save(self, *args, **kwargs):
-        self.concatenated_code = (self.pillar.code if self.pillar else "") + self.code
+        self.concatenated_code = (
+            self.pillar.code + "." if self.pillar else ""
+        ) + self.code
         super().save(*args, **kwargs)
         [child_criteria.save() for child_criteria in self.criterias.all()]
 
@@ -240,7 +241,7 @@ class Criteria(index.Indexed, ReferentielFields):
         max_length=2,
         help_text="Correspond au numéro (ou lettre) de ce critère dans son marqueur",
     )
-    concatenated_code = models.CharField(max_length=6, default="")
+    concatenated_code = models.CharField(max_length=8, default="")
     thematic_tags = models.ManyToManyField(
         ThematicTag, blank=True, verbose_name="Thématiques"
     )
@@ -262,7 +263,6 @@ class Criteria(index.Indexed, ReferentielFields):
             self.marker.concatenated_code + "." if self.marker else ""
         ) + self.code
         super().save(*args, **kwargs)
-        print(self.questions.all())
         # Use proxy QuestionnaireQuestion
         child_questions = QuestionnaireQuestion.objects.filter(criteria_id=self.id)
         [child_question.save() for child_question in child_questions]
@@ -309,7 +309,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         max_length=2,
         help_text="Correspond au numéro (ou lettre) de cette question, détermine son ordre",
     )
-    concatenated_code = models.CharField(max_length=8, default="")
+    concatenated_code = models.CharField(max_length=11, default="")
 
     name = models.CharField(verbose_name="Nom", max_length=125, default="")
     question_statement = models.TextField(
@@ -547,8 +547,9 @@ class QuestionnaireQuestion(Question):
     def save(self, *args, **kwargs):
         self.profiling_question = False
         self.concatenated_code = (
-            self.criteria.concatenated_code + self.code if self.criteria else self.code
-        )
+            self.criteria.concatenated_code + "." if self.criteria else ""
+        ) + self.code
+
         super().save(*args, **kwargs)
 
     class Meta(Question.Meta):

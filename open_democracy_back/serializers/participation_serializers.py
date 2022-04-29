@@ -1,8 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from open_democracy_back.fields.assessment_fields import AssessmentField
-from open_democracy_back.fields.participation_fields import ParticipationField
+from open_democracy_back.models import Assessment
 
 from open_democracy_back.models.participation_models import Participation, Response
 from open_democracy_back.models.questionnaire_and_profiling_models import (
@@ -10,6 +9,19 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Question,
     ResponseChoice,
 )
+
+
+class AssessmentField(serializers.PrimaryKeyRelatedField):
+    def get_queryset(self):
+        return Assessment.objects.filter(initialization_date__lt=timezone.now())
+
+
+class ParticipationField(serializers.PrimaryKeyRelatedField):
+    def get_queryset(self):
+        return Participation.objects.filter(
+            user_id=self.context.get("request").user.id,
+            assessment__initialization_date__lt=timezone.now(),
+        )
 
 
 class ParticipationSerializer(serializers.ModelSerializer):

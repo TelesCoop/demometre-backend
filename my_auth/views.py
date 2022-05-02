@@ -38,7 +38,7 @@ def frontend_signup(request):
     data = request.data
     if User.objects.filter(email=request.data["email"]).count():
         return Response(
-            data={"message": "Le mail est déjà utilisé", "field": "email"}, status=400
+            data={"message": "email-already-exists", "field": "email"}, status=400
         )
     data["username"] = request.data["email"]
     user = AuthSerializer(data=data)
@@ -76,7 +76,7 @@ def frontend_login(request):
     except User.DoesNotExist:
         return Response(
             data={
-                "message": "Cet email ne correspond à aucun utilisateur",
+                "message": "no-email",
                 "field": "email",
             },
             status=400,
@@ -89,9 +89,7 @@ def frontend_login(request):
         login(request, user_auth)
         return Response(AuthSerializer(user_auth).data)
     else:
-        return Response(
-            data={"message": "Email et mot de passe ne correspondent pas"}, status=400
-        )
+        return Response(data={"message": "wrong-password-for-email"}, status=400)
 
 
 @api_view(["POST"])

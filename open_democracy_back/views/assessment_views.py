@@ -36,7 +36,7 @@ def initialize_assessment(request, pk):
 
     # Check that tje assessment is not already initialized
     if assessment.initialization_date:
-        return Response(status=400, data="L'évaluation a déjà été initialisée")
+        return Response(status=400, data="assessment-already-initiated")
 
     # Check if email user correspond to the initiator
     email_only_letters = re.sub(r"[^a-z]", "", user.email)
@@ -48,16 +48,14 @@ def initialize_assessment(request, pk):
         else initialize_data["initiator_name"],
     )
     if initiator_name_only_letters not in email_only_letters:
-        return Response(
-            status=400, data="L'email ne correspond pas à l'instance initiatrice"
-        )
+        return Response(status=400, data="email-not-corresponding-assessment")
 
     assessment.initiated_by_user = user
     assessment.initialization_date = date.today()
     if initialize_data["initiator_type"] in InitiatorType.values:
         assessment.initiator_type = initialize_data["initiator_type"]
     else:
-        return Response(status=400, data="Le type de l'initiateur est incorrect")
+        return Response(status=400, data="incorrect-initiator-assessment")
     assessment.initialized_to_the_name_of = initialize_data["initiator_name"]
     assessment.public_initiator = initialize_data["consent"]
     assessment.save()
@@ -92,9 +90,7 @@ class AssessmentsView(
 
             municipality = Municipality.objects.filter(zip_codes__code=zip_code)
             if municipality.count() == 0:
-                return Response(
-                    status=400, data="Aucune commune ne correspond à ce code postal"
-                )
+                return Response(status=400, data="no-zip-code-municipality")
             if municipality.count() > 1:
                 logger.warning(
                     f"There is several municipality corresponding to zip_code: {zip_code} (we are using the first occurence)"
@@ -109,7 +105,7 @@ class AssessmentsView(
             if epci.count() == 0:
                 return Response(
                     status=400,
-                    data="Aucune intercommunalité ne correspond à ce code postal",
+                    data="no-zip-code-epci",
                 )
             if epci.count() > 1:
                 logger.warning(

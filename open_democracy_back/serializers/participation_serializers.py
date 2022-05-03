@@ -3,7 +3,11 @@ from rest_framework import serializers
 
 from open_democracy_back.models import Assessment
 
-from open_democracy_back.models.participation_models import Participation, Response
+from open_democracy_back.models.participation_models import (
+    Participation,
+    Response,
+    ParticipationPillarCompleted,
+)
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Role,
     Question,
@@ -24,11 +28,25 @@ class ParticipationField(serializers.PrimaryKeyRelatedField):
         )
 
 
+class ParticipationPillarCompletedSerializer(serializers.ModelSerializer):
+    participation_id = serializers.PrimaryKeyRelatedField(
+        source="participation", read_only=True
+    )
+    pillar_id = serializers.PrimaryKeyRelatedField(source="pillar", read_only=True)
+
+    class Meta:
+        model = ParticipationPillarCompleted
+        fields = ["participation_id", "pillar_id", "completed"]
+
+
 class ParticipationSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     assessment_id = AssessmentField(source="assessment")
     role_id = serializers.PrimaryKeyRelatedField(
         source="role", queryset=Role.objects.all()
+    )
+    is_pillar_questions_completed = ParticipationPillarCompletedSerializer(
+        source="participationpillarcompleted_set", many=True, read_only=True
     )
 
     def validate(self, data):
@@ -40,7 +58,16 @@ class ParticipationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Participation
-        fields = ["id", "user", "assessment_id", "role_id", "consent"]
+        fields = [
+            "id",
+            "user",
+            "assessment_id",
+            "role_id",
+            "consent",
+            "is_profiling_question_completed",
+            "is_pillar_questions_completed",
+        ]
+        read_only_fields = ["is_profiling_question_completed"]
 
 
 class ResponseSerializer(serializers.ModelSerializer):

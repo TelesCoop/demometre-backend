@@ -54,7 +54,7 @@ class Participation(models.Model):
 class ParticipationPillarCompleted(models.Model):
     completed = models.BooleanField(default=False)
     pillar = models.ForeignKey(Pillar, on_delete=models.CASCADE)
-    Participation = models.ForeignKey(Participation, on_delete=models.CASCADE)
+    participation = models.ForeignKey(Participation, on_delete=models.CASCADE)
 
 
 class Response(models.Model):

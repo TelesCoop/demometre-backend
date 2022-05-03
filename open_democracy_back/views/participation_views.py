@@ -65,9 +65,9 @@ class CompletedQuestionsParticipationView(APIView):
         pillard_id = request.data.get("pillar_id")
 
         if request.data.get("profiling_question"):
-            participation.is_profiling_question_completed = True
+            participation.is_profiling_questions_completed = True
             participation.save()
-        elif participation.is_profiling_question_completed and pillard_id:
+        elif participation.is_profiling_questions_completed and pillard_id:
             participation_pillar_completed = (
                 participation.participationpillarcompleted_set.get(pillar=pillard_id)
             )

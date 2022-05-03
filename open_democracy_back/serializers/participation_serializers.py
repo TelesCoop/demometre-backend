@@ -64,10 +64,10 @@ class ParticipationSerializer(serializers.ModelSerializer):
             "assessment_id",
             "role_id",
             "consent",
-            "is_profiling_question_completed",
+            "is_profiling_questions_completed",
             "is_pillar_questions_completed",
         ]
-        read_only_fields = ["is_profiling_question_completed"]
+        read_only_fields = ["is_profiling_questions_completed"]
 
 
 class ResponseSerializer(serializers.ModelSerializer):

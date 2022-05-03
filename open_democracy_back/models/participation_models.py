@@ -32,7 +32,7 @@ class Participation(models.Model):
     )
     profiles = models.ManyToManyField(ProfileType, related_name="participations")
     consent = models.BooleanField(default=False)
-    is_profiling_question_completed = models.BooleanField(default=False)
+    is_profiling_questions_completed = models.BooleanField(default=False)
     is_pillar_questions_completed = models.ManyToManyField(
         Pillar, through="ParticipationPillarCompleted"
     )

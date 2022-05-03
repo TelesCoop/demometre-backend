@@ -1,10 +1,11 @@
 from django.utils import timezone
 from django.db.models import QuerySet
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response as RestResponse
 
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
-from open_democracy_back.models import Question
 from open_democracy_back.models.participation_models import Participation, Response
 
 from open_democracy_back.serializers.participation_serializers import (
@@ -55,28 +56,23 @@ class ResponseView(
             question_id=request.data.get("question_id"),
         )
 
-    def perform_create(self, serializer):
-        super().perform_create(serializer)
-        data = serializer.validated_data
-        question = data["question"]
-        participation = data["participation"]
 
-        if question.profiling_question:
-            last_question = Question.objects.filter(profiling_question=True).last()
+class CompletedQuestionsParticipationView(APIView):
+    permission_classes = [IsAuthenticated]
 
-            if last_question.id == question.id:
-                participation.is_profiling_question_completed = True
-                participation.save()
+    def patch(self, request, pk):
+        participation = Participation.objects.get(user_id=request.user.id, id=pk)
+        pillard_id = request.data.get("pillar_id")
 
+        if request.data.get("profiling_question"):
+            participation.is_profiling_question_completed = True
+            participation.save()
+        elif participation.is_profiling_question_completed and pillard_id:
+            participation_pillar_completed = (
+                participation.participationpillarcompleted_set.get(pillar=pillard_id)
+            )
+            participation_pillar_completed.completed = True
+            participation_pillar_completed.save()
         else:
-            pillar = question.criteria.marker.pillar
-            last_question = Question.objects.filter(
-                profiling_question=False, criteria__marker__pillar=pillar
-            ).last()
-
-            if last_question.id == question.id:
-                participation_pillar_completed = (
-                    participation.participationpillarcompleted_set.get(pillar=pillar)
-                )
-                participation_pillar_completed.completed = True
-                participation_pillar_completed.save()
+            return RestResponse(status=status.HTTP_400_BAD_REQUEST)
+        return RestResponse(status=status.HTTP_200_OK)

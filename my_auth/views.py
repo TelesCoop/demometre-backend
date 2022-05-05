@@ -9,9 +9,11 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 from my_auth.emails import email_reset_password_link
 from my_auth.models import UserResetKey
+from open_democracy_back.exceptions import ValidationFieldError
 
 from .serializers import AuthSerializer
 
@@ -37,9 +39,7 @@ def frontend_signup(request):
     """
     data = request.data
     if User.objects.filter(email=request.data["email"]).count():
-        return Response(
-            data={"message": "email-already-exists", "field": "email"}, status=400
-        )
+        raise ValidationFieldError("email", code="email_already_exists")
     data["username"] = request.data["email"]
     user = AuthSerializer(data=data)
     user.is_valid(raise_exception=True)
@@ -74,13 +74,7 @@ def frontend_login(request):
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        return Response(
-            data={
-                "message": "no-email",
-                "field": "email",
-            },
-            status=400,
-        )
+        raise ValidationFieldError("email", code="no_email")
 
     user_auth = authenticate(username=user.username, password=password)
 
@@ -89,7 +83,7 @@ def frontend_login(request):
         login(request, user_auth)
         return Response(AuthSerializer(user_auth).data)
     else:
-        return Response(data={"message": "wrong-password-for-email"}, status=400)
+        raise ValidationFieldError("password", code="wrong_password_for_email")
 
 
 @api_view(["POST"])
@@ -105,7 +99,7 @@ def frontend_logout(request):
 def who_am_i(request):
     """Returns information about the current user."""
     if request.user.is_anonymous:
-        return Response(status=400)
+        raise NotAuthenticated()
 
     return Response(AuthSerializer(request.user).data)
 
@@ -116,7 +110,7 @@ def front_end_reset_password_link(request):
     try:
         user = User.objects.get(email=request.data.get("email"))
     except User.DoesNotExist:
-        return Response(status=404)
+        raise ValidationFieldError("email", code="no_email")
     if UserResetKey.objects.get(user=user):
         UserResetKey.objects.get(user=user).delete()
     UserResetKey.objects.create(
@@ -134,11 +128,15 @@ def front_end_reset_password(request):
             reset_key__reset_key=request.data.get("reset_key"),
         )
     except User.DoesNotExist:
-        return Response(status=403)
+        raise PermissionDenied(
+            detail="There is not user with this reset_key", code=None
+        )
 
     is_valid_key = datetime.now() - user.reset_key.reset_key_datetime
     if is_valid_key.days != 0:
-        return Response(status=400)
+        raise PermissionDenied(
+            detail="The reset_key do not correspond to last 24H", code=None
+        )
 
     user.set_password(request.data.get("password"))
     user.save()

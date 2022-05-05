@@ -7,6 +7,7 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound, ValidationError, APIException
 
 from open_democracy_back.models import Assessment
 from open_democracy_back.models.assessment_models import (
@@ -36,7 +37,10 @@ def initialize_assessment(request, pk):
 
     # Check that tje assessment is not already initialized
     if assessment.initialization_date:
-        return Response(status=400, data="assessment-already-initiated")
+        raise APIException(
+            detail="The assessment is already initiated",
+            code="assessment_already_initiated",
+        )
 
     # Check if email user correspond to the initiator
     email_only_letters = re.sub(r"[^a-z]", "", user.email)
@@ -48,14 +52,20 @@ def initialize_assessment(request, pk):
         else initialize_data["initiator_name"],
     )
     if initiator_name_only_letters not in email_only_letters:
-        return Response(status=400, data="email-not-corresponding-assessment")
+        raise APIException(
+            detail="The email is not corresponding to the assessment initiator",
+            code="email_not_corresponding_assessment",
+        )
 
     assessment.initiated_by_user = user
     assessment.initialization_date = date.today()
     if initialize_data["initiator_type"] in InitiatorType.values:
         assessment.initiator_type = initialize_data["initiator_type"]
     else:
-        return Response(status=400, data="incorrect-initiator-assessment")
+        raise APIException(
+            detail="The type of the assessment initiator is incorrect",
+            code="incorrect_initiator_assessment",
+        )
     assessment.initialized_to_the_name_of = initialize_data["initiator_name"]
     assessment.public_initiator = initialize_data["consent"]
     assessment.save()
@@ -90,7 +100,10 @@ class AssessmentsView(
 
             municipality = Municipality.objects.filter(zip_codes__code=zip_code)
             if municipality.count() == 0:
-                return Response(status=400, data="no-zip-code-municipality")
+                raise NotFound(
+                    detail="The zip code does not correspond to any municipality",
+                    code="no_zip_code_municipality",
+                )
             if municipality.count() > 1:
                 logger.warning(
                     f"There is several municipality corresponding to zip_code: {zip_code} (we are using the first occurence)"
@@ -103,9 +116,9 @@ class AssessmentsView(
                 related_municipalities_ordered__municipality__zip_codes__code=zip_code
             )
             if epci.count() == 0:
-                return Response(
-                    status=400,
-                    data="no-zip-code-epci",
+                raise NotFound(
+                    detail="The zip code does not correspond to any epci",
+                    code="no_zip_code_epci",
                 )
             if epci.count() > 1:
                 logger.warning(
@@ -117,7 +130,10 @@ class AssessmentsView(
 
         else:
             logger.error("locality_type received not correct")
-            return Response(status=400)
+            raise ValidationError(
+                detail="The locality_type received is not correct",
+                code="uncorrect_localitytype",
+            )
 
         return Response(status=200, data=self.serializer_class(assessment[0]).data)
 

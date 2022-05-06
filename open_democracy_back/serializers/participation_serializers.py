@@ -38,7 +38,7 @@ class ParticipationSerializer(serializers.ModelSerializer):
         ).exists():
             raise serializers.ValidationError(
                 detail="The participation already exists",
-                code=ErrorCode.PARTICIPATION_ALREADY_EXISTS,
+                code=ErrorCode.PARTICIPATION_ALREADY_EXISTS.value,
             )
         return data
 

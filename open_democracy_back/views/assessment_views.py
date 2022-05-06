@@ -40,7 +40,7 @@ def initialize_assessment(request, pk):
     if assessment.initialization_date:
         raise APIException(
             detail="The assessment is already initiated",
-            code=ErrorCode.ASSESSMENT_ALREADY_INITIATED,
+            code=ErrorCode.ASSESSMENT_ALREADY_INITIATED.value,
         )
 
     # Check if email user correspond to the initiator
@@ -56,7 +56,7 @@ def initialize_assessment(request, pk):
         raise ValidationFieldError(
             "initiator_name",
             detail="The email is not corresponding to the assessment initiator",
-            code=ErrorCode.EMAIL_NOT_CORRESPONDING_ASSESSMENT,
+            code=ErrorCode.EMAIL_NOT_CORRESPONDING_ASSESSMENT.value,
         )
 
     assessment.initiated_by_user = user
@@ -67,7 +67,7 @@ def initialize_assessment(request, pk):
         raise ValidationFieldError(
             "initiator_type",
             detail="The type of the assessment initiator is incorrect",
-            code=ErrorCode.INCORRECT_INITIATOR_ASSESSMENT,
+            code=ErrorCode.INCORRECT_INITIATOR_ASSESSMENT.value,
         )
     assessment.initialized_to_the_name_of = initialize_data["initiator_name"]
     assessment.public_initiator = initialize_data["consent"]
@@ -106,7 +106,7 @@ class AssessmentsView(
                 raise ValidationFieldError(
                     "zip_code",
                     detail="The zip code does not correspond to any municipality",
-                    code=ErrorCode.NO_ZIP_CODE_MUNICIPALITY,
+                    code=ErrorCode.NO_ZIP_CODE_MUNICIPALITY.value,
                 )
             if municipality.count() > 1:
                 logger.warning(
@@ -123,7 +123,7 @@ class AssessmentsView(
                 raise ValidationFieldError(
                     "zip_code",
                     detail="The zip code does not correspond to any epci",
-                    code=ErrorCode.NO_ZIP_CODE_EPCI,
+                    code=ErrorCode.NO_ZIP_CODE_EPCI.value,
                 )
             if epci.count() > 1:
                 logger.warning(
@@ -138,7 +138,7 @@ class AssessmentsView(
             raise ValidationFieldError(
                 "locality_type",
                 detail="The locality type received is not correct",
-                code=ErrorCode.UNCORRECT_LOCALITY_TYPE,
+                code=ErrorCode.UNCORRECT_LOCALITY_TYPE.value,
             )
 
         return Response(status=200, data=self.serializer_class(assessment[0]).data)

@@ -39,7 +39,7 @@ def frontend_signup(request):
     """
     data = request.data
     if User.objects.filter(email=request.data["email"]).count():
-        raise ValidationFieldError("email", code=ErrorCode.EMAIL_ALREADY_EXISTS)
+        raise ValidationFieldError("email", code=ErrorCode.EMAIL_ALREADY_EXISTS.value)
     data["username"] = request.data["email"]
     user = AuthSerializer(data=data)
     user.is_valid(raise_exception=True)
@@ -74,7 +74,7 @@ def frontend_login(request):
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL)
+        raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL.value)
 
     user_auth = authenticate(username=user.username, password=password)
 
@@ -83,7 +83,9 @@ def frontend_login(request):
         login(request, user_auth)
         return Response(AuthSerializer(user_auth).data)
     else:
-        raise ValidationFieldError("password", code=ErrorCode.WRONG_PASSWORD_FOR_EMAIL)
+        raise ValidationFieldError(
+            "password", code=ErrorCode.WRONG_PASSWORD_FOR_EMAIL.value
+        )
 
 
 @api_view(["POST"])
@@ -110,7 +112,7 @@ def front_end_reset_password_link(request):
     try:
         user = User.objects.get(email=request.data.get("email"))
     except User.DoesNotExist:
-        raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL)
+        raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL.value)
     if UserResetKey.objects.get(user=user):
         UserResetKey.objects.get(user=user).delete()
     UserResetKey.objects.create(
@@ -130,14 +132,14 @@ def front_end_reset_password(request):
     except User.DoesNotExist:
         raise PermissionDenied(
             detail="The reset password key is wrong or already used.",
-            code=ErrorCode.WRONG_PASSWORD_RESET_KEY,
+            code=ErrorCode.WRONG_PASSWORD_RESET_KEY.value,
         )
 
     is_valid_key = datetime.now() - user.reset_key.reset_key_datetime
     if is_valid_key.days != 0:
         raise PermissionDenied(
             detail="The reset password key is outdated (24h max).",
-            code=ErrorCode.PASSWORD_RESET_KEY_OUTDATE,
+            code=ErrorCode.PASSWORD_RESET_KEY_OUTDATE.value,
         )
 
     user.set_password(request.data.get("password"))

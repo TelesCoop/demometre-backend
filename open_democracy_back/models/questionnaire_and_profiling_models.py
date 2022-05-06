@@ -17,14 +17,21 @@ from wagtail.search import index
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
 
-from open_democracy_back.constants import NUMERICAL_OPERATOR
-
 SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "bold",
     "italic",
     "link",
     "ol",
     "ul",
+]
+
+NUMERICAL_OPERATOR = [
+    ("<", "<"),
+    (">", ">"),
+    ("<=", "<="),
+    (">=", ">="),
+    ("!=", "!="),
+    ("=", "="),
 ]
 
 
@@ -273,16 +280,6 @@ class Criteria(index.Indexed, ReferentielFields):
         ordering = ["code"]
 
 
-class QuestionType(models.TextChoices):
-    OPEN = "open", "Ouverte"
-    UNIQUE_CHOICE = "unique_choice", "Choix unique"
-    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
-    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
-    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
-    BOOLEAN = "boolean", "Binaire oui / non"
-    PERCENTAGE = "percentage", "Pourcentage"
-
-
 @register_snippet
 class Definition(models.Model):
     word = models.CharField(max_length=255, verbose_name="mot")
@@ -296,6 +293,16 @@ class Definition(models.Model):
     class Meta:
         verbose_name = "Définition"
         verbose_name_plural = "Définitions"
+
+
+class QuestionType(models.TextChoices):
+    OPEN = "open", "Ouverte"
+    UNIQUE_CHOICE = "unique_choice", "Choix unique"
+    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
+    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
+    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
+    BOOLEAN = "boolean", "Binaire oui / non"
+    PERCENTAGE = "percentage", "Pourcentage"
 
 
 @register_snippet

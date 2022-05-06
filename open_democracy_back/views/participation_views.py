@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+import operator
 from django.utils import timezone
 from django.db.models import QuerySet
 from rest_framework import mixins, viewsets
@@ -5,11 +7,107 @@ from rest_framework.permissions import IsAuthenticated
 
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 from open_democracy_back.models.participation_models import Participation, Response
+from open_democracy_back.models.questionnaire_and_profiling_models import (
+    BooleanOperator,
+    ProfileDefinition,
+    ProfileType,
+)
 
 from open_democracy_back.serializers.participation_serializers import (
     ParticipationSerializer,
     ResponseSerializer,
 )
+
+NUMERICAL_OPERATOR_CONVERSION = {
+    "<": operator.lt,
+    ">": operator.gt,
+    "<=": operator.le,
+    ">=": operator.ge,
+    "!=": operator.ne,
+    "=": operator.eq,
+}
+
+
+class QuestionStrategy(ABC):
+    @abstractmethod
+    def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+        pass
+
+
+class UniqueChoiceStrategy(QuestionStrategy):
+    def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+        return response.unique_choice_response in rule.response_choices.all()
+
+
+class MultipleChoiceStrategy(QuestionStrategy):
+    def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+        return any(
+            [
+                response in rule.response_choices.all()
+                for response in response.multiple_choice_response
+            ]
+        )
+
+
+class BooleanStrategy(QuestionStrategy):
+    def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+        return response.boolean_response == rule.boolean_response
+
+
+class PercentageStrategy(QuestionStrategy):
+    def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+        return NUMERICAL_OPERATOR_CONVERSION[rule.numerical_operator](
+            response.percentage_response, rule.numerical_value
+        )
+
+
+RULES_STRATEGY = {
+    "unique_choice": UniqueChoiceStrategy(),
+    "multiple_choice": MultipleChoiceStrategy(),
+    "boolean": BooleanStrategy(),
+    "percentage": PercentageStrategy(),
+}
+
+
+class RuleContext:
+    def __init__(self, rule: ProfileDefinition) -> None:
+        self._strategy = RULES_STRATEGY[rule.type]
+        self.rule = rule
+
+    def does_respect_rule(self, response: Response) -> bool:
+        return self._strategy.does_respect_rule(self.rule, response)
+
+
+def isProfileRelevant(profileType, profilingQuestionResponses):
+    if profileType.rules_intersection_operator == BooleanOperator["and"]:
+        all(
+            [
+                RuleContext(rule).does_respect_rule(
+                    profilingQuestionResponses.get(question=rule.conditional_question),
+                )
+                for rule in profileType.rules
+            ]
+        )
+    if profileType.rules_intersection_operator == BooleanOperator["or"]:
+        any(
+            [
+                RuleContext(rule).does_respect_rule(
+                    profilingQuestionResponses.get(question=rule.conditional_question),
+                )
+                for rule in profileType.rules
+            ]
+        )
+
+
+def assignProfilesToParticipation(participationId):
+    participation = Participation.objects.get(id=participationId)
+    profilingQuestionResponses = participation.responses.filter(
+        question__profiling_question=True
+    )
+    profileTypes = ProfileType.objects.all()
+    for profileType in profileTypes:
+        if isProfileRelevant(profileType, profilingQuestionResponses):
+            participation.profiles.add(profileType)
 
 
 class ParticipationView(

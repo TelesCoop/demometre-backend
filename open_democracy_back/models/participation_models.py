@@ -46,6 +46,7 @@ class Response(models.Model):
     question = models.ForeignKey(
         Question, on_delete=models.CASCADE, related_name="responses"
     )
+    has_passed = models.BooleanField(default=False)
     unique_choice_response = models.ForeignKey(
         ResponseChoice,
         on_delete=models.SET_NULL,

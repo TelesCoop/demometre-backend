@@ -323,6 +323,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Enoncé de la question", default=""
     )
 
+    mandatory = models.BooleanField(default=False, verbose_name="Obligatoire")
+
     type = models.CharField(
         max_length=32,
         choices=QuestionType.choices,
@@ -464,6 +466,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("name"),
         FieldPanel("question_statement"),
         FieldPanel("description"),
+        FieldPanel("mandatory"),
         FieldRowPanel(
             [
                 FieldPanel("population_lower_bound"),

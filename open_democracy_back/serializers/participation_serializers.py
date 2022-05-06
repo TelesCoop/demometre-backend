@@ -1,5 +1,6 @@
 from django.utils import timezone
 from rest_framework import serializers
+from open_democracy_back.exceptions import ErrorCode
 
 from open_democracy_back.models import Assessment
 
@@ -35,7 +36,10 @@ class ParticipationSerializer(serializers.ModelSerializer):
         if Participation.objects.filter(
             user_id=data["user"].id, assessment__initialization_date__lt=timezone.now()
         ).exists():
-            raise serializers.ValidationError("You already have a participation.")
+            raise serializers.ValidationError(
+                detail="The participation already exists",
+                code=ErrorCode.PARTICIPATION_ALREADY_EXISTS,
+            )
         return data
 
     class Meta:

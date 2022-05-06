@@ -1,6 +1,7 @@
 from rest_framework.exceptions import APIException
 from rest_framework import status
 from rest_framework.views import exception_handler
+from enum import Enum
 
 
 def custom_exception_handler(exc, context):
@@ -28,3 +29,18 @@ class ValidationFieldError(APIException):
     def __init__(self, field, code=None, detail=None):
         code = {"field": field, "code": code}
         super().__init__(detail, code)
+
+
+class ErrorCode(Enum):
+    EMAIL_ALREADY_EXISTS = "email_already_exists"
+    NO_EMAIL = "no_email"
+    WRONG_PASSWORD_FOR_EMAIL = "wrong_password_for_email"
+    WRONG_PASSWORD_RESET_KEY = "wrong_password_reset_key"
+    PASSWORD_RESET_KEY_OUTDATE = "password_reset_key_outdate"
+    ASSESSMENT_ALREADY_INITIATED = "assessment_already_initiated"
+    EMAIL_NOT_CORRESPONDING_ASSESSMENT = "email_not_corresponding_assessment"
+    INCORRECT_INITIATOR_ASSESSMENT = "incorrect_initiator_assessment"
+    NO_ZIP_CODE_MUNICIPALITY = "no_zip_code_municipality"
+    NO_ZIP_CODE_EPCI = "no_zip_code_epci"
+    UNCORRECT_LOCALITY_TYPE = "uncorrect_locality_type"
+    PARTICIPATION_ALREADY_EXISTS = "participation_already_exists"

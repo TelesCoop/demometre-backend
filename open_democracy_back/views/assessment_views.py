@@ -7,7 +7,8 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import NotFound, ValidationError, APIException
+from rest_framework.exceptions import APIException
+from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 
 from open_democracy_back.models import Assessment
 from open_democracy_back.models.assessment_models import (
@@ -35,11 +36,11 @@ def initialize_assessment(request, pk):
     user = User.objects.get(pk=request.user.id)
     assessment = Assessment.objects.get(pk=pk)
 
-    # Check that tje assessment is not already initialized
+    # Check that the assessment is not already initialized
     if assessment.initialization_date:
         raise APIException(
             detail="The assessment is already initiated",
-            code="assessment_already_initiated",
+            code=ErrorCode.ASSESSMENT_ALREADY_INITIATED,
         )
 
     # Check if email user correspond to the initiator
@@ -52,9 +53,10 @@ def initialize_assessment(request, pk):
         else initialize_data["initiator_name"],
     )
     if initiator_name_only_letters not in email_only_letters:
-        raise APIException(
+        raise ValidationFieldError(
+            "initiator_name",
             detail="The email is not corresponding to the assessment initiator",
-            code="email_not_corresponding_assessment",
+            code=ErrorCode.EMAIL_NOT_CORRESPONDING_ASSESSMENT,
         )
 
     assessment.initiated_by_user = user
@@ -62,9 +64,10 @@ def initialize_assessment(request, pk):
     if initialize_data["initiator_type"] in InitiatorType.values:
         assessment.initiator_type = initialize_data["initiator_type"]
     else:
-        raise APIException(
+        raise ValidationFieldError(
+            "initiator_type",
             detail="The type of the assessment initiator is incorrect",
-            code="incorrect_initiator_assessment",
+            code=ErrorCode.INCORRECT_INITIATOR_ASSESSMENT,
         )
     assessment.initialized_to_the_name_of = initialize_data["initiator_name"]
     assessment.public_initiator = initialize_data["consent"]
@@ -100,9 +103,10 @@ class AssessmentsView(
 
             municipality = Municipality.objects.filter(zip_codes__code=zip_code)
             if municipality.count() == 0:
-                raise NotFound(
+                raise ValidationFieldError(
+                    "zip_code",
                     detail="The zip code does not correspond to any municipality",
-                    code="no_zip_code_municipality",
+                    code=ErrorCode.NO_ZIP_CODE_MUNICIPALITY,
                 )
             if municipality.count() > 1:
                 logger.warning(
@@ -116,9 +120,10 @@ class AssessmentsView(
                 related_municipalities_ordered__municipality__zip_codes__code=zip_code
             )
             if epci.count() == 0:
-                raise NotFound(
+                raise ValidationFieldError(
+                    "zip_code",
                     detail="The zip code does not correspond to any epci",
-                    code="no_zip_code_epci",
+                    code=ErrorCode.NO_ZIP_CODE_EPCI,
                 )
             if epci.count() > 1:
                 logger.warning(
@@ -130,9 +135,10 @@ class AssessmentsView(
 
         else:
             logger.error("locality_type received not correct")
-            raise ValidationError(
-                detail="The locality_type received is not correct",
-                code="uncorrect_localitytype",
+            raise ValidationFieldError(
+                "locality_type",
+                detail="The locality type received is not correct",
+                code=ErrorCode.UNCORRECT_LOCALITY_TYPE,
             )
 
         return Response(status=200, data=self.serializer_class(assessment[0]).data)

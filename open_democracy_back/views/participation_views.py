@@ -1,7 +1,9 @@
 from django.utils import timezone
 from django.db.models import QuerySet
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response as RestResponse
 
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 from open_democracy_back.models.participation_models import Participation, Response
@@ -53,3 +55,24 @@ class ResponseView(
             participation_id=request.data.get("participation_id"),
             question_id=request.data.get("question_id"),
         )
+
+
+class CompletedQuestionsParticipationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        participation = Participation.objects.get(user_id=request.user.id, id=pk)
+        pillard_id = request.data.get("pillar_id")
+
+        if request.data.get("profiling_question"):
+            participation.is_profiling_questions_completed = True
+            participation.save()
+        elif participation.is_profiling_questions_completed and pillard_id:
+            participation_pillar_completed = (
+                participation.participationpillarcompleted_set.get(pillar=pillard_id)
+            )
+            participation_pillar_completed.completed = True
+            participation_pillar_completed.save()
+        else:
+            return RestResponse(status=status.HTTP_400_BAD_REQUEST)
+        return RestResponse(status=status.HTTP_200_OK)

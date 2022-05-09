@@ -1,12 +1,12 @@
 from django.db.models import QuerySet, Q
 from rest_framework import mixins, viewsets
-from rest_framework.permissions import IsAuthenticated
 from open_democracy_back.models.participation_models import Participation
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     ProfilingQuestion,
     Role,
 )
+from my_auth.permissions import IsAuthenticatedOrAnonymous
 from open_democracy_back.serializers.questionnaire_and_profiling_serializers import (
     ProfilingQuestionSerializer,
     RoleSerializer,
@@ -26,7 +26,7 @@ class ParticipationProfilingQuestionView(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrAnonymous]
     serializer_class = ProfilingQuestionSerializer
 
     def get_queryset(self) -> QuerySet:

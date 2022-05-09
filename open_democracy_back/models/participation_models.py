@@ -9,6 +9,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Question,
     ResponseChoice,
     Role,
+    Pillar,
 )
 
 
@@ -31,12 +32,29 @@ class Participation(models.Model):
     )
     profiles = models.ManyToManyField(ProfileType, related_name="participations")
     consent = models.BooleanField(default=False)
+    is_profiling_questions_completed = models.BooleanField(default=False)
+    is_pillar_questions_completed = models.ManyToManyField(
+        Pillar, through="ParticipationPillarCompleted"
+    )
 
     def __str__(self):
         return self.user.username
 
+    def save(self, *args, **kwargs):
+        is_new = not self.pk
+        super().save(*args, **kwargs)
+        if is_new:
+            for pillar in Pillar.objects.all():
+                self.is_pillar_questions_completed.add(pillar)
+
     class Meta:
         unique_together = ["user", "assessment"]
+
+
+class ParticipationPillarCompleted(models.Model):
+    completed = models.BooleanField(default=False)
+    pillar = models.ForeignKey(Pillar, on_delete=models.CASCADE)
+    participation = models.ForeignKey(Participation, on_delete=models.CASCADE)
 
 
 class Response(models.Model):

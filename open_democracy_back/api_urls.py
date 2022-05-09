@@ -10,6 +10,7 @@ from open_democracy_back.views.page_views import (
 from open_democracy_back.views.participation_views import (
     ResponseView,
     ParticipationView,
+    CompletedQuestionsParticipationView,
 )
 from open_democracy_back.views.representativity_views import (
     RepresentativityCriteriaView,
@@ -84,5 +85,9 @@ urlpatterns = [
     path(
         "representativity-criterias/",
         RepresentativityCriteriaView.as_view({"get": "list"}),
+    ),
+    path(
+        "participations/<int:pk>/questions/completed",
+        CompletedQuestionsParticipationView.as_view(),
     ),
 ]

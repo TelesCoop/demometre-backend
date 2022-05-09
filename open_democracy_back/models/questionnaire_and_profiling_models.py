@@ -358,11 +358,13 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Score associé à une réponse négative",
         blank=True,
         null=True,
+        help_text="Si pertinant",
     )
     true_associated_score = models.IntegerField(
         verbose_name="Score associé à une réponse positive",
         blank=True,
         null=True,
+        help_text="Si pertinant",
     )
 
     max_multiple_choices = models.IntegerField(
@@ -617,9 +619,7 @@ class ResponseChoice(TimeStampedModel, Orderable):
     )
 
     associated_score = models.IntegerField(
-        verbose_name="Score associé",
-        blank=True,
-        null=True,
+        verbose_name="Score associé", blank=True, null=True, help_text="Si pertinant"
     )
 
     def __str__(self):
@@ -647,7 +647,7 @@ class PercentageRange(TimeStampedModel, Orderable):
 
     associated_score = models.IntegerField(
         verbose_name="Score associé",
-        help_text="Le score sera alors de",
+        help_text="Si pertinant.",
     )
     panels = [
         MultiFieldPanel(

@@ -26,3 +26,12 @@ class AuthSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         return make_password(value)
+
+
+class AnonymousSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=True, max_length=150)
+    email = serializers.CharField(required=True, max_length=150)
+
+    class Meta:
+        model = User
+        fields = ("id", "username", "email")

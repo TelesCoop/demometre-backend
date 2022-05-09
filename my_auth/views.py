@@ -15,13 +15,13 @@ from my_auth.emails import email_reset_password_link
 from my_auth.models import UserResetKey
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 
-from .serializers import AuthSerializer
+from .serializers import AnonymousSerializer, AuthSerializer
 
 
 @api_view(["POST"])
 def frontend_signup(request):
     """
-    Sign up user
+    Sign up user. If anonymous user, change it to known user
 
     Args:
         request:
@@ -31,6 +31,7 @@ def frontend_signup(request):
                     "last_name": "Doe",
                     "email": "email@ex.com",
                     "password": "secret_pa$$w0rD",
+                    "anonymous": None
                 }
 
     Returns:
@@ -38,11 +39,20 @@ def frontend_signup(request):
             AuthSerializer
     """
     data = request.data
-    if User.objects.filter(email=request.data["email"]).count():
+    if User.objects.filter(email=data["email"]).count():
         raise ValidationFieldError("email", code=ErrorCode.EMAIL_ALREADY_EXISTS.value)
-    data["username"] = request.data["email"]
-    user = AuthSerializer(data=data)
-    user.is_valid(raise_exception=True)
+    data["username"] = data["email"]
+
+    if data["anonymous"]:
+        user = User.objects.get(username=data["anonymous"])
+        user.first_name = data["first_name"]
+        user.last_name = data["last_name"]
+        user.email = data["email"]
+        user.username = data["username"]
+        user.set_password(data["password"])
+    else:
+        user = AuthSerializer(data=data)
+        user.is_valid(raise_exception=True)
     user.save()
 
     userAuth = authenticate(username=data["username"], password=data["password"])
@@ -147,3 +157,12 @@ def front_end_reset_password(request):
     user.reset_key.reset_key = None
     user.reset_key.save()
     return Response(status=200)
+
+
+@api_view(["POST"])
+def front_end_create_anonymous(_):
+    """Create anonymous user without email and password to save data related"""
+    anonymous_name = "anonymous-" + str(User.objects.last().id + 1)
+    user = User.objects.create(username=anonymous_name, email=anonymous_name)
+
+    return Response(status=201, data=AnonymousSerializer(user).data)

@@ -36,6 +36,14 @@ from .views.questionnaire_views import (
 )
 
 router = routers.DefaultRouter()
+router.register(r"home-pages", HomePageView, basename="HomePage")
+router.register(r"referential-pages", ReferentialPageView, basename="ReferentialPage")
+router.register(
+    r"evaluation-intro-pages", EvaluationIntroPageView, basename="EvaluationIntroPage"
+)
+router.register(
+    r"evaluation-init-pages", EvaluationInitPageView, basename="EvaluationInitPage"
+)
 router.register(r"participations", ParticipationView, basename="Participation")
 router.register(r"responses", ResponseView, basename="Response")
 
@@ -70,10 +78,6 @@ urlpatterns = [
         "profiling-questions/participation/<int:participation_pk>/",
         ParticipationProfilingQuestionView.as_view({"get": "list"}),
     ),
-    path("home-pages/", HomePageView.as_view({"get": "list"})),
-    path("referential-pages/", ReferentialPageView.as_view({"get": "list"})),
-    path("evaluation-intro-pages/", EvaluationIntroPageView.as_view({"get": "list"})),
-    path("evaluation-init-pages/", EvaluationInitPageView.as_view({"get": "list"})),
     path("definitions/", DefinitionView.as_view({"get": "list"})),
     path("definitions/<int:pk>/", DefinitionView.as_view({"get": "retrieve"})),
     path("roles/", RoleView.as_view({"get": "list"})),

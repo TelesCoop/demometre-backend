@@ -7,6 +7,8 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import APIException
+from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 
 from open_democracy_back.models import Assessment
 from open_democracy_back.models.assessment_models import (
@@ -34,9 +36,12 @@ def initialize_assessment(request, pk):
     user = User.objects.get(pk=request.user.id)
     assessment = Assessment.objects.get(pk=pk)
 
-    # Check that tje assessment is not already initialized
+    # Check that the assessment is not already initialized
     if assessment.initialization_date:
-        return Response(status=400, data="L'évaluation a déjà été initialisée")
+        raise APIException(
+            detail="The assessment is already initiated",
+            code=ErrorCode.ASSESSMENT_ALREADY_INITIATED.value,
+        )
 
     # Check if email user correspond to the initiator
     email_only_letters = re.sub(r"[^a-z]", "", user.email)
@@ -48,8 +53,10 @@ def initialize_assessment(request, pk):
         else initialize_data["initiator_name"],
     )
     if initiator_name_only_letters not in email_only_letters:
-        return Response(
-            status=400, data="L'email ne correspond pas à l'instance initiatrice"
+        raise ValidationFieldError(
+            "initiator_name",
+            detail="The email is not corresponding to the assessment initiator",
+            code=ErrorCode.EMAIL_NOT_CORRESPONDING_ASSESSMENT.value,
         )
 
     assessment.initiated_by_user = user
@@ -57,7 +64,11 @@ def initialize_assessment(request, pk):
     if initialize_data["initiator_type"] in InitiatorType.values:
         assessment.initiator_type = initialize_data["initiator_type"]
     else:
-        return Response(status=400, data="Le type de l'initiateur est incorrect")
+        raise ValidationFieldError(
+            "initiator_type",
+            detail="The type of the assessment initiator is incorrect",
+            code=ErrorCode.INCORRECT_INITIATOR_ASSESSMENT.value,
+        )
     assessment.initialized_to_the_name_of = initialize_data["initiator_name"]
     assessment.public_initiator = initialize_data["consent"]
     assessment.save()
@@ -92,8 +103,10 @@ class AssessmentsView(
 
             municipality = Municipality.objects.filter(zip_codes__code=zip_code)
             if municipality.count() == 0:
-                return Response(
-                    status=400, data="Aucune commune ne correspond à ce code postal"
+                raise ValidationFieldError(
+                    "zip_code",
+                    detail="The zip code does not correspond to any municipality",
+                    code=ErrorCode.NO_ZIP_CODE_MUNICIPALITY.value,
                 )
             if municipality.count() > 1:
                 logger.warning(
@@ -107,9 +120,10 @@ class AssessmentsView(
                 related_municipalities_ordered__municipality__zip_codes__code=zip_code
             )
             if epci.count() == 0:
-                return Response(
-                    status=400,
-                    data="Aucune intercommunalité ne correspond à ce code postal",
+                raise ValidationFieldError(
+                    "zip_code",
+                    detail="The zip code does not correspond to any epci",
+                    code=ErrorCode.NO_ZIP_CODE_EPCI.value,
                 )
             if epci.count() > 1:
                 logger.warning(
@@ -121,7 +135,11 @@ class AssessmentsView(
 
         else:
             logger.error("locality_type received not correct")
-            return Response(status=400)
+            raise ValidationFieldError(
+                "locality_type",
+                detail="The locality type received is not correct",
+                code=ErrorCode.UNCORRECT_LOCALITY_TYPE.value,
+            )
 
         return Response(status=200, data=self.serializer_class(assessment[0]).data)
 

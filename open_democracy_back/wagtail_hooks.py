@@ -31,6 +31,12 @@ from open_democracy_back.models import (
 )
 
 from wagtail.contrib.modeladmin.helpers import ButtonHelper
+from open_democracy_back.models.contents_models import (
+    BlogPost,
+    Feedback,
+    Partner,
+    Resource,
+)
 
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
@@ -102,11 +108,55 @@ def editor_js():
     return js_includes
 
 
+class FeedbackModelAdmin(ModelAdmin):
+    model = Feedback
+    menu_label = "Retour d'expérience"
+    menu_icon = "user"
+    add_to_settings_menu = False
+    search_fields = "name"
+
+
+class BlogPostModelAdmin(ModelAdmin):
+    model = BlogPost
+    menu_label = "Article de blog"
+    menu_icon = "doc-full"
+    add_to_settings_menu = False
+    search_fields = "title"
+
+
+class ResourcesModelAdmin(ModelAdmin):
+    model = Resource
+    menu_label = "Ressource"
+    menu_icon = "doc-full"
+    add_to_settings_menu = False
+    search_fields = "title"
+
+
+class PartnerModelAdmin(ModelAdmin):
+    model = Partner
+    menu_label = "Partenaire"
+    menu_icon = "link"
+    add_to_settings_menu = False
+    search_fields = "name"
+
+
+class ContentAdminGroup(ModelAdminGroup):
+    menu_label = "Contenus"
+    menu_order = 200
+    menu_icon = "folder-inverse"
+    items = (
+        FeedbackModelAdmin,
+        BlogPostModelAdmin,
+        ResourcesModelAdmin,
+        PartnerModelAdmin,
+    )
+
+
 class ThematicTagModelAdmin(ModelAdmin):
     model = ThematicTag
     menu_label = "Thématiques"
     menu_icon = "pilcrow"
-    menu_order = 200
+    menu_order = 202
     form_fields_exclude = ("slug",)
     add_to_settings_menu = False
     search_fields = ("name",)
@@ -116,14 +166,14 @@ class DefinitionsModelAdmin(ModelAdmin):
     model = Definition
     menu_label = "Définitions"
     menu_icon = "openquote"
-    menu_order = 201
+    menu_order = 204
     add_to_settings_menu = False
     search_fields = ("word",)
 
 
 class PillarModelAdmin(ModelAdmin):
     model = Pillar
-    menu_label = "Pillier"
+    menu_label = "Pilier"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
     search_fields = ("name", "code")
@@ -168,7 +218,7 @@ class QuestionnaireQuestionModelAdmin(ModelAdmin):
 
 class SurveyAdminGroup(ModelAdminGroup):
     menu_label = "Questionnaire"
-    menu_order = 202
+    menu_order = 206
     menu_icon = "list-ol"
     items = (
         PillarModelAdmin,
@@ -206,7 +256,7 @@ class ProfilingQuestionModelAdmin(ModelAdmin):
 
 class ProfilingAdminGroup(ModelAdminGroup):
     menu_label = "Profilage"
-    menu_order = 203
+    menu_order = 208
     menu_icon = "group"
     items = (
         RoleModelAdmin,
@@ -219,7 +269,7 @@ class RepresentativityModelAdmin(ModelAdmin):
     model = RepresentativityCriteria
     menu_label = "Représentativité"
     menu_icon = "password"
-    menu_order = 204
+    menu_order = 210
     add_to_settings_menu = False
     search_fields = ("name",)
 
@@ -258,7 +308,7 @@ class EPCIModelAdmin(ModelAdmin):
 
 class LocalityAdminGroup(ModelAdminGroup):
     menu_label = "Localités"
-    menu_order = 205
+    menu_order = 212
     menu_icon = "home"
     items = (
         RegionModelAdmin,
@@ -272,7 +322,7 @@ class AssessmentModelAdmin(ModelAdmin):
     model = Assessment
     menu_label = "Évaluation"
     menu_icon = "date"
-    menu_order = 206
+    menu_order = 214
 
 
 class MyPermissionHelper(PermissionHelper):
@@ -302,6 +352,7 @@ class UserAdmin(ModelAdmin):
         return qs.filter(is_superuser=True)
 
 
+modeladmin_register(ContentAdminGroup)
 modeladmin_register(ThematicTagModelAdmin)
 modeladmin_register(DefinitionsModelAdmin)
 modeladmin_register(SurveyAdminGroup)

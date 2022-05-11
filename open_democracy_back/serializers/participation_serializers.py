@@ -49,6 +49,9 @@ class ParticipationSerializer(serializers.ModelSerializer):
     is_pillar_questions_completed = ParticipationPillarCompletedSerializer(
         source="participationpillarcompleted_set", many=True, read_only=True
     )
+    profile_ids = serializers.PrimaryKeyRelatedField(
+        read_only=True, source="profiles", many=True
+    )
 
     def validate(self, data):
         if Participation.objects.filter(
@@ -70,6 +73,7 @@ class ParticipationSerializer(serializers.ModelSerializer):
             "consent",
             "is_profiling_questions_completed",
             "is_pillar_questions_completed",
+            "profile_ids",
         ]
         read_only_fields = ["is_profiling_questions_completed"]
 

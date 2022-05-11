@@ -1,7 +1,12 @@
+import logging
 from rest_framework.exceptions import APIException
 from rest_framework import status
 from rest_framework.views import exception_handler
 from enum import Enum
+
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 
 def custom_exception_handler(exc, context):
@@ -12,11 +17,15 @@ def custom_exception_handler(exc, context):
     # Now add the HTTP status code and the message code to the response.
     if response is not None:
         response.data["status_code"] = response.status_code
-        if isinstance(response.data["detail"].code, dict):
-            response.data["field"] = response.data["detail"].code["field"]
-            response.data["message_code"] = response.data["detail"].code["code"]
+        logger.error(f"An error occured: {response.data}")
+        if "detail" in response.data:
+            if isinstance(response.data["detail"].code, dict):
+                response.data["field"] = response.data["detail"].code["field"]
+                response.data["message_code"] = response.data["detail"].code["code"]
+            else:
+                response.data["message_code"] = response.data["detail"].code
         else:
-            response.data["message_code"] = response.data["detail"].code
+            response.data["message_code"] = "server_error"
 
     return response
 
@@ -44,3 +53,4 @@ class ErrorCode(Enum):
     NO_ZIP_CODE_EPCI = "no_zip_code_epci"
     UNCORRECT_LOCALITY_TYPE = "uncorrect_locality_type"
     PARTICIPATION_ALREADY_EXISTS = "participation_already_exists"
+    QUESTION_NOT_NEEDED = "question_not_needed"

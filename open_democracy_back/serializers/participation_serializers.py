@@ -49,6 +49,9 @@ class ParticipationSerializer(serializers.ModelSerializer):
     is_pillar_questions_completed = ParticipationPillarCompletedSerializer(
         source="participationpillarcompleted_set", many=True, read_only=True
     )
+    profile_ids = serializers.PrimaryKeyRelatedField(
+        read_only=True, source="profiles", many=True
+    )
 
     def validate(self, data):
         if Participation.objects.filter(
@@ -70,6 +73,7 @@ class ParticipationSerializer(serializers.ModelSerializer):
             "consent",
             "is_profiling_questions_completed",
             "is_pillar_questions_completed",
+            "profile_ids",
         ]
         read_only_fields = ["is_profiling_questions_completed"]
 
@@ -91,12 +95,29 @@ class ResponseSerializer(serializers.ModelSerializer):
         required=False,
     )
 
+    def validate(self, data):
+        participation = data["participation"]
+        population = participation.assessment.population
+        if (
+            not Question.objects.filter_by_role_and_population(
+                participation.role, population
+            )
+            .filter(id=data["question"].id)
+            .exists()
+        ):
+            raise serializers.ValidationError(
+                detail="You don't need to respond to this question.",
+                code=ErrorCode.QUESTION_NOT_NEEDED.value,
+            )
+        return data
+
     class Meta:
         model = Response
         fields = [
             "id",
             "participation_id",
             "question_id",
+            "has_passed",
             "unique_choice_response_id",
             "multiple_choice_response_ids",
             "boolean_response",

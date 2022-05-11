@@ -1,5 +1,6 @@
 from django.db import models
 from django import forms
+from django.db.models import Q
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -17,8 +18,6 @@ from wagtail.search import index
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
 
-from open_democracy_back.constants import NUMERICAL_OPERATOR
-
 SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "bold",
     "italic",
@@ -27,10 +26,29 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "ul",
 ]
 
+NUMERICAL_OPERATOR = [
+    ("<", "<"),
+    (">", ">"),
+    ("<=", "<="),
+    (">=", ">="),
+    ("!=", "!="),
+    ("=", "="),
+]
+
 
 class BooleanOperator(models.TextChoices):
     AND = "and", "et"
     OR = "or", "ou"
+
+
+class QuestionType(models.TextChoices):
+    OPEN = "open", "Ouverte"
+    UNIQUE_CHOICE = "unique_choice", "Choix unique"
+    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
+    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
+    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
+    BOOLEAN = "boolean", "Binaire oui / non"
+    PERCENTAGE = "percentage", "Pourcentage"
 
 
 @register_snippet
@@ -273,16 +291,6 @@ class Criteria(index.Indexed, ReferentielFields):
         ordering = ["code"]
 
 
-class QuestionType(models.TextChoices):
-    OPEN = "open", "Ouverte"
-    UNIQUE_CHOICE = "unique_choice", "Choix unique"
-    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
-    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
-    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
-    BOOLEAN = "boolean", "Binaire oui / non"
-    PERCENTAGE = "percentage", "Pourcentage"
-
-
 @register_snippet
 class Definition(models.Model):
     word = models.CharField(max_length=255, verbose_name="mot")
@@ -298,8 +306,27 @@ class Definition(models.Model):
         verbose_name_plural = "Définitions"
 
 
+class QuestionQuerySet(models.QuerySet):
+    def filter_by_role_and_population(self, role, population):
+        return self.filter(
+            Q(roles=role) | Q(roles=None),
+            Q(population_lower_bound__lte=population) | Q(population_lower_bound=None),
+            Q(population_upper_bound__gte=population) | Q(population_upper_bound=None),
+        )
+
+
+class QuestionManager(models.Manager):
+    def get_queryset(self):
+        return QuestionQuerySet(self.model, using=self._db)
+
+    def filter_by_role_and_population(self, role, population):
+        return self.get_queryset().filter_by_role_and_population(role, population)
+
+
 @register_snippet
 class Question(index.Indexed, TimeStampedModel, ClusterableModel):
+    objects = QuestionManager()
+
     rules_intersection_operator = models.CharField(
         max_length=8, choices=BooleanOperator.choices, default=BooleanOperator.AND
     )
@@ -315,6 +342,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     question_statement = models.TextField(
         verbose_name="Enoncé de la question", default=""
     )
+
+    mandatory = models.BooleanField(default=False, verbose_name="Obligatoire")
 
     type = models.CharField(
         max_length=32,
@@ -349,11 +378,13 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Score associé à une réponse négative",
         blank=True,
         null=True,
+        help_text="Si pertinant",
     )
     true_associated_score = models.IntegerField(
         verbose_name="Score associé à une réponse positive",
         blank=True,
         null=True,
+        help_text="Si pertinant",
     )
 
     max_multiple_choices = models.IntegerField(
@@ -457,6 +488,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("name"),
         FieldPanel("question_statement"),
         FieldPanel("description"),
+        FieldPanel("mandatory"),
         FieldRowPanel(
             [
                 FieldPanel("population_lower_bound"),
@@ -509,7 +541,7 @@ class QuestionDefinition(Orderable):
     ]
 
 
-class QuestionnaireQuestionManager(models.Manager):
+class QuestionnaireQuestionManager(QuestionManager):
     def get_queryset(self):
         return super().get_queryset().filter(profiling_question=False)
 
@@ -558,7 +590,7 @@ class QuestionnaireQuestion(Question):
         proxy = True
 
 
-class ProfilingQuestionManager(models.Manager):
+class ProfilingQuestionManager(QuestionManager):
     def get_queryset(self):
         return super().get_queryset().filter(profiling_question=True)
 
@@ -607,9 +639,7 @@ class ResponseChoice(TimeStampedModel, Orderable):
     )
 
     associated_score = models.IntegerField(
-        verbose_name="Score associé",
-        blank=True,
-        null=True,
+        verbose_name="Score associé", blank=True, null=True, help_text="Si pertinant"
     )
 
     def __str__(self):
@@ -637,7 +667,7 @@ class PercentageRange(TimeStampedModel, Orderable):
 
     associated_score = models.IntegerField(
         verbose_name="Score associé",
-        help_text="Le score sera alors de",
+        help_text="Si pertinant.",
     )
     panels = [
         MultiFieldPanel(

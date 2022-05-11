@@ -81,28 +81,27 @@ class RuleContext:
 
 
 def isProfileRelevant(profileType, profilingQuestionResponses):
-    if profileType.rules_intersection_operator == BooleanOperator["and"]:
+    if profileType.rules_intersection_operator == BooleanOperator.AND.value:
         all(
             [
                 RuleContext(rule).does_respect_rule(
                     profilingQuestionResponses.get(question=rule.conditional_question),
                 )
-                for rule in profileType.rules
+                for rule in profileType.rules.all()
             ]
         )
-    if profileType.rules_intersection_operator == BooleanOperator["or"]:
+    if profileType.rules_intersection_operator == BooleanOperator.OR.value:
         any(
             [
                 RuleContext(rule).does_respect_rule(
                     profilingQuestionResponses.get(question=rule.conditional_question),
                 )
-                for rule in profileType.rules
+                for rule in profileType.rules.all()
             ]
         )
 
 
-def assignProfilesToParticipation(participationId):
-    participation = Participation.objects.get(id=participationId)
+def assignProfilesToParticipation(participation):
     profilingQuestionResponses = participation.responses.filter(
         question__profiling_question=True
     )
@@ -165,6 +164,7 @@ class CompletedQuestionsParticipationView(APIView):
         if request.data.get("profiling_question"):
             participation.is_profiling_questions_completed = True
             participation.save()
+            assignProfilesToParticipation(participation)
         elif participation.is_profiling_questions_completed and pillard_id:
             participation_pillar_completed = (
                 participation.participationpillarcompleted_set.get(pillar=pillard_id)

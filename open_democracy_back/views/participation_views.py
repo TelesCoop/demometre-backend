@@ -82,7 +82,7 @@ class RuleContext:
 
 def isProfileRelevant(profileType, profilingQuestionResponses):
     if profileType.rules_intersection_operator == BooleanOperator.AND.value:
-        all(
+        return all(
             [
                 RuleContext(rule).does_respect_rule(
                     profilingQuestionResponses.get(question=rule.conditional_question),
@@ -91,7 +91,7 @@ def isProfileRelevant(profileType, profilingQuestionResponses):
             ]
         )
     if profileType.rules_intersection_operator == BooleanOperator.OR.value:
-        any(
+        return any(
             [
                 RuleContext(rule).does_respect_rule(
                     profilingQuestionResponses.get(question=rule.conditional_question),

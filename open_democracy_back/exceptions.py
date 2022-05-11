@@ -44,3 +44,4 @@ class ErrorCode(Enum):
     NO_ZIP_CODE_EPCI = "no_zip_code_epci"
     UNCORRECT_LOCALITY_TYPE = "uncorrect_locality_type"
     PARTICIPATION_ALREADY_EXISTS = "participation_already_exists"
+    QUESTION_NOT_NEEDED = "question_not_needed"

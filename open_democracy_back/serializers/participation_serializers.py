@@ -95,6 +95,22 @@ class ResponseSerializer(serializers.ModelSerializer):
         required=False,
     )
 
+    def validate(self, data):
+        participation = data["participation"]
+        population = participation.assessment.population
+        if (
+            not Question.objects.filter_by_role_and_population(
+                participation.role, population
+            )
+            .filter(id=data["question"].id)
+            .exists()
+        ):
+            raise serializers.ValidationError(
+                detail="You don't need to respond to this question.",
+                code=ErrorCode.QUESTION_NOT_NEEDED.value,
+            )
+        return data
+
     class Meta:
         model = Response
         fields = [

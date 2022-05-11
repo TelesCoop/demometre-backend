@@ -1,5 +1,6 @@
 from django.db import models
 from django import forms
+from django.db.models import Q
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -509,9 +510,23 @@ class QuestionDefinition(Orderable):
     ]
 
 
+class QuestionQuerySet(models.QuerySet):
+    def filter_by_role_and_population(self, role, population):
+        return self.filter(
+            Q(roles=role) | Q(roles=None),
+            Q(population_lower_bound__lte=population) | Q(population_lower_bound=None),
+            Q(population_upper_bound__gte=population) | Q(population_upper_bound=None),
+        )
+
+
 class QuestionnaireQuestionManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(profiling_question=False)
+        return QuestionQuerySet(self.model, using=self._db).filter(
+            profiling_question=False
+        )
+
+    def filter_by_role_and_population(self, role, population):
+        return self.get_queryset().filter_by_role_and_population(role, population)
 
 
 @register_snippet
@@ -560,7 +575,12 @@ class QuestionnaireQuestion(Question):
 
 class ProfilingQuestionManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(profiling_question=True)
+        return QuestionQuerySet(self.model, using=self._db).filter(
+            profiling_question=True
+        )
+
+    def filter_by_role_and_population(self, role, population):
+        return self.get_queryset().filter_by_role_and_population(role, population)
 
 
 @register_snippet

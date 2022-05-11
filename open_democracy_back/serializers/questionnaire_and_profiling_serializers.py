@@ -107,12 +107,19 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 
 class QuestionnaireQuestionSerializer(QuestionSerializer):
+    role_ids = serializers.PrimaryKeyRelatedField(
+        read_only=True, source="roles", many=True
+    )
+
     class Meta:
         model = QuestionnaireQuestion
         fields = [
             "criteria_id",
             "objectivity",
             "method",
+            "role_ids",
+            "population_lower_bound",
+            "population_upper_bound",
         ] + QUESTION_FIELDS
         read_only_fields = fields
 

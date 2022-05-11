@@ -117,6 +117,7 @@ class ResponseSerializer(serializers.ModelSerializer):
             "id",
             "participation_id",
             "question_id",
+            "has_passed",
             "unique_choice_response_id",
             "multiple_choice_response_ids",
             "boolean_response",

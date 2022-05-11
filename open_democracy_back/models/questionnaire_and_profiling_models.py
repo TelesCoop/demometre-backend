@@ -18,8 +18,6 @@ from wagtail.search import index
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
 
-from open_democracy_back.constants import NUMERICAL_OPERATOR
-
 SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "bold",
     "italic",
@@ -28,10 +26,29 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "ul",
 ]
 
+NUMERICAL_OPERATOR = [
+    ("<", "<"),
+    (">", ">"),
+    ("<=", "<="),
+    (">=", ">="),
+    ("!=", "!="),
+    ("=", "="),
+]
+
 
 class BooleanOperator(models.TextChoices):
     AND = "and", "et"
     OR = "or", "ou"
+
+
+class QuestionType(models.TextChoices):
+    OPEN = "open", "Ouverte"
+    UNIQUE_CHOICE = "unique_choice", "Choix unique"
+    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
+    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
+    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
+    BOOLEAN = "boolean", "Binaire oui / non"
+    PERCENTAGE = "percentage", "Pourcentage"
 
 
 @register_snippet
@@ -274,16 +291,6 @@ class Criteria(index.Indexed, ReferentielFields):
         ordering = ["code"]
 
 
-class QuestionType(models.TextChoices):
-    OPEN = "open", "Ouverte"
-    UNIQUE_CHOICE = "unique_choice", "Choix unique"
-    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
-    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
-    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
-    BOOLEAN = "boolean", "Binaire oui / non"
-    PERCENTAGE = "percentage", "Pourcentage"
-
-
 @register_snippet
 class Definition(models.Model):
     word = models.CharField(max_length=255, verbose_name="mot")
@@ -336,6 +343,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Enoncé de la question", default=""
     )
 
+    mandatory = models.BooleanField(default=False, verbose_name="Obligatoire")
+
     type = models.CharField(
         max_length=32,
         choices=QuestionType.choices,
@@ -369,11 +378,13 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Score associé à une réponse négative",
         blank=True,
         null=True,
+        help_text="Si pertinant",
     )
     true_associated_score = models.IntegerField(
         verbose_name="Score associé à une réponse positive",
         blank=True,
         null=True,
+        help_text="Si pertinant",
     )
 
     max_multiple_choices = models.IntegerField(
@@ -477,6 +488,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("name"),
         FieldPanel("question_statement"),
         FieldPanel("description"),
+        FieldPanel("mandatory"),
         FieldRowPanel(
             [
                 FieldPanel("population_lower_bound"),
@@ -627,9 +639,7 @@ class ResponseChoice(TimeStampedModel, Orderable):
     )
 
     associated_score = models.IntegerField(
-        verbose_name="Score associé",
-        blank=True,
-        null=True,
+        verbose_name="Score associé", blank=True, null=True, help_text="Si pertinant"
     )
 
     def __str__(self):
@@ -657,7 +667,7 @@ class PercentageRange(TimeStampedModel, Orderable):
 
     associated_score = models.IntegerField(
         verbose_name="Score associé",
-        help_text="Le score sera alors de",
+        help_text="Si pertinant.",
     )
     panels = [
         MultiFieldPanel(

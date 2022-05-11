@@ -1,5 +1,6 @@
 from django.db import models
 from django import forms
+from django.db.models import Q
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -38,6 +39,16 @@ NUMERICAL_OPERATOR = [
 class BooleanOperator(models.TextChoices):
     AND = "and", "et"
     OR = "or", "ou"
+
+
+class QuestionType(models.TextChoices):
+    OPEN = "open", "Ouverte"
+    UNIQUE_CHOICE = "unique_choice", "Choix unique"
+    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
+    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
+    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
+    BOOLEAN = "boolean", "Binaire oui / non"
+    PERCENTAGE = "percentage", "Pourcentage"
 
 
 @register_snippet
@@ -295,18 +306,27 @@ class Definition(models.Model):
         verbose_name_plural = "Définitions"
 
 
-class QuestionType(models.TextChoices):
-    OPEN = "open", "Ouverte"
-    UNIQUE_CHOICE = "unique_choice", "Choix unique"
-    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
-    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
-    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
-    BOOLEAN = "boolean", "Binaire oui / non"
-    PERCENTAGE = "percentage", "Pourcentage"
+class QuestionQuerySet(models.QuerySet):
+    def filter_by_role_and_population(self, role, population):
+        return self.filter(
+            Q(roles=role) | Q(roles=None),
+            Q(population_lower_bound__lte=population) | Q(population_lower_bound=None),
+            Q(population_upper_bound__gte=population) | Q(population_upper_bound=None),
+        )
+
+
+class QuestionManager(models.Manager):
+    def get_queryset(self):
+        return QuestionQuerySet(self.model, using=self._db)
+
+    def filter_by_role_and_population(self, role, population):
+        return self.get_queryset().filter_by_role_and_population(role, population)
 
 
 @register_snippet
 class Question(index.Indexed, TimeStampedModel, ClusterableModel):
+    objects = QuestionManager()
+
     rules_intersection_operator = models.CharField(
         max_length=8, choices=BooleanOperator.choices, default=BooleanOperator.AND
     )
@@ -521,7 +541,7 @@ class QuestionDefinition(Orderable):
     ]
 
 
-class QuestionnaireQuestionManager(models.Manager):
+class QuestionnaireQuestionManager(QuestionManager):
     def get_queryset(self):
         return super().get_queryset().filter(profiling_question=False)
 
@@ -570,7 +590,7 @@ class QuestionnaireQuestion(Question):
         proxy = True
 
 
-class ProfilingQuestionManager(models.Manager):
+class ProfilingQuestionManager(QuestionManager):
     def get_queryset(self):
         return super().get_queryset().filter(profiling_question=True)
 

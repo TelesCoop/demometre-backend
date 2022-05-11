@@ -33,6 +33,9 @@ QUESTION_FIELDS = [
     "rules_intersection_operator",
     "rules",
     "survey_type",
+    "role_ids",
+    "population_lower_bound",
+    "population_upper_bound",
 ]
 REFERENTIAL_FIELDS = [
     "description",
@@ -98,6 +101,9 @@ class QuestionSerializer(serializers.ModelSerializer):
     definition_ids = serializers.SerializerMethodField()
     categories = CategorySerializer(many=True, read_only=True)
     rules = QuestionRuleSerializer(many=True, read_only=True)
+    role_ids = serializers.PrimaryKeyRelatedField(
+        read_only=True, source="roles", many=True
+    )
 
     @staticmethod
     def get_definition_ids(obj: Question):
@@ -108,12 +114,17 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 
 class QuestionnaireQuestionSerializer(QuestionSerializer):
+    profile_ids = serializers.PrimaryKeyRelatedField(
+        read_only=True, source="profiles", many=True
+    )
+
     class Meta:
         model = QuestionnaireQuestion
         fields = [
             "criteria_id",
             "objectivity",
             "method",
+            "profile_ids",
         ] + QUESTION_FIELDS
         read_only_fields = fields
 

@@ -22,7 +22,6 @@ from .views.assessment_views import (
     initialize_assessment,
 )
 from .views.profiling_views import (
-    ParticipationProfilingQuestionView,
     ProfilingQuestionView,
     RoleView,
 )
@@ -46,6 +45,14 @@ router.register(
 )
 router.register(r"participations", ParticipationView, basename="Participation")
 router.register(r"responses", ResponseView, basename="Response")
+router.register(
+    r"profiling-questions", ProfilingQuestionView, basename="ProfilingQuestion"
+)
+router.register(
+    r"questionnaire-questions",
+    QuestionnaireQuestionView,
+    basename="QuestionnaireQuestion",
+)
 
 
 urlpatterns = [
@@ -62,22 +69,6 @@ urlpatterns = [
     path("markers/<int:pk>/", MarkerView.as_view({"get": "retrieve"})),
     path("criterias/", CriteriaView.as_view({"get": "list"})),
     path("criterias/<int:pk>/", CriteriaView.as_view({"get": "retrieve"})),
-    path(
-        "questionnaire-questions/", QuestionnaireQuestionView.as_view({"get": "list"})
-    ),
-    path(
-        "questionnaire-questions/<int:pk>/",
-        QuestionnaireQuestionView.as_view({"get": "retrieve"}),
-    ),
-    path("profiling-questions/", ProfilingQuestionView.as_view({"get": "list"})),
-    path(
-        "profiling-questions/<int:pk>/",
-        ProfilingQuestionView.as_view({"get": "retrieve"}),
-    ),
-    path(
-        "profiling-questions/participation/<int:participation_pk>/",
-        ParticipationProfilingQuestionView.as_view({"get": "list"}),
-    ),
     path("definitions/", DefinitionView.as_view({"get": "list"})),
     path("definitions/<int:pk>/", DefinitionView.as_view({"get": "retrieve"})),
     path("roles/", RoleView.as_view({"get": "list"})),

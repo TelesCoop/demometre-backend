@@ -20,6 +20,7 @@ QUESTION_FIELDS = [
     "name",
     "question_statement",
     "description",
+    "mandatory",
     "type",
     "response_choices",
     "max_multiple_choices",

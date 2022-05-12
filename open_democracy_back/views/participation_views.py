@@ -173,4 +173,5 @@ class CompletedQuestionsParticipationView(APIView):
             participation_pillar_completed.save()
         else:
             return RestResponse(status=status.HTTP_400_BAD_REQUEST)
-        return RestResponse(status=status.HTTP_200_OK)
+        serializer = ParticipationSerializer(participation)
+        return RestResponse(serializer.data, status=status.HTTP_200_OK)

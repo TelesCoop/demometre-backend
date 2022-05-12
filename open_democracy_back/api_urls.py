@@ -78,7 +78,7 @@ urlpatterns = [
         RepresentativityCriteriaView.as_view({"get": "list"}),
     ),
     path(
-        "participations/<int:pk>/questions/completed",
+        "participations/<int:pk>/questions/completed/",
         CompletedQuestionsParticipationView.as_view(),
     ),
 ]

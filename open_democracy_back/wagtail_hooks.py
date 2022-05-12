@@ -202,7 +202,8 @@ class CriteriaModelAdmin(ModelAdmin):
 
 class QuestionnaireQuestionModelAdmin(ModelAdmin):
     model = QuestionnaireQuestion
-    button_helper_class = RulesButtonHelper
+    # Drawer question for questionnaire question is inactive
+    # button_helper_class = RulesButtonHelper
     menu_label = "Question"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False

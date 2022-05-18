@@ -38,7 +38,7 @@ class Participation(models.Model):
     )
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} - {str(self.assessment)}"
 
     def save(self, *args, **kwargs):
         is_new = not self.pk

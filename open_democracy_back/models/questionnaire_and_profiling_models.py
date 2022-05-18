@@ -45,10 +45,11 @@ class QuestionType(models.TextChoices):
     OPEN = "open", "Ouverte"
     UNIQUE_CHOICE = "unique_choice", "Choix unique"
     MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
-    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
     CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
     BOOLEAN = "boolean", "Binaire oui / non"
     PERCENTAGE = "percentage", "Pourcentage"
+    # Inactive question type
+    # CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
 
 
 @register_snippet
@@ -348,7 +349,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     type = models.CharField(
         max_length=32,
         choices=QuestionType.choices,
-        default=QuestionType.OPEN,
+        default=QuestionType.BOOLEAN,
         help_text="Choisir le type de question",
     )
 

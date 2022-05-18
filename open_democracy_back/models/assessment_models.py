@@ -226,7 +226,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
     ]
 
     def __str__(self):
-        return f"{self.type} {self.municipality}"
+        return f"{self.get_type_display()} {self.municipality if self.type == LocalityType.MUNICIPALITY else self.epci}"
 
     class Meta:
         verbose_name = "Évaluation"

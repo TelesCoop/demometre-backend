@@ -37,6 +37,7 @@ from open_democracy_back.models.contents_models import (
     Partner,
     Resource,
 )
+from open_democracy_back.models.participation_models import Participation
 
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
@@ -106,6 +107,11 @@ def editor_js():
     )
 
     return js_includes
+
+
+class CanNotEditPermissionHelper(PermissionHelper):
+    def user_can_edit_obj(self, user, obj):
+        return False
 
 
 class FeedbackModelAdmin(ModelAdmin):
@@ -202,7 +208,8 @@ class CriteriaModelAdmin(ModelAdmin):
 
 class QuestionnaireQuestionModelAdmin(ModelAdmin):
     model = QuestionnaireQuestion
-    button_helper_class = RulesButtonHelper
+    # Drawer question for questionnaire question is inactive
+    # button_helper_class = RulesButtonHelper
     menu_label = "Question"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
@@ -322,12 +329,31 @@ class AssessmentModelAdmin(ModelAdmin):
     model = Assessment
     menu_label = "Évaluation"
     menu_icon = "date"
+    add_to_settings_menu = False
+    search_fields = ("municipality__name", "epci__name")
+
+
+class ParticipationModelAdmin(ModelAdmin):
+    model = Participation
+    menu_label = "Participations aux évaluations"
+    menu_icon = "user"
+    add_to_settings_menu = False
+    search_fields = (
+        "user__username",
+        "assessment__municipality__name",
+        "assessment__epci__name",
+    )
+    permission_helper_class = CanNotEditPermissionHelper
+
+
+class AssessmentAdminGroup(ModelAdminGroup):
+    menu_label = "Évaluations"
     menu_order = 214
-
-
-class MyPermissionHelper(PermissionHelper):
-    def user_can_edit_obj(self, user, obj):
-        return False
+    menu_icon = "date"
+    items = (
+        AssessmentModelAdmin,
+        ParticipationModelAdmin,
+    )
 
 
 class UserAdmin(ModelAdmin):
@@ -343,8 +369,7 @@ class UserAdmin(ModelAdmin):
         "last_login",
     )
     search_fields = "username"
-
-    permission_helper_class = MyPermissionHelper
+    permission_helper_class = CanNotEditPermissionHelper
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -359,5 +384,5 @@ modeladmin_register(SurveyAdminGroup)
 modeladmin_register(ProfilingAdminGroup)
 modeladmin_register(RepresentativityModelAdmin)
 modeladmin_register(LocalityAdminGroup)
-modeladmin_register(AssessmentModelAdmin)
+modeladmin_register(AssessmentAdminGroup)
 modeladmin_register(UserAdmin)

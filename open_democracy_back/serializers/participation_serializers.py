@@ -1,5 +1,6 @@
 from django.utils import timezone
 from rest_framework import serializers
+from my_auth.serializers import CurrentUserOrAnonymousField
 from open_democracy_back.exceptions import ErrorCode
 
 from open_democracy_back.models import Assessment
@@ -41,7 +42,7 @@ class ParticipationPillarCompletedSerializer(serializers.ModelSerializer):
 
 
 class ParticipationSerializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    user = serializers.HiddenField(default=CurrentUserOrAnonymousField())
     assessment_id = AssessmentField(source="assessment")
     role_id = serializers.PrimaryKeyRelatedField(
         source="role", queryset=Role.objects.all()

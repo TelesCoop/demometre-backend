@@ -5,7 +5,6 @@ from django.db.models import QuerySet
 from rest_framework import mixins, viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response as RestResponse
-from rest_framework.permissions import IsAuthenticated
 from my_auth.utils import get_authenticated_or_anonymous_user_from_request
 from my_auth.permissions import IsAuthenticatedOrAnonymous
 
@@ -159,7 +158,7 @@ class ResponseView(
 
 
 class CompletedQuestionsParticipationView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrAnonymous]
 
     def patch(self, request, pk):
         participation = Participation.objects.get(user_id=request.user.id, id=pk)

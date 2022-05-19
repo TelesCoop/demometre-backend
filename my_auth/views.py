@@ -1,4 +1,5 @@
 import uuid
+import re
 from datetime import datetime
 
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
@@ -16,6 +17,9 @@ from my_auth.models import UserResetKey
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 
 from .serializers import AnonymousSerializer, AuthSerializer
+
+# Regular expression for validating an Email
+regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
 
 
 @api_view(["POST"])
@@ -41,9 +45,11 @@ def frontend_signup(request):
     data = request.data
     if User.objects.filter(email=data["email"]).count():
         raise ValidationFieldError("email", code=ErrorCode.EMAIL_ALREADY_EXISTS.value)
+    if not re.fullmatch(regex, data["email"]):
+        raise ValidationFieldError("email", code=ErrorCode.EMAIL_NOT_VALID.value)
     data["username"] = data["email"]
 
-    if data["anonymous"]:
+    if "anonymous" in data:
         user = User.objects.get(username=data["anonymous"])
         user.first_name = data["first_name"]
         user.last_name = data["last_name"]
@@ -81,6 +87,8 @@ def frontend_login(request):
 
     data = request.data
     email, password = data["email"].lower(), data["password"]
+    if not re.fullmatch(regex, data["email"]):
+        raise ValidationFieldError("email", code=ErrorCode.EMAIL_NOT_VALID.value)
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:

@@ -118,6 +118,13 @@ def frontend_logout(request):
 @ensure_csrf_cookie
 def who_am_i(request):
     """Returns information about the current user."""
+    anonymous_name = request.query_params.get("anonymous")
+    if request.user.is_anonymous and anonymous_name:
+        return Response(
+            AnonymousSerializer(
+                {"username": anonymous_name, "email": anonymous_name}
+            ).data
+        )
     if request.user.is_anonymous:
         raise NotAuthenticated()
 

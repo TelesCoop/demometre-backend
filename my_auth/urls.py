@@ -10,4 +10,5 @@ urlpatterns = [
     path("signup", views.frontend_signup),
     path("user/reset-password-link", views.front_end_reset_password_link),
     path("user/reset-password", views.front_end_reset_password),
+    path("anonymous", views.front_end_create_anonymous),
 ]

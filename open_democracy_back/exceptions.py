@@ -42,6 +42,7 @@ class ValidationFieldError(APIException):
 
 class ErrorCode(Enum):
     EMAIL_ALREADY_EXISTS = "email_already_exists"
+    EMAIL_NOT_VALID = "email_not_valid"
     NO_EMAIL = "no_email"
     WRONG_PASSWORD_FOR_EMAIL = "wrong_password_for_email"
     WRONG_PASSWORD_RESET_KEY = "wrong_password_reset_key"
@@ -54,3 +55,4 @@ class ErrorCode(Enum):
     UNCORRECT_LOCALITY_TYPE = "uncorrect_locality_type"
     PARTICIPATION_ALREADY_EXISTS = "participation_already_exists"
     QUESTION_NOT_NEEDED = "question_not_needed"
+    USER_NOT_FOUND = "user_not_found"

@@ -3,9 +3,10 @@ import operator
 from django.utils import timezone
 from django.db.models import QuerySet
 from rest_framework import mixins, viewsets, status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response as RestResponse
+from my_auth.utils import get_authenticated_or_anonymous_user_from_request
+from my_auth.permissions import IsAuthenticatedOrAnonymous
 
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 from open_democracy_back.models.participation_models import Participation, Response
@@ -117,12 +118,13 @@ class ParticipationView(
     mixins.CreateModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrAnonymous]
     serializer_class = ParticipationSerializer
 
     def get_queryset(self) -> QuerySet:
+        user = get_authenticated_or_anonymous_user_from_request(self.request)
         return Participation.objects.filter(
-            user_id=self.request.user.id,
+            user_id=user.id,
             assessment__initialization_date__lt=timezone.now(),
         )
 
@@ -130,11 +132,12 @@ class ParticipationView(
 class ResponseView(
     mixins.ListModelMixin, UpdateOrCreateModelMixin, viewsets.GenericViewSet
 ):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrAnonymous]
     serializer_class = ResponseSerializer
 
     def get_queryset(self):
-        query = Response.objects.filter(participation__user_id=self.request.user.id)
+        user = get_authenticated_or_anonymous_user_from_request(self.request)
+        query = Response.objects.filter(participation__user_id=user.id)
 
         context = self.request.query_params.get("context")
         if context:
@@ -155,7 +158,7 @@ class ResponseView(
 
 
 class CompletedQuestionsParticipationView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrAnonymous]
 
     def patch(self, request, pk):
         participation = Participation.objects.get(user_id=request.user.id, id=pk)

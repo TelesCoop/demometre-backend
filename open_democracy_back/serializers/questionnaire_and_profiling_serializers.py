@@ -117,11 +117,23 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
     profile_ids = serializers.PrimaryKeyRelatedField(
         read_only=True, source="profiles", many=True
     )
+    pillar_id = serializers.SerializerMethodField()
+    pillar_name = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_pillar_name(obj):
+        return obj.criteria.marker.pillar.name
+
+    @staticmethod
+    def get_pillar_id(obj):
+        return obj.criteria.marker.pillar_id
 
     class Meta:
         model = QuestionnaireQuestion
         fields = [
             "criteria_id",
+            "pillar_name",
+            "pillar_id",
             "objectivity",
             "method",
             "profile_ids",

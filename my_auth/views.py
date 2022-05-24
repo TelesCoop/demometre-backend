@@ -49,7 +49,7 @@ def frontend_signup(request):
         raise ValidationFieldError("email", code=ErrorCode.EMAIL_NOT_VALID.value)
     data["username"] = data["email"]
 
-    if "anonymous" in data:
+    if "anonymous" in data and data["anonymous"]:
         user = User.objects.get(username=data["anonymous"])
         user.first_name = data["first_name"]
         user.last_name = data["last_name"]

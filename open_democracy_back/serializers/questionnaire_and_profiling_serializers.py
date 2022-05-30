@@ -5,7 +5,6 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Marker,
     Pillar,
     ProfilingQuestion,
-    Question,
     QuestionRule,
     QuestionnaireQuestion,
     ResponseChoice,
@@ -24,11 +23,6 @@ QUESTION_FIELDS = [
     "type",
     "response_choices",
     "max_multiple_choices",
-    "definition_ids",
-    "legal_frame",
-    "use_case",
-    "sources",
-    "to_go_further",
     "categories",
     "rules_intersection_operator",
     "rules",
@@ -98,16 +92,11 @@ class QuestionRuleSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
-    definition_ids = serializers.SerializerMethodField()
     categories = CategorySerializer(many=True, read_only=True)
     rules = QuestionRuleSerializer(many=True, read_only=True)
     role_ids = serializers.PrimaryKeyRelatedField(
         read_only=True, source="roles", many=True
     )
-
-    @staticmethod
-    def get_definition_ids(obj: Question):
-        return obj.related_definition_ordered.values_list("definition_id", flat=True)
 
     class Meta:
         abstract = True
@@ -152,6 +141,11 @@ class CriteriaSerializer(serializers.ModelSerializer):
     question_ids = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, source="questions"
     )
+    definition_ids = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_definition_ids(obj: Criteria):
+        return obj.related_definition_ordered.values_list("definition_id", flat=True)
 
     class Meta:
         model = Criteria
@@ -162,6 +156,11 @@ class CriteriaSerializer(serializers.ModelSerializer):
             "concatenated_code",
             "question_ids",
             "thematic_tags",
+            "definition_ids",
+            "legal_frame",
+            "use_case",
+            "sources",
+            "to_go_further",
         ] + REFERENTIAL_FIELDS
         read_only_fields = fields
 

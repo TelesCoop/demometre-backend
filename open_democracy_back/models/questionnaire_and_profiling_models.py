@@ -246,7 +246,7 @@ class ThematicTag(TagBase):
 
 
 @register_snippet
-class Criteria(index.Indexed, ReferentielFields):
+class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
     marker = models.ForeignKey(
         Marker,
         null=True,
@@ -265,12 +265,47 @@ class Criteria(index.Indexed, ReferentielFields):
         ThematicTag, blank=True, verbose_name="Thématiques"
     )
 
-    panels = [
-        FieldPanel("marker"),
-        FieldPanel("name"),
-        FieldPanel("code"),
-        FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
-    ] + ReferentielFields.panels
+    legal_frame = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Cadre légal",
+    )
+    use_case = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Exemples inspirants",
+    )
+    sources = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Sources",
+    )
+    to_go_further = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Pour aller plus loin",
+    )
+
+    panels = (
+        [
+            FieldPanel("marker"),
+            FieldPanel("name"),
+            FieldPanel("code"),
+            FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
+        ]
+        + ReferentielFields.panels
+        + [
+            InlinePanel("related_definition_ordered", label="Définitions"),
+            FieldPanel("legal_frame"),
+            FieldPanel("sources"),
+            FieldPanel("to_go_further"),
+            FieldPanel("use_case"),
+        ]
+    )
 
     search_fields = [index.SearchField("name", partial_match=True)]
 
@@ -305,6 +340,16 @@ class Definition(models.Model):
     class Meta:
         verbose_name = "Définition"
         verbose_name_plural = "Définitions"
+
+
+class CriteriaDefinition(Orderable):
+    criteria = ParentalKey(
+        Criteria, on_delete=models.CASCADE, related_name="related_definition_ordered"
+    )
+    definition = models.ForeignKey(Definition, on_delete=models.CASCADE)
+    panels = [
+        SnippetChooserPanel("definition"),
+    ]
 
 
 class QuestionQuerySet(models.QuerySet):
@@ -403,30 +448,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         help_text="Texte précisant la question et pourquoi elle est posée.",
     )
 
-    legal_frame = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Cadre légal",
-    )
-    use_case = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Exemples inspirants",
-    )
-    sources = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Sources",
-    )
-    to_go_further = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Pour aller plus loin",
-    )
     comments = RichTextField(
         null=True,
         blank=True,
@@ -515,11 +536,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     explanation_panels = [
         SnippetChooserPanel("allows_to_explain"),
-        InlinePanel("related_definition_ordered", label="Définitions"),
-        FieldPanel("legal_frame"),
-        FieldPanel("sources"),
-        FieldPanel("to_go_further"),
-        FieldPanel("use_case"),
         FieldPanel("comments"),
     ]
 
@@ -530,16 +546,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     class Meta:
         ordering = ["code"]
-
-
-class QuestionDefinition(Orderable):
-    question = ParentalKey(
-        Question, on_delete=models.CASCADE, related_name="related_definition_ordered"
-    )
-    definition = models.ForeignKey(Definition, on_delete=models.CASCADE)
-    panels = [
-        SnippetChooserPanel("definition"),
-    ]
 
 
 class QuestionnaireQuestionManager(QuestionManager):

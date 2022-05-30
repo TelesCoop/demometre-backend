@@ -55,4 +55,6 @@ class ErrorCode(Enum):
     UNCORRECT_LOCALITY_TYPE = "uncorrect_locality_type"
     PARTICIPATION_ALREADY_EXISTS = "participation_already_exists"
     QUESTION_NOT_NEEDED = "question_not_needed"
+    NEED_PARTICIPATION_RESPONSE = "need_participation_response"
+    NEED_ASSESSMENT_RESPONSE = "need_assessment_response"
     USER_NOT_FOUND = "user_not_found"

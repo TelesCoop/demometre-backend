@@ -8,7 +8,7 @@ from open_democracy_back.views.page_views import (
     ReferentialPageView,
 )
 from open_democracy_back.views.participation_views import (
-    ResponseView,
+    ParticipationResponseView,
     ParticipationView,
     CompletedQuestionsParticipationView,
 )
@@ -17,6 +17,7 @@ from open_democracy_back.views.representativity_views import (
 )
 
 from .views.assessment_views import (
+    AssessmentResponseView,
     AssessmentView,
     AssessmentsView,
     initialize_assessment,
@@ -44,7 +45,10 @@ router.register(
     r"evaluation-init-pages", EvaluationInitPageView, basename="EvaluationInitPage"
 )
 router.register(r"participations", ParticipationView, basename="Participation")
-router.register(r"responses", ResponseView, basename="Response")
+router.register(
+    r"participation-responses", ParticipationResponseView, basename="Response"
+)
+router.register(r"assessment-responses", AssessmentResponseView, basename="Response")
 router.register(
     r"profiling-questions", ProfilingQuestionView, basename="ProfilingQuestion"
 )

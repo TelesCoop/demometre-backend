@@ -8,7 +8,7 @@ from open_democracy_back.models import Assessment
 
 from open_democracy_back.models.participation_models import (
     Participation,
-    Response,
+    ParticipationResponse,
     ParticipationPillarCompleted,
 )
 from open_democracy_back.models.questionnaire_and_profiling_models import (
@@ -16,6 +16,22 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Question,
     ResponseChoice,
 )
+
+RESPONSE_FIELDS = [
+    "id",
+    "question_id",
+    "has_passed",
+    "unique_choice_response_id",
+    "multiple_choice_response_ids",
+    "boolean_response",
+    "percentage_response",
+]
+OPTIONAL_RESPONSE_FIELDS = [
+    "unique_choice_response_id",
+    "multiple_choice_response_ids",
+    "boolean_response",
+    "percentage_response",
+]
 
 
 class AssessmentField(serializers.PrimaryKeyRelatedField):
@@ -84,7 +100,6 @@ class ParticipationSerializer(serializers.ModelSerializer):
 
 
 class ResponseSerializer(serializers.ModelSerializer):
-    participation_id = ParticipationField(source="participation")
     question_id = serializers.PrimaryKeyRelatedField(
         source="question", queryset=Question.objects.all()
     )
@@ -100,13 +115,19 @@ class ResponseSerializer(serializers.ModelSerializer):
         required=False,
     )
 
+    class Meta:
+        asbtract = True
+
+
+class ParticipationResponseSerializer(ResponseSerializer):
+    participation_id = ParticipationField(source="participation")
+
     def validate(self, data):
         participation = data["participation"]
         population = participation.assessment.population
         if (
-            not Question.objects.filter_by_role_and_population(
-                participation.role, population
-            )
+            not Question.objects.filter_by_role(participation.role)
+            .filter_by_population(population)
             .filter(id=data["question"].id)
             .exists()
         ):
@@ -114,23 +135,18 @@ class ResponseSerializer(serializers.ModelSerializer):
                 detail="You don't need to respond to this question.",
                 code=ErrorCode.QUESTION_NOT_NEEDED.value,
             )
+        question = data["question"]
+        if (
+            question.objectivity == "objective"
+            and question.survey_type == "questionnaire"
+        ):
+            raise serializers.ValidationError(
+                detail="An objective response must be link to the assessment, not the participation",
+                code=ErrorCode.NEED_PARTICIPATION_RESPONSE.value,
+            )
         return data
 
     class Meta:
-        model = Response
-        fields = [
-            "id",
-            "participation_id",
-            "question_id",
-            "has_passed",
-            "unique_choice_response_id",
-            "multiple_choice_response_ids",
-            "boolean_response",
-            "percentage_response",
-        ]
-        optional_fields = [
-            "unique_choice_response_id",
-            "multiple_choice_response_ids",
-            "boolean_response",
-            "percentage_response",
-        ]
+        model = ParticipationResponse
+        fields = RESPONSE_FIELDS + ["participation_id"]
+        optional_fields = OPTIONAL_RESPONSE_FIELDS

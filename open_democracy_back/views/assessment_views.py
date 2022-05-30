@@ -9,10 +9,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
+from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
 from open_democracy_back.models import Assessment
 from open_democracy_back.models.assessment_models import (
     EPCI,
+    AssessmentResponse,
     InitiatorType,
     LocalityType,
     Municipality,
@@ -21,7 +23,11 @@ from open_democracy_back.models.representativity_models import (
     AssessmentRepresentativity,
     RepresentativityCriteria,
 )
-from open_democracy_back.serializers.assessment_serializers import AssessmentSerializer
+from open_democracy_back.permissions import IsAssessmentAdmin
+from open_democracy_back.serializers.assessment_serializers import (
+    AssessmentResponseSerializer,
+    AssessmentSerializer,
+)
 
 
 # Get an instance of a logger
@@ -150,3 +156,21 @@ class AssessmentView(
 ):
     serializer_class = AssessmentSerializer
     queryset = Assessment.objects.all()
+
+
+class AssessmentResponseView(
+    mixins.ListModelMixin, UpdateOrCreateModelMixin, viewsets.GenericViewSet
+):
+    permission_classes = [IsAssessmentAdmin]
+    serializer_class = AssessmentResponseSerializer
+
+    def get_queryset(self):
+        return AssessmentResponse.objects.filter(
+            assessment=self.request.query_params.get("assessment_id")
+        )
+
+    def get_or_update_object(self, request):
+        return self.get_queryset().get(
+            assessment_id=request.data.get("assessment_id"),
+            question_id=request.data.get("question_id"),
+        )

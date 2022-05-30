@@ -11,6 +11,8 @@ from wagtail.core.models import Orderable
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
+from open_democracy_back.models.participation_models import Response
+
 
 class LocalityType(models.TextChoices):
     MUNICIPALITY = "municipality", "Commune"
@@ -231,3 +233,13 @@ class Assessment(TimeStampedModel, ClusterableModel):
     class Meta:
         verbose_name = "Évaluation"
         verbose_name_plural = "Évaluations"
+
+
+# All objective responses are assessment responses
+class AssessmentResponse(Response):
+    assessment = models.ForeignKey(
+        Assessment, on_delete=models.CASCADE, related_name="responses"
+    )
+
+    class Meta:
+        unique_together = ["assessment", "question"]

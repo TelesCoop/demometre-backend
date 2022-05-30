@@ -9,7 +9,11 @@ from my_auth.utils import get_authenticated_or_anonymous_user_from_request
 from my_auth.permissions import IsAuthenticatedOrAnonymous
 
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
-from open_democracy_back.models.participation_models import Participation, Response
+from open_democracy_back.models.participation_models import (
+    Participation,
+    ParticipationResponse,
+    Response,
+)
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     BooleanOperator,
     ProfileDefinition,
@@ -18,7 +22,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
 
 from open_democracy_back.serializers.participation_serializers import (
     ParticipationSerializer,
-    ResponseSerializer,
+    ParticipationResponseSerializer,
 )
 
 NUMERICAL_OPERATOR_CONVERSION = {
@@ -129,15 +133,15 @@ class ParticipationView(
         )
 
 
-class ResponseView(
+class ParticipationResponseView(
     mixins.ListModelMixin, UpdateOrCreateModelMixin, viewsets.GenericViewSet
 ):
     permission_classes = [IsAuthenticatedOrAnonymous]
-    serializer_class = ResponseSerializer
+    serializer_class = ParticipationResponseSerializer
 
     def get_queryset(self):
         user = get_authenticated_or_anonymous_user_from_request(self.request)
-        query = Response.objects.filter(participation__user_id=user.id)
+        query = ParticipationResponse.objects.filter(participation__user_id=user.id)
 
         context = self.request.query_params.get("context")
         if context:

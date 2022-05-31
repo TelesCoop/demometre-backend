@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from open_democracy_back.exceptions import ErrorCode
 from open_democracy_back.models.questionnaire_and_profiling_models import Question
@@ -109,6 +110,9 @@ class AssessmentSerializer(serializers.ModelSerializer):
 
 class AssessmentResponseSerializer(ResponseSerializer):
     assessment_id = AssessmentField(source="assessment")
+    answered_by = serializers.PrimaryKeyRelatedField(
+        source="answered_by", queryset=User.objects.all()
+    )
 
     def validate(self, data):
         assessment = data["assessment"]
@@ -132,5 +136,5 @@ class AssessmentResponseSerializer(ResponseSerializer):
 
     class Meta:
         model = AssessmentResponse
-        fields = RESPONSE_FIELDS + ["assessment_id"]
+        fields = RESPONSE_FIELDS + ["assessment_id", "answered_by"]
         optional_fields = OPTIONAL_RESPONSE_FIELDS

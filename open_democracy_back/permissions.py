@@ -1,6 +1,5 @@
 from rest_framework.permissions import BasePermission
-
-from open_democracy_back.models.participation_models import Participation
+from open_democracy_back.models.assessment_models import Assessment
 
 
 class IsAssessmentAdmin(BasePermission):
@@ -11,11 +10,10 @@ class IsAssessmentAdmin(BasePermission):
 
     def has_permission(self, request, view):
         is_authenticated = bool(request.user and request.user.is_authenticated)
-        participation_id = request.data.get(
-            "participation_id"
-        ) or request.query_params.get("participation_id")
+        assessment_id = request.data.get("assessment_id") or request.query_params.get(
+            "assessment_id"
+        )
         is_initator = bool(
-            Participation.objects.get(id=participation_id).assessment.initiated_by_user
-            == request.user
+            Assessment.objects.get(id=assessment_id).initiated_by_user == request.user
         )
         return bool(is_authenticated and is_initator)

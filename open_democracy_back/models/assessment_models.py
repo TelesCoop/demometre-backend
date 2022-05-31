@@ -240,6 +240,9 @@ class AssessmentResponse(Response):
     assessment = models.ForeignKey(
         Assessment, on_delete=models.CASCADE, related_name="responses"
     )
+    answered_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, related_name="assessment_responses", null=True
+    )
 
     class Meta:
         unique_together = ["assessment", "question"]

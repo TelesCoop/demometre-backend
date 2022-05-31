@@ -2,7 +2,7 @@ from rest_framework.permissions import BasePermission
 from open_democracy_back.models.assessment_models import Assessment
 
 
-class IsAssessmentAdmin(BasePermission):
+class IsAssessmentAdminOrReadOnly(BasePermission):
     """
     Allows access only to the assessment initiator.
     TODO : access to expert
@@ -16,4 +16,4 @@ class IsAssessmentAdmin(BasePermission):
         is_initator = bool(
             Assessment.objects.get(id=assessment_id).initiated_by_user == request.user
         )
-        return bool(is_authenticated and is_initator)
+        return bool((is_authenticated and is_initator) or request.method == "GET")

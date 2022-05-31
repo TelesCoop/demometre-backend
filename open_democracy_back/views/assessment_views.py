@@ -23,7 +23,7 @@ from open_democracy_back.models.representativity_models import (
     AssessmentRepresentativity,
     RepresentativityCriteria,
 )
-from open_democracy_back.permissions import IsAssessmentAdmin
+from open_democracy_back.permissions import IsAssessmentAdminOrReadOnly
 from open_democracy_back.serializers.assessment_serializers import (
     AssessmentResponseSerializer,
     AssessmentSerializer,
@@ -161,7 +161,7 @@ class AssessmentView(
 class AssessmentResponseView(
     mixins.ListModelMixin, UpdateOrCreateModelMixin, viewsets.GenericViewSet
 ):
-    permission_classes = [IsAssessmentAdmin]
+    permission_classes = [IsAssessmentAdminOrReadOnly]
     serializer_class = AssessmentResponseSerializer
 
     def get_queryset(self):
@@ -170,7 +170,7 @@ class AssessmentResponseView(
         )
 
     def get_or_update_object(self, request):
-        return self.get_queryset().get(
+        return AssessmentResponse.objects.get(
             assessment_id=request.data.get("assessment_id"),
             question_id=request.data.get("question_id"),
         )

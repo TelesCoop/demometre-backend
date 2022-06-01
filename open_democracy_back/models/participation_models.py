@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from open_democracy_back.models.assessment_models import Assessment
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Category,
     ProfileType,
@@ -19,7 +18,7 @@ class Participation(models.Model):
         User, on_delete=models.CASCADE, related_name="participations"
     )
     assessment = models.ForeignKey(
-        Assessment,
+        "open_democracy_back.Assessment",
         on_delete=models.CASCADE,
         related_name="participations",
     )
@@ -58,11 +57,9 @@ class ParticipationPillarCompleted(models.Model):
 
 
 class Response(models.Model):
-    participation = models.ForeignKey(
-        Participation, on_delete=models.CASCADE, related_name="responses"
-    )
+    # related_name is participationresponses or assessmentresponses
     question = models.ForeignKey(
-        Question, on_delete=models.CASCADE, related_name="responses"
+        Question, on_delete=models.CASCADE, related_name="%(class)ss"
     )
     has_passed = models.BooleanField(default=False)
     unique_choice_response = models.ForeignKey(
@@ -70,12 +67,25 @@ class Response(models.Model):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        related_name="responses",
+        related_name="unique_choice_%(class)ss",
     )
-    multiple_choice_response = models.ManyToManyField(ResponseChoice)
+    multiple_choice_response = models.ManyToManyField(
+        ResponseChoice,
+        related_name="multiple_choice_%(class)ss",
+    )
     boolean_response = models.BooleanField(blank=True, null=True)
     percentage_response = models.IntegerField(
         blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(100)]
+    )
+
+    class Meta:
+        abstract = True
+
+
+# All subjective and profiling responses are participation responses
+class ParticipationResponse(Response):
+    participation = models.ForeignKey(
+        Participation, on_delete=models.CASCADE, related_name="responses"
     )
 
     class Meta:
@@ -84,7 +94,7 @@ class Response(models.Model):
 
 class ClosedWithRankingResponse(models.Model):
     response = models.ForeignKey(
-        Response,
+        ParticipationResponse,
         on_delete=models.CASCADE,
         related_name="closed_with_ranking_responses_ordered",
     )
@@ -96,7 +106,7 @@ class ClosedWithRankingResponse(models.Model):
 
 class ClosedWithScaleCategoryResponse(models.Model):
     response = models.ForeignKey(
-        Response,
+        ParticipationResponse,
         on_delete=models.CASCADE,
         related_name="closed_with_scale_response_categories",
     )

@@ -11,6 +11,8 @@ from wagtail.core.models import Orderable
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
+from open_democracy_back.models.participation_models import Response
+
 
 class LocalityType(models.TextChoices):
     MUNICIPALITY = "municipality", "Commune"
@@ -195,6 +197,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         verbose_name="Date d'initialisation",
         help_text="Si il n'y a pas de date d'initialisation, c'est que le début de l'évaluation n'a pas été confirmée",
     )
+    is_initialization_questions_completed = models.BooleanField(default=False)
     last_participation_date = models.DateTimeField(
         default=timezone.now, verbose_name="Date de dernière participation"
     )
@@ -231,3 +234,16 @@ class Assessment(TimeStampedModel, ClusterableModel):
     class Meta:
         verbose_name = "Évaluation"
         verbose_name_plural = "Évaluations"
+
+
+# All questionnaire objective responses are assessment responses
+class AssessmentResponse(Response):
+    assessment = models.ForeignKey(
+        Assessment, on_delete=models.CASCADE, related_name="responses"
+    )
+    answered_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, related_name="assessment_responses", null=True
+    )
+
+    class Meta:
+        unique_together = ["assessment", "question"]

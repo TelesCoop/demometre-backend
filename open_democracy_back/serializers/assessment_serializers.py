@@ -1,9 +1,21 @@
 from rest_framework import serializers
+from open_democracy_back.exceptions import ErrorCode
+from open_democracy_back.models.questionnaire_and_profiling_models import Question
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
 )
 
-from open_democracy_back.models.assessment_models import EPCI, Assessment, Municipality
+from open_democracy_back.models.assessment_models import (
+    EPCI,
+    Assessment,
+    AssessmentResponse,
+    Municipality,
+)
+from open_democracy_back.serializers.participation_serializers import (
+    OPTIONAL_RESPONSE_FIELDS,
+    RESPONSE_FIELDS,
+    ResponseSerializer,
+)
 from open_democracy_back.serializers.representativity_serializers import (
     AssessmentRepresentativityCriteriaSerializer,
 )
@@ -85,6 +97,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "initialized_to_the_name_of",
             "public_initiator",
             "initialization_date",
+            "is_initialization_questions_completed",
             "end_date",
             "municipality",
             "epci",
@@ -92,3 +105,35 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "representativities",
         ]
         read_only_fields = fields
+
+
+class AssessmentResponseSerializer(ResponseSerializer):
+    assessment_id = serializers.PrimaryKeyRelatedField(
+        source="assessment", queryset=Assessment.objects.all()
+    )
+    answered_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def validate(self, data):
+        assessment = data["assessment"]
+        population = assessment.population
+        if (
+            not Question.objects.filter_by_population(population)
+            .filter(id=data["question"].id)
+            .exists()
+        ):
+            raise serializers.ValidationError(
+                detail="You don't need to respond to this question.",
+                code=ErrorCode.QUESTION_NOT_NEEDED.value,
+            )
+        question = data["question"]
+        if question.objectivity == "subjective" or question.survey_type == "profiling":
+            raise serializers.ValidationError(
+                detail="A subjective response or profiling response must be link to the participation, not the assessment",
+                code=ErrorCode.NEED_ASSESSMENT_RESPONSE.value,
+            )
+        return data
+
+    class Meta:
+        model = AssessmentResponse
+        fields = RESPONSE_FIELDS + ["assessment_id", "answered_by"]
+        optional_fields = OPTIONAL_RESPONSE_FIELDS

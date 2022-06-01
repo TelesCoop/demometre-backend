@@ -74,16 +74,6 @@ class ParticipationSerializer(serializers.ModelSerializer):
         read_only=True, source="profiles", many=True
     )
 
-    def validate(self, data):
-        if Participation.objects.filter(
-            user_id=data["user"].id, assessment__initialization_date__lt=timezone.now()
-        ).exists():
-            raise serializers.ValidationError(
-                detail="The participation already exists",
-                code=ErrorCode.PARTICIPATION_ALREADY_EXISTS.value,
-            )
-        return data
-
     class Meta:
         model = Participation
         fields = [

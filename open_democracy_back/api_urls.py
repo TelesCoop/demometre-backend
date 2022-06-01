@@ -87,7 +87,7 @@ urlpatterns = [
         CompletedQuestionsParticipationView.as_view(),
     ),
     path(
-        "assessments/<int:pk>/questions/completed/",
+        "assessments/<int:assessment_pk>/questions/completed/",
         CompletedQuestionsInitializationView.as_view(),
     ),
 ]

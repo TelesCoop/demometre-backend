@@ -181,9 +181,8 @@ class AssessmentResponseView(
 class CompletedQuestionsInitializationView(APIView):
     permission_classes = [IsAssessmentAdminOrReadOnly]
 
-    def patch(self, _, pk):
-        assessment = Assessment.objects.get(id=pk)
-
+    def patch(self, _, assessment_pk):
+        assessment = Assessment.objects.get(id=assessment_pk)
         assessment.is_initialization_questions_completed = True
         assessment.save()
 

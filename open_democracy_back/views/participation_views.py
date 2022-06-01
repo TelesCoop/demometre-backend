@@ -119,7 +119,7 @@ def assignProfilesToParticipation(participation):
 class ParticipationView(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    mixins.CreateModelMixin,
+    UpdateOrCreateModelMixin,
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsAuthenticatedOrAnonymous]
@@ -129,7 +129,12 @@ class ParticipationView(
         user = get_authenticated_or_anonymous_user_from_request(self.request)
         return Participation.objects.filter(
             user_id=user.id,
-            assessment__initialization_date__lt=timezone.now(),
+            assessment__initialization_date__lte=timezone.now(),
+        )
+
+    def get_or_update_object(self, request):
+        return self.get_queryset().get(
+            assessment_id=request.data.get("assessment_id"),
         )
 
 

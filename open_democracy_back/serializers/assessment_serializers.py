@@ -14,7 +14,6 @@ from open_democracy_back.models.assessment_models import (
 from open_democracy_back.serializers.participation_serializers import (
     OPTIONAL_RESPONSE_FIELDS,
     RESPONSE_FIELDS,
-    AssessmentField,
     ResponseSerializer,
 )
 from open_democracy_back.serializers.representativity_serializers import (
@@ -98,6 +97,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "initialized_to_the_name_of",
             "public_initiator",
             "initialization_date",
+            "is_initialization_questions_completed",
             "end_date",
             "municipality",
             "epci",
@@ -108,7 +108,9 @@ class AssessmentSerializer(serializers.ModelSerializer):
 
 
 class AssessmentResponseSerializer(ResponseSerializer):
-    assessment_id = AssessmentField(source="assessment")
+    assessment_id = serializers.PrimaryKeyRelatedField(
+        source="assessment", queryset=Assessment.objects.all()
+    )
     answered_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     def validate(self, data):

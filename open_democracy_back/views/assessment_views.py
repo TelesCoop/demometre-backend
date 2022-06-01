@@ -1,13 +1,15 @@
 import logging
-import re
+
+# import re
 
 from datetime import date
 from django.contrib.auth.models import User
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
+from rest_framework.response import Response as RestResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
+from rest_framework.views import APIView
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
@@ -49,21 +51,21 @@ def initialize_assessment(request, pk):
             code=ErrorCode.ASSESSMENT_ALREADY_INITIATED.value,
         )
 
-    # Check if email user correspond to the initiator
-    email_only_letters = re.sub(r"[^a-z]", "", user.email)
-    initiator_name_only_letters = re.sub(
-        r"[^a-z]",
-        "",
-        assessment.collectivity_name
-        if initialize_data["initiator_type"] == InitiatorType.COLLECTIVITY
-        else initialize_data["initiator_name"],
-    )
-    if initiator_name_only_letters not in email_only_letters:
-        raise ValidationFieldError(
-            "initiator_name",
-            detail="The email is not corresponding to the assessment initiator",
-            code=ErrorCode.EMAIL_NOT_CORRESPONDING_ASSESSMENT.value,
-        )
+    # # Check if email user correspond to the initiator
+    # email_only_letters = re.sub(r"[^a-z]", "", user.email)
+    # initiator_name_only_letters = re.sub(
+    #     r"[^a-z]",
+    #     "",
+    #     assessment.collectivity_name
+    #     if initialize_data["initiator_type"] == InitiatorType.COLLECTIVITY
+    #     else initialize_data["initiator_name"],
+    # )
+    # if initiator_name_only_letters not in email_only_letters:
+    #     raise ValidationFieldError(
+    #         "initiator_name",
+    #         detail="The email is not corresponding to the assessment initiator",
+    #         code=ErrorCode.EMAIL_NOT_CORRESPONDING_ASSESSMENT.value,
+    #     )
 
     assessment.initiated_by_user = user
     assessment.initialization_date = date.today()
@@ -91,7 +93,7 @@ def initialize_assessment(request, pk):
         )
         representativity.save()
 
-    return Response(status=200, data=AssessmentSerializer(assessment).data)
+    return RestResponse(status=200, data=AssessmentSerializer(assessment).data)
 
 
 class AssessmentsView(
@@ -147,7 +149,7 @@ class AssessmentsView(
                 code=ErrorCode.UNCORRECT_LOCALITY_TYPE.value,
             )
 
-        return Response(status=200, data=self.serializer_class(assessment[0]).data)
+        return RestResponse(status=200, data=self.serializer_class(assessment[0]).data)
 
 
 class AssessmentView(
@@ -174,3 +176,16 @@ class AssessmentResponseView(
             assessment_id=request.data.get("assessment_id"),
             question_id=request.data.get("question_id"),
         )
+
+
+class CompletedQuestionsInitializationView(APIView):
+    permission_classes = [IsAssessmentAdminOrReadOnly]
+
+    def patch(self, _, pk):
+        assessment = Assessment.objects.get(id=pk)
+
+        assessment.is_initialization_questions_completed = True
+        assessment.save()
+
+        serializer = AssessmentSerializer(assessment)
+        return RestResponse(serializer.data, status=status.HTTP_200_OK)

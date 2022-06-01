@@ -36,7 +36,7 @@ OPTIONAL_RESPONSE_FIELDS = [
 
 class AssessmentField(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
-        return Assessment.objects.filter(initialization_date__lt=timezone.now())
+        return Assessment.objects.filter(initialization_date__lte=timezone.now())
 
 
 class ParticipationField(serializers.PrimaryKeyRelatedField):
@@ -46,7 +46,7 @@ class ParticipationField(serializers.PrimaryKeyRelatedField):
         ).id
         return Participation.objects.filter(
             user_id=user_id,
-            assessment__initialization_date__lt=timezone.now(),
+            assessment__initialization_date__lte=timezone.now(),
         )
 
 

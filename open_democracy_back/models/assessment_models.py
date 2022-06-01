@@ -197,6 +197,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         verbose_name="Date d'initialisation",
         help_text="Si il n'y a pas de date d'initialisation, c'est que le début de l'évaluation n'a pas été confirmée",
     )
+    is_initialization_questions_completed = models.BooleanField(default=False)
     last_participation_date = models.DateTimeField(
         default=timezone.now, verbose_name="Date de dernière participation"
     )

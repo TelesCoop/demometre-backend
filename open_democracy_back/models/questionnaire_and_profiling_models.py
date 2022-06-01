@@ -353,20 +353,25 @@ class CriteriaDefinition(Orderable):
 
 
 class QuestionQuerySet(models.QuerySet):
-    def filter_by_role_and_population(self, role, population):
+    def filter_by_population(self, population):
         return self.filter(
-            Q(roles=role) | Q(roles=None),
             Q(population_lower_bound__lte=population) | Q(population_lower_bound=None),
             Q(population_upper_bound__gte=population) | Q(population_upper_bound=None),
         )
+
+    def filter_by_role(self, role):
+        return self.filter(Q(roles=role) | Q(roles=None))
 
 
 class QuestionManager(models.Manager):
     def get_queryset(self):
         return QuestionQuerySet(self.model, using=self._db)
 
-    def filter_by_role_and_population(self, role, population):
-        return self.get_queryset().filter_by_role_and_population(role, population)
+    def filter_by_population(self, population):
+        return self.get_queryset().filter_by_population(population)
+
+    def filter_by_role(self, role):
+        return self.get_queryset().filter_by_role(role)
 
 
 @register_snippet

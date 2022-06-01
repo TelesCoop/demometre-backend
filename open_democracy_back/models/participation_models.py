@@ -57,6 +57,7 @@ class ParticipationPillarCompleted(models.Model):
 
 
 class Response(models.Model):
+    # related_name is participationresponses or assessmentresponses
     question = models.ForeignKey(
         Question, on_delete=models.CASCADE, related_name="%(class)ss"
     )

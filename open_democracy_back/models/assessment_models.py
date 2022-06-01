@@ -236,7 +236,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         verbose_name_plural = "Évaluations"
 
 
-# All objective responses are assessment responses
+# All questionnaire objective responses are assessment responses
 class AssessmentResponse(Response):
     assessment = models.ForeignKey(
         Assessment, on_delete=models.CASCADE, related_name="responses"

@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
+from open_democracy_back.views.content_views import BlogPostView, ResourceView
 
 from open_democracy_back.views.page_views import (
     EvaluationInitPageView,
@@ -43,6 +44,8 @@ router.register(
 router.register(
     r"evaluation-init-pages", EvaluationInitPageView, basename="EvaluationInitPage"
 )
+router.register(r"blog-posts", BlogPostView, basename="BlogPost")
+router.register(r"resources", ResourceView, basename="Resources")
 router.register(r"participations", ParticipationView, basename="Participation")
 router.register(r"responses", ResponseView, basename="Response")
 

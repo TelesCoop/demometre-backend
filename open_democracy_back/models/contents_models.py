@@ -1,10 +1,13 @@
 import datetime
 
 from django.db import models
+from django import forms
 from wagtail.admin.edit_handlers import FieldPanel
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
+
+from open_democracy_back.models.questionnaire_and_profiling_models import Pillar
 
 
 @register_snippet
@@ -69,6 +72,9 @@ class Article(index.Indexed, models.Model):
     external_link = models.CharField(
         verbose_name="lien externe", blank=True, null=True, max_length=300
     )
+    pillars = models.ManyToManyField(
+        Pillar, related_name="%(class)ss", blank=True, verbose_name="Piliers concernés"
+    )
 
     panels = [
         FieldPanel("title"),
@@ -76,6 +82,7 @@ class Article(index.Indexed, models.Model):
         FieldPanel("publication_date"),
         FieldPanel("short_description"),
         FieldPanel("external_link"),
+        FieldPanel("pillars", widget=forms.CheckboxSelectMultiple),
     ]
 
     search_fields = [
@@ -87,6 +94,7 @@ class Article(index.Indexed, models.Model):
 
     class Meta:
         abstract = True
+        ordering = ["-publication_date"]
 
 
 @register_snippet
@@ -94,7 +102,6 @@ class BlogPost(Article):
     class Meta:
         verbose_name = "Article de blog"
         verbose_name_plural = "Articles de blog"
-        ordering = ["-publication_date"]
 
 
 @register_snippet

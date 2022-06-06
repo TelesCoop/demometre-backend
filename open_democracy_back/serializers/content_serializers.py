@@ -36,6 +36,7 @@ ARTICLE_FIELDS = [
     "short_description",
     "image_url",
     "external_link",
+    "pillars",
 ]
 
 

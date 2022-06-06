@@ -54,14 +54,14 @@ class HomePageSerializer(PageSerialiserWithLocale):
     @staticmethod
     def get_blog_posts(_):
         blog_posts = []
-        for blog_post in BlogPost.objects.all():
+        for blog_post in BlogPost.objects.all()[:6]:
             blog_posts.append(BlogPostSerializer(blog_post, read_only=True).data)
         return blog_posts
 
     @staticmethod
     def get_resources(_):
         resources = []
-        for resource in Resource.objects.all():
+        for resource in Resource.objects.all()[:6]:
             resources.append(ResourceSerializer(resource, read_only=True).data)
         return resources
 
@@ -77,6 +77,7 @@ class HomePageSerializer(PageSerialiserWithLocale):
         fields = PAGE_FIELDS + [
             "tag_line",
             "intro_image_url",
+            "intro_youtube_video_id",
             "feedback_block_title",
             "feedback_block_intro",
             "feedbacks",

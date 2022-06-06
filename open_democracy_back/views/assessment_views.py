@@ -1,9 +1,12 @@
 import logging
 
 # import re
+from abc import ABC, abstractmethod
 
 from datetime import date
 from django.contrib.auth.models import User
+from django.db.models import Avg, Case, When, Value, IntegerField, Max
+from django.db.models.functions import Greatest
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response as RestResponse
@@ -13,7 +16,7 @@ from rest_framework.views import APIView
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
-from open_democracy_back.models import Assessment
+from open_democracy_back.models import Assessment, ParticipationResponse, QuestionType
 from open_democracy_back.models.assessment_models import (
     EPCI,
     AssessmentResponse,
@@ -188,3 +191,105 @@ class CompletedQuestionsInitializationView(APIView):
 
         serializer = AssessmentSerializer(assessment)
         return RestResponse(serializer.data, status=status.HTTP_200_OK)
+
+
+#
+# class QuestionScoreStrategy(ABC):
+#     @abstractmethod
+#     def is_question_response_type(self, rule, response: Response):
+#         pass
+#
+#
+# class UniqueChoiceStrategy(QuestionScoreStrategy):
+#     def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+#         return response.unique_choice_response in rule.response_choices.all()
+#
+#
+# class MultipleChoiceStrategy(QuestionStrategy):
+#     def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+#         return any(
+#             [
+#                 response in rule.response_choices.all()
+#                 for response in response.multiple_choice_response
+#             ]
+#         )
+#
+#
+# class BooleanStrategy(QuestionStrategy):
+#     def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+#         return response.boolean_response == rule.boolean_response
+#
+#
+# class PercentageStrategy(QuestionStrategy):
+#     def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+#         return NUMERICAL_OPERATOR_CONVERSION[rule.numerical_operator](
+#             response.percentage_response, rule.numerical_value
+#         )
+#
+#
+# RULES_STRATEGY = {
+#     "unique_choice": UniqueChoiceStrategy(),
+#     "multiple_choice": MultipleChoiceStrategy(),
+#     "boolean": BooleanStrategy(),
+#     "percentage": PercentageStrategy(),
+# }
+
+
+class QuestionnaireScoreView(APIView):
+    def get(self, request, assessment_pk):
+        scores = {}
+        assessment_participation_responses = ParticipationResponse.objects.filter(
+            participation__assessment_id=assessment_pk
+        ).exclude(has_passed=True)
+        # Average
+        scores["boolean_score"] = (
+            assessment_participation_responses.filter(
+                question__type=QuestionType.BOOLEAN
+            )
+            .annotate(
+                boolean_response_int=Case(
+                    When(boolean_response=True, then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            )
+            .values("question_id")
+            .annotate(Avg("boolean_response_int"))
+        )
+
+        # UNIQUE_CHOICE
+        ## TODO create field to determine Zscore when score change and use it there
+        scores["unique_choice_score"] = (
+            assessment_participation_responses.filter(
+                question__type=QuestionType.UNIQUE_CHOICE
+            )
+            .values("question_id")
+            .annotate(Avg("unique_choice_response__associated_score"))
+        )
+
+        # MULTIPLE_CHOICE
+        # scores["multiple_choice_score"] = assessment_participation_responses.filter(question__type=QuestionType.MULTIPLE_CHOICE).annotate(multiple_choice_score_max=Greatest('multiple_choice_response__associated_score')).values('question_id', 'multiple_choice_score_max').annotate(values=Avg('multiple_choice_score_max'))
+        scores["multiple_choice_score"] = (
+            assessment_participation_responses.filter(
+                question__type=QuestionType.MULTIPLE_CHOICE
+            )
+            .annotate(
+                multiple_choice_score_max=Max(
+                    "multiple_choice_response__associated_score"
+                )
+            )
+            .values("question_id")
+            .annotate(values=Avg("multiple_choice_score_max"))
+        )
+        return RestResponse(scores, status=status.HTTP_200_OK)
+
+
+# class QuestionnaireScoreView(APIView):
+#     def get(self, request, assessment_pk):
+#         scores = {}
+#
+#         assessment_participation_responses = ProfilingQuestion.objects.filter(participationresponses__participation__assessment_id=assessment_pk)
+#         # Average
+#         breakpoint()
+#         scores["boolean_score"] = assessment_participation_responses.values('id').filter(type=QuestionType.BOOLEAN).aggregate(Avg('participationresponses__boolean_response'))["participationresponses__boolean_response__avg"]
+#         return RestResponse(scores, status=status.HTTP_200_OK)

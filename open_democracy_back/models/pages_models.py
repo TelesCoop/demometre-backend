@@ -28,6 +28,14 @@ class HomePage(Page):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="+",
+        help_text="Si l'id d'une vidéo youtube est indiqué alors l'image ne sera pas affiché sur la page d'accueil",
+    )
+    intro_youtube_video_id = models.CharField(
+        max_length=15,
+        null=True,
+        blank=True,
+        verbose_name="Vidéo Youtube (id)",
+        help_text="Indiquer ici seulement l'id de la video youtube, celui-ci est indiqué dans l'url après 'v='. Exemple : pour https://www.youtube.com/watch?v=xMQMvVIB0vM renseigner xMQMvVIB0vM",
     )
     feedback_block_title = models.CharField(
         max_length=68,
@@ -69,7 +77,13 @@ class HomePage(Page):
     content_panels = Page.content_panels + [
         FieldPanel("tag_line"),
         FieldPanel("introduction"),
-        ImageChooserPanel("intro_image"),
+        MultiFieldPanel(
+            [
+                ImageChooserPanel("intro_image"),
+                FieldPanel("intro_youtube_video_id"),
+            ],
+            heading="Image ou Vidéo d'introduction",
+        ),
         MultiFieldPanel(
             [
                 FieldPanel("feedback_block_title"),

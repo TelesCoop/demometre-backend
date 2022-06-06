@@ -77,6 +77,7 @@ class HomePageSerializer(PageSerialiserWithLocale):
         fields = PAGE_FIELDS + [
             "tag_line",
             "intro_image_url",
+            "intro_youtube_video_id",
             "feedback_block_title",
             "feedback_block_intro",
             "feedbacks",

@@ -94,7 +94,6 @@ class Article(index.Indexed, models.Model):
 
     class Meta:
         abstract = True
-        ordering = ["-publication_date"]
 
 
 @register_snippet
@@ -110,6 +109,7 @@ class Resource(Article):
     class Meta:
         verbose_name = "Ressource"
         verbose_name_plural = "Ressources"
+        ordering = ["-publication_date"]
 
 
 @register_snippet

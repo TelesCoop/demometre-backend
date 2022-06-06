@@ -2,13 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from open_democracy_back.models.assessment_models import Assessment
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Category,
     ProfileType,
     Question,
     ResponseChoice,
     Role,
+    Pillar,
 )
 
 
@@ -18,7 +18,7 @@ class Participation(models.Model):
         User, on_delete=models.CASCADE, related_name="participations"
     )
     assessment = models.ForeignKey(
-        Assessment,
+        "open_democracy_back.Assessment",
         on_delete=models.CASCADE,
         related_name="participations",
     )
@@ -31,32 +31,61 @@ class Participation(models.Model):
     )
     profiles = models.ManyToManyField(ProfileType, related_name="participations")
     consent = models.BooleanField(default=False)
+    is_profiling_questions_completed = models.BooleanField(default=False)
+    is_pillar_questions_completed = models.ManyToManyField(
+        Pillar, through="ParticipationPillarCompleted"
+    )
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} - {str(self.assessment)}"
+
+    def save(self, *args, **kwargs):
+        is_new = not self.pk
+        super().save(*args, **kwargs)
+        if is_new:
+            for pillar in Pillar.objects.all():
+                self.is_pillar_questions_completed.add(pillar)
 
     class Meta:
         unique_together = ["user", "assessment"]
 
 
+class ParticipationPillarCompleted(models.Model):
+    completed = models.BooleanField(default=False)
+    pillar = models.ForeignKey(Pillar, on_delete=models.CASCADE)
+    participation = models.ForeignKey(Participation, on_delete=models.CASCADE)
+
+
 class Response(models.Model):
-    participation = models.ForeignKey(
-        Participation, on_delete=models.CASCADE, related_name="responses"
-    )
+    # related_name is participationresponses or assessmentresponses
     question = models.ForeignKey(
-        Question, on_delete=models.CASCADE, related_name="responses"
+        Question, on_delete=models.CASCADE, related_name="%(class)ss"
     )
+    has_passed = models.BooleanField(default=False)
     unique_choice_response = models.ForeignKey(
         ResponseChoice,
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        related_name="responses",
+        related_name="unique_choice_%(class)ss",
     )
-    multiple_choice_response = models.ManyToManyField(ResponseChoice)
+    multiple_choice_response = models.ManyToManyField(
+        ResponseChoice,
+        related_name="multiple_choice_%(class)ss",
+    )
     boolean_response = models.BooleanField(blank=True, null=True)
     percentage_response = models.IntegerField(
         blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(100)]
+    )
+
+    class Meta:
+        abstract = True
+
+
+# All subjective and profiling responses are participation responses
+class ParticipationResponse(Response):
+    participation = models.ForeignKey(
+        Participation, on_delete=models.CASCADE, related_name="responses"
     )
 
     class Meta:
@@ -65,7 +94,7 @@ class Response(models.Model):
 
 class ClosedWithRankingResponse(models.Model):
     response = models.ForeignKey(
-        Response,
+        ParticipationResponse,
         on_delete=models.CASCADE,
         related_name="closed_with_ranking_responses_ordered",
     )
@@ -77,7 +106,7 @@ class ClosedWithRankingResponse(models.Model):
 
 class ClosedWithScaleCategoryResponse(models.Model):
     response = models.ForeignKey(
-        Response,
+        ParticipationResponse,
         on_delete=models.CASCADE,
         related_name="closed_with_scale_response_categories",
     )

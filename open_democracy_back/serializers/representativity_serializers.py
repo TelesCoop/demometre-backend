@@ -22,7 +22,7 @@ class AssessmentRepresentativityCriteriaSerializer(serializers.ModelSerializer):
         # values() : specifies which columns are going to be used to "group by"
         # annotate() : specifies an operation over the grouped values
         return (
-            obj.profiling_question.responses.filter(
+            obj.profiling_question.participationresponses.filter(
                 participation__assessment_id=self.context.get("assessment_id")
             )
             .annotate(

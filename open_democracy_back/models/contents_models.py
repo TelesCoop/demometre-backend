@@ -102,6 +102,7 @@ class BlogPost(Article):
     class Meta:
         verbose_name = "Article de blog"
         verbose_name_plural = "Articles de blog"
+        ordering = ["-publication_date"]
 
 
 @register_snippet

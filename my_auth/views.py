@@ -1,4 +1,5 @@
 import uuid
+import re
 from datetime import datetime
 
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
@@ -15,13 +16,16 @@ from my_auth.emails import email_reset_password_link
 from my_auth.models import UserResetKey
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 
-from .serializers import AuthSerializer
+from .serializers import AnonymousSerializer, AuthSerializer
+
+# Regular expression for validating an Email
+regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
 
 
 @api_view(["POST"])
 def frontend_signup(request):
     """
-    Sign up user
+    Sign up user. If anonymous user, change it to known user
 
     Args:
         request:
@@ -31,6 +35,7 @@ def frontend_signup(request):
                     "last_name": "Doe",
                     "email": "email@ex.com",
                     "password": "secret_pa$$w0rD",
+                    "anonymous": None
                 }
 
     Returns:
@@ -38,11 +43,22 @@ def frontend_signup(request):
             AuthSerializer
     """
     data = request.data
-    if User.objects.filter(email=request.data["email"]).count():
-        raise ValidationFieldError("email", code=ErrorCode.EMAIL_ALREADY_EXISTS)
-    data["username"] = request.data["email"]
-    user = AuthSerializer(data=data)
-    user.is_valid(raise_exception=True)
+    if User.objects.filter(email=data["email"]).count():
+        raise ValidationFieldError("email", code=ErrorCode.EMAIL_ALREADY_EXISTS.value)
+    if not re.fullmatch(regex, data["email"]):
+        raise ValidationFieldError("email", code=ErrorCode.EMAIL_NOT_VALID.value)
+    data["username"] = data["email"]
+
+    if "anonymous" in data and data["anonymous"]:
+        user = User.objects.get(username=data["anonymous"])
+        user.first_name = data["first_name"]
+        user.last_name = data["last_name"]
+        user.email = data["email"]
+        user.username = data["username"]
+        user.set_password(data["password"])
+    else:
+        user = AuthSerializer(data=data)
+        user.is_valid(raise_exception=True)
     user.save()
 
     userAuth = authenticate(username=data["username"], password=data["password"])
@@ -71,10 +87,12 @@ def frontend_login(request):
 
     data = request.data
     email, password = data["email"].lower(), data["password"]
+    if not re.fullmatch(regex, data["email"]):
+        raise ValidationFieldError("email", code=ErrorCode.EMAIL_NOT_VALID.value)
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL)
+        raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL.value)
 
     user_auth = authenticate(username=user.username, password=password)
 
@@ -83,7 +101,9 @@ def frontend_login(request):
         login(request, user_auth)
         return Response(AuthSerializer(user_auth).data)
     else:
-        raise ValidationFieldError("password", code=ErrorCode.WRONG_PASSWORD_FOR_EMAIL)
+        raise ValidationFieldError(
+            "password", code=ErrorCode.WRONG_PASSWORD_FOR_EMAIL.value
+        )
 
 
 @api_view(["POST"])
@@ -98,6 +118,13 @@ def frontend_logout(request):
 @ensure_csrf_cookie
 def who_am_i(request):
     """Returns information about the current user."""
+    anonymous_name = request.query_params.get("anonymous")
+    if request.user.is_anonymous and anonymous_name:
+        return Response(
+            AnonymousSerializer(
+                {"username": anonymous_name, "email": anonymous_name}
+            ).data
+        )
     if request.user.is_anonymous:
         raise NotAuthenticated()
 
@@ -110,7 +137,7 @@ def front_end_reset_password_link(request):
     try:
         user = User.objects.get(email=request.data.get("email"))
     except User.DoesNotExist:
-        raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL)
+        raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL.value)
     if UserResetKey.objects.get(user=user):
         UserResetKey.objects.get(user=user).delete()
     UserResetKey.objects.create(
@@ -130,14 +157,14 @@ def front_end_reset_password(request):
     except User.DoesNotExist:
         raise PermissionDenied(
             detail="The reset password key is wrong or already used.",
-            code=ErrorCode.WRONG_PASSWORD_RESET_KEY,
+            code=ErrorCode.WRONG_PASSWORD_RESET_KEY.value,
         )
 
     is_valid_key = datetime.now() - user.reset_key.reset_key_datetime
     if is_valid_key.days != 0:
         raise PermissionDenied(
             detail="The reset password key is outdated (24h max).",
-            code=ErrorCode.PASSWORD_RESET_KEY_OUTDATE,
+            code=ErrorCode.PASSWORD_RESET_KEY_OUTDATE.value,
         )
 
     user.set_password(request.data.get("password"))
@@ -145,3 +172,12 @@ def front_end_reset_password(request):
     user.reset_key.reset_key = None
     user.reset_key.save()
     return Response(status=200)
+
+
+@api_view(["POST"])
+def front_end_create_anonymous(_):
+    """Create anonymous user without email and password to save data related"""
+    anonymous_name = "anonymous-" + str(User.objects.last().id + 1)
+    user = User.objects.create(username=anonymous_name, email=anonymous_name)
+
+    return Response(status=201, data=AnonymousSerializer(user).data)

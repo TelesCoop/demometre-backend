@@ -1,5 +1,6 @@
 from django.db import models
 from django import forms
+from django.db.models import Q
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -17,8 +18,6 @@ from wagtail.search import index
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
 
-from open_democracy_back.constants import NUMERICAL_OPERATOR
-
 SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "bold",
     "italic",
@@ -27,10 +26,30 @@ SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "ul",
 ]
 
+NUMERICAL_OPERATOR = [
+    ("<", "<"),
+    (">", ">"),
+    ("<=", "<="),
+    (">=", ">="),
+    ("!=", "!="),
+    ("=", "="),
+]
+
 
 class BooleanOperator(models.TextChoices):
     AND = "and", "et"
     OR = "or", "ou"
+
+
+class QuestionType(models.TextChoices):
+    OPEN = "open", "Ouverte"
+    UNIQUE_CHOICE = "unique_choice", "Choix unique"
+    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
+    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
+    BOOLEAN = "boolean", "Binaire oui / non"
+    PERCENTAGE = "percentage", "Pourcentage"
+    # Inactive question type
+    # CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
 
 
 @register_snippet
@@ -227,7 +246,7 @@ class ThematicTag(TagBase):
 
 
 @register_snippet
-class Criteria(index.Indexed, ReferentielFields):
+class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
     marker = models.ForeignKey(
         Marker,
         null=True,
@@ -246,12 +265,47 @@ class Criteria(index.Indexed, ReferentielFields):
         ThematicTag, blank=True, verbose_name="Thématiques"
     )
 
-    panels = [
-        FieldPanel("marker"),
-        FieldPanel("name"),
-        FieldPanel("code"),
-        FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
-    ] + ReferentielFields.panels
+    legal_frame = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Cadre légal",
+    )
+    use_case = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Exemples inspirants",
+    )
+    sources = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Sources",
+    )
+    to_go_further = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Pour aller plus loin",
+    )
+
+    panels = (
+        [
+            FieldPanel("marker"),
+            FieldPanel("name"),
+            FieldPanel("code"),
+            FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
+        ]
+        + ReferentielFields.panels
+        + [
+            InlinePanel("related_definition_ordered", label="Définitions"),
+            FieldPanel("legal_frame"),
+            FieldPanel("sources"),
+            FieldPanel("to_go_further"),
+            FieldPanel("use_case"),
+        ]
+    )
 
     search_fields = [index.SearchField("name", partial_match=True)]
 
@@ -273,16 +327,6 @@ class Criteria(index.Indexed, ReferentielFields):
         ordering = ["code"]
 
 
-class QuestionType(models.TextChoices):
-    OPEN = "open", "Ouverte"
-    UNIQUE_CHOICE = "unique_choice", "Choix unique"
-    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
-    CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
-    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
-    BOOLEAN = "boolean", "Binaire oui / non"
-    PERCENTAGE = "percentage", "Pourcentage"
-
-
 @register_snippet
 class Definition(models.Model):
     word = models.CharField(max_length=255, verbose_name="mot")
@@ -298,8 +342,42 @@ class Definition(models.Model):
         verbose_name_plural = "Définitions"
 
 
+class CriteriaDefinition(Orderable):
+    criteria = ParentalKey(
+        Criteria, on_delete=models.CASCADE, related_name="related_definition_ordered"
+    )
+    definition = models.ForeignKey(Definition, on_delete=models.CASCADE)
+    panels = [
+        SnippetChooserPanel("definition"),
+    ]
+
+
+class QuestionQuerySet(models.QuerySet):
+    def filter_by_population(self, population):
+        return self.filter(
+            Q(population_lower_bound__lte=population) | Q(population_lower_bound=None),
+            Q(population_upper_bound__gte=population) | Q(population_upper_bound=None),
+        )
+
+    def filter_by_role(self, role):
+        return self.filter(Q(roles=role) | Q(roles=None))
+
+
+class QuestionManager(models.Manager):
+    def get_queryset(self):
+        return QuestionQuerySet(self.model, using=self._db)
+
+    def filter_by_population(self, population):
+        return self.get_queryset().filter_by_population(population)
+
+    def filter_by_role(self, role):
+        return self.get_queryset().filter_by_role(role)
+
+
 @register_snippet
 class Question(index.Indexed, TimeStampedModel, ClusterableModel):
+    objects = QuestionManager()
+
     rules_intersection_operator = models.CharField(
         max_length=8, choices=BooleanOperator.choices, default=BooleanOperator.AND
     )
@@ -316,10 +394,12 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Enoncé de la question", default=""
     )
 
+    mandatory = models.BooleanField(default=False, verbose_name="Obligatoire")
+
     type = models.CharField(
         max_length=32,
         choices=QuestionType.choices,
-        default=QuestionType.OPEN,
+        default=QuestionType.BOOLEAN,
         help_text="Choisir le type de question",
     )
 
@@ -349,11 +429,13 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Score associé à une réponse négative",
         blank=True,
         null=True,
+        help_text="Si pertinant",
     )
     true_associated_score = models.IntegerField(
         verbose_name="Score associé à une réponse positive",
         blank=True,
         null=True,
+        help_text="Si pertinant",
     )
 
     max_multiple_choices = models.IntegerField(
@@ -371,30 +453,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         help_text="Texte précisant la question et pourquoi elle est posée.",
     )
 
-    legal_frame = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Cadre légal",
-    )
-    use_case = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Exemples inspirants",
-    )
-    sources = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Sources",
-    )
-    to_go_further = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Pour aller plus loin",
-    )
     comments = RichTextField(
         null=True,
         blank=True,
@@ -457,6 +515,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("name"),
         FieldPanel("question_statement"),
         FieldPanel("description"),
+        FieldPanel("mandatory"),
         FieldRowPanel(
             [
                 FieldPanel("population_lower_bound"),
@@ -482,11 +541,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     explanation_panels = [
         SnippetChooserPanel("allows_to_explain"),
-        InlinePanel("related_definition_ordered", label="Définitions"),
-        FieldPanel("legal_frame"),
-        FieldPanel("sources"),
-        FieldPanel("to_go_further"),
-        FieldPanel("use_case"),
         FieldPanel("comments"),
     ]
 
@@ -499,17 +553,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         ordering = ["code"]
 
 
-class QuestionDefinition(Orderable):
-    question = ParentalKey(
-        Question, on_delete=models.CASCADE, related_name="related_definition_ordered"
-    )
-    definition = models.ForeignKey(Definition, on_delete=models.CASCADE)
-    panels = [
-        SnippetChooserPanel("definition"),
-    ]
-
-
-class QuestionnaireQuestionManager(models.Manager):
+class QuestionnaireQuestionManager(QuestionManager):
     def get_queryset(self):
         return super().get_queryset().filter(profiling_question=False)
 
@@ -558,7 +602,7 @@ class QuestionnaireQuestion(Question):
         proxy = True
 
 
-class ProfilingQuestionManager(models.Manager):
+class ProfilingQuestionManager(QuestionManager):
     def get_queryset(self):
         return super().get_queryset().filter(profiling_question=True)
 
@@ -607,9 +651,7 @@ class ResponseChoice(TimeStampedModel, Orderable):
     )
 
     associated_score = models.IntegerField(
-        verbose_name="Score associé",
-        blank=True,
-        null=True,
+        verbose_name="Score associé", blank=True, null=True, help_text="Si pertinant"
     )
 
     def __str__(self):
@@ -637,7 +679,7 @@ class PercentageRange(TimeStampedModel, Orderable):
 
     associated_score = models.IntegerField(
         verbose_name="Score associé",
-        help_text="Le score sera alors de",
+        help_text="Si pertinant.",
     )
     panels = [
         MultiFieldPanel(

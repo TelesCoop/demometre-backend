@@ -36,9 +36,7 @@ def get_question_response_by_question_id(question_list):
 def get_data_for_creating_profile_definition(profile_type):
     data = {}
     data["questions_list"] = ProfilingQuestion.objects.filter(
-        ~Q(type=QuestionType.OPEN)
-        & ~Q(type=QuestionType.CLOSED_WITH_RANKING)
-        & ~Q(type=QuestionType.CLOSED_WITH_SCALE)
+        ~Q(type=QuestionType.OPEN) & ~Q(type=QuestionType.CLOSED_WITH_SCALE)
     ).prefetch_related("response_choices")
     data["profile_type"] = profile_type
     data["rules"] = ProfileDefinition.objects.filter(profile_type_id=profile_type.id)
@@ -58,7 +56,6 @@ def get_data_for_creating_question_rules(question):
     data["other_questions_list"] = question_instance.objects.filter(
         ~Q(id=question.id)
         & ~Q(type=QuestionType.OPEN)
-        & ~Q(type=QuestionType.CLOSED_WITH_RANKING)
         & ~Q(type=QuestionType.CLOSED_WITH_SCALE)
     )
     if not data["is_profiling_question"]:

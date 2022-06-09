@@ -1,12 +1,20 @@
 from typing import List
+from django import forms
 from django.db import models
-from wagtail.core.fields import RichTextField
-from wagtail.admin.edit_handlers import FieldPanel, MultiFieldPanel
+from wagtail.core import blocks
+from wagtail.core.fields import RichTextField, StreamField
+from wagtail.admin.edit_handlers import (
+    FieldPanel,
+    MultiFieldPanel,
+    StreamFieldPanel,
+    FieldRowPanel,
+)
 from wagtail.images.edit_handlers import ImageChooserPanel
+from wagtail.images.blocks import ImageChooserBlock
 from wagtail.core.models import Page
-
-from open_democracy_back.models.questionnaire_and_profiling_models import (
+from open_democracy_back.utils import (
     SIMPLE_RICH_TEXT_FIELD_FEATURE,
+    ManagedAssessmentType,
 )
 
 
@@ -116,6 +124,154 @@ class HomePage(Page):
 
     class Meta:
         verbose_name = "Page d'accueil"
+
+
+class UsagePage(Page):
+    parent_page_types = ["HomePage"]
+    subpage_types: List[str] = []
+    max_count_per_parent = 1
+    preview_modes = None
+
+    tag_line = models.CharField(
+        max_length=510, default="", verbose_name="Phrase d'accroche"
+    )
+    introduction = RichTextField(
+        default="", features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Introduction"
+    )
+    intro_image = models.ForeignKey(
+        "wagtailimages.Image",
+        verbose_name="Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    step_of_use_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre du bloc retours d'expérience",
+        blank=True,
+        help_text="Si ce champ est vide les étapes d'utilisation du DémoMètre ne s'afficheront pas",
+    )
+    step_of_use_intro = models.CharField(
+        max_length=510, verbose_name="Intro du bloc retours d'expérience", blank=True
+    )
+    steps_of_use = StreamField(
+        [
+            (
+                "step",
+                blocks.StructBlock(
+                    [
+                        ("image", ImageChooserBlock(label="Image")),
+                        ("title", blocks.CharBlock(label="Titre")),
+                        ("description", blocks.TextBlock(label="Description")),
+                    ],
+                    label_format="Etape : {title}",
+                    label="Etape",
+                ),
+            )
+        ],
+        blank=True,
+        verbose_name="Etapes d'utilisation",
+    )
+
+    participate_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre du bloc retours d'expérience",
+        blank=True,
+        help_text="Si ce champ est vide les étapes d'utilisation du DémoMètre ne s'afficheront pas",
+    )
+    participate_block_intro = models.CharField(
+        max_length=510, verbose_name="Intro du bloc retours d'expérience", blank=True
+    )
+    participate_left_paragraph = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Paragraphe de gauche",
+        blank=True,
+    )
+    participate_right_paragraph = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Paragraphe de droite",
+        blank=True,
+    )
+
+    start_assessment_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre du bloc retours d'expérience",
+        blank=True,
+        help_text="Si ce champ est vide les étapes d'utilisation du DémoMètre ne s'afficheront pas",
+    )
+    start_assessment_block_intro = models.CharField(
+        max_length=510, verbose_name="Intro du bloc retours d'expérience", blank=True
+    )
+    start_processes = StreamField(
+        [
+            (
+                "assessment_type",
+                blocks.StructBlock(
+                    [
+                        ("title", blocks.CharBlock(label="Titre")),
+                        (
+                            "type",
+                            blocks.ChoiceBlock(
+                                choices=ManagedAssessmentType.choices, label="Type"
+                            ),
+                        ),
+                        (
+                            "pdf_button",
+                            blocks.CharBlock(label="Label du bouton pour le pdf"),
+                        ),
+                    ],
+                    label_format="Evaluation : {title}",
+                    label="Type d'évaluation",
+                ),
+            )
+        ],
+        blank=True,
+        verbose_name="Descriptif des différents types d'évaluation",
+        help_text="Pour modifier le descriptif de chaque type d'évaluation il faut directement aller dans le type d'évaluation correspondant",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("tag_line"),
+        FieldPanel("introduction"),
+        ImageChooserPanel("intro_image"),
+        MultiFieldPanel(
+            [
+                FieldPanel("step_of_use_title"),
+                FieldPanel("step_of_use_intro"),
+                StreamFieldPanel("steps_of_use", classname="full"),
+            ],
+            heading="Etapes d'utilisation du DémoMètre",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("participate_block_title"),
+                FieldPanel("participate_block_intro", widget=forms.Textarea),
+                FieldRowPanel(
+                    [
+                        FieldPanel("participate_left_paragraph"),
+                        FieldPanel("participate_right_paragraph"),
+                    ],
+                    heading="Description",
+                ),
+            ],
+            heading="Participer à une évaluation en cours",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("start_assessment_block_title"),
+                FieldPanel("start_assessment_block_intro", widget=forms.Textarea),
+                StreamFieldPanel("start_processes", classname="full"),
+            ],
+            heading="Lancer une nouvelle évaluation",
+        ),
+    ]
+
+    class Meta:
+        verbose_name = "Page des utilisations possibles"
 
 
 class ReferentialPage(Page):

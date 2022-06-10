@@ -144,7 +144,7 @@ class UsagePageSerializer(PageSerialiserWithLocale):
             "participate_right_paragraph",
             "start_assessment_block_title",
             "start_assessment_block_intro",
-            "start_processes",
+            "start_assessment_block_data",
             "assessment_types_details",
         ]
         read_only_fields = fields

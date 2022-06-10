@@ -206,7 +206,7 @@ class UsagePage(Page):
     start_assessment_block_intro = models.CharField(
         max_length=510, verbose_name="Intro du bloc retours d'expérience", blank=True
     )
-    start_processes = StreamField(
+    start_assessment_block_data = StreamField(
         [
             (
                 "assessment_type",
@@ -264,7 +264,7 @@ class UsagePage(Page):
             [
                 FieldPanel("start_assessment_block_title"),
                 FieldPanel("start_assessment_block_intro", widget=forms.Textarea),
-                StreamFieldPanel("start_processes", classname="full"),
+                StreamFieldPanel("start_assessment_block_data", classname="full"),
             ],
             heading="Lancer une nouvelle évaluation",
         ),

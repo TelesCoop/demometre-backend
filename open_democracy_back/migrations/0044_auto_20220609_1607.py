@@ -75,4 +75,9 @@ class Migration(migrations.Migration):
             name='steps_of_use',
             field=wagtail.core.fields.StreamField([('step', wagtail.core.blocks.StructBlock([('image', wagtail.images.blocks.ImageChooserBlock(label='Image')), ('title', wagtail.core.blocks.CharBlock(label='Titre')), ('description', wagtail.core.blocks.TextBlock(label='Description'))], label='Etape', label_format='Etape : {title}'))], blank=True, verbose_name="Etapes d'utilisation"),
         ),
+        migrations.RenameField(
+            model_name='usagepage',
+            old_name='start_processes',
+            new_name='start_assessment_block_data',
+        ),
     ]

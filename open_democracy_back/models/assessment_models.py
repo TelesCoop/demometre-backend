@@ -1,3 +1,4 @@
+from django import forms
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import User
@@ -6,22 +7,15 @@ from modelcluster.models import ClusterableModel
 from modelcluster.fields import ParentalKey
 from wagtail.admin.edit_handlers import InlinePanel, FieldPanel
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
+from wagtail.documents.edit_handlers import DocumentChooserPanel
+from wagtail.documents.models import Document
 
 from wagtail.core.models import Orderable
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
 from open_democracy_back.models.participation_models import Response
-
-
-class LocalityType(models.TextChoices):
-    MUNICIPALITY = "municipality", "Commune"
-    INTERCOMMUNALITY = "intercommunality", "Intercommunalité"
-
-
-class InitiatorType(models.TextChoices):
-    COLLECTIVITY = "collectivity", "La collectivité"
-    ASSOCIATION = "association", "Une association"
+from open_democracy_back.utils import InitiatorType, LocalityType, ManagedAssessmentType
 
 
 @register_snippet
@@ -148,11 +142,67 @@ class MunicipalityOrderByEPCI(Orderable):
 
 
 @register_snippet
+class AssessmentType(models.Model):
+    name = models.CharField(max_length=64, verbose_name="Nom")
+    assessment_type = models.CharField(
+        max_length=32,
+        choices=ManagedAssessmentType.choices,
+        verbose_name="Evaluation géré par le code",
+        unique=True,
+    )
+    for_who = models.CharField(
+        max_length=510, blank=True, verbose_name="A qui c'est adressé"
+    )
+    what = models.CharField(
+        max_length=510, blank=True, verbose_name="Ce que ça contient"
+    )
+    for_what = models.CharField(
+        max_length=510, blank=True, verbose_name="Ce que ça permet"
+    )
+    results = models.CharField(max_length=510, blank=True, verbose_name="Les résultats")
+    price = models.CharField(max_length=510, blank=True, verbose_name="Le prix")
+    pdf = models.ForeignKey(
+        Document,
+        verbose_name="Pdf du questionnaire",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    panels = [
+        FieldPanel("name"),
+        FieldPanel("assessment_type"),
+        FieldPanel("for_who", widget=forms.Textarea),
+        FieldPanel("what", widget=forms.Textarea),
+        FieldPanel("for_what", widget=forms.Textarea),
+        FieldPanel("results", widget=forms.Textarea),
+        FieldPanel("price", widget=forms.Textarea),
+        DocumentChooserPanel("pdf"),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Type d'évaluation"
+        verbose_name_plural = "Types d'évaluation"
+
+
+@register_snippet
 class Assessment(TimeStampedModel, ClusterableModel):
-    type = models.CharField(
+    assessment_type = models.ForeignKey(
+        AssessmentType,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Type d'évaluation",
+    )
+    locality_type = models.CharField(
         max_length=32,
         choices=LocalityType.choices,
         default=LocalityType.MUNICIPALITY,
+        verbose_name="Type de localité",
     )
     municipality = models.ForeignKey(
         Municipality,
@@ -218,7 +268,8 @@ class Assessment(TimeStampedModel, ClusterableModel):
             return self.epci.name
 
     panels = [
-        FieldPanel("type"),
+        FieldPanel("assessment_type"),
+        FieldPanel("locality_type"),
         SnippetChooserPanel("municipality"),
         SnippetChooserPanel("epci"),
         FieldPanel("initiated_by_user"),
@@ -229,7 +280,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
     ]
 
     def __str__(self):
-        return f"{self.get_type_display()} {self.municipality if self.type == LocalityType.MUNICIPALITY else self.epci}"
+        return f"{self.get_locality_type_display()} {self.municipality if self.locality_type == LocalityType.MUNICIPALITY else self.epci}"
 
     class Meta:
         verbose_name = "Évaluation"

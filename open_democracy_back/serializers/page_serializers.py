@@ -1,13 +1,17 @@
 from rest_framework import serializers
 
 from open_democracy_back.models import HomePage, EvaluationIntroPage, ReferentialPage
+from open_democracy_back.models.assessment_models import AssessmentType
 from open_democracy_back.models.contents_models import (
     BlogPost,
     Feedback,
     Partner,
     Resource,
 )
-from open_democracy_back.models.pages_models import EvaluationInitPage
+from open_democracy_back.models.pages_models import EvaluationInitPage, UsagePage
+from open_democracy_back.serializers.assessment_serializers import (
+    AssessmentTypeSerializer,
+)
 from open_democracy_back.serializers.content_serializers import (
     BlogPostSerializer,
     FeedbackSerializer,
@@ -98,6 +102,51 @@ class ReferentialPageSerializer(PageSerialiserWithLocale):
     class Meta:
         model = ReferentialPage
         fields = PAGE_FIELDS
+        read_only_fields = fields
+
+
+class UsagePageSerializer(PageSerialiserWithLocale):
+    intro_image_url = serializers.SerializerMethodField()
+    steps_images_url = serializers.SerializerMethodField()
+    assessment_types_details = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_intro_image_url(obj: UsagePage):
+        if obj.intro_image:
+            return obj.intro_image.file.url
+        return None
+
+    @staticmethod
+    def get_steps_images_url(obj: UsagePage):
+        to_return = []
+        for step in obj.steps_of_use:
+            to_return.append(
+                {"id": step.value["image"].id, "url": step.value["image"].file.url}
+            )
+        return to_return
+
+    @staticmethod
+    def get_assessment_types_details(_):
+        return AssessmentTypeSerializer(AssessmentType.objects.all(), many=True).data
+
+    class Meta:
+        model = UsagePage
+        fields = PAGE_FIELDS + [
+            "tag_line",
+            "intro_image_url",
+            "step_of_use_title",
+            "step_of_use_intro",
+            "steps_of_use",
+            "steps_images_url",
+            "participate_block_title",
+            "participate_block_intro",
+            "participate_left_paragraph",
+            "participate_right_paragraph",
+            "start_assessment_block_title",
+            "start_assessment_block_intro",
+            "start_assessment_block_data",
+            "assessment_types_details",
+        ]
         read_only_fields = fields
 
 

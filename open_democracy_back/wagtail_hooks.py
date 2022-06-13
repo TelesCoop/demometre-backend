@@ -31,6 +31,7 @@ from open_democracy_back.models import (
 )
 
 from wagtail.contrib.modeladmin.helpers import ButtonHelper
+from open_democracy_back.models.assessment_models import AssessmentType
 from open_democracy_back.models.contents_models import (
     BlogPost,
     Feedback,
@@ -281,6 +282,45 @@ class RepresentativityModelAdmin(ModelAdmin):
     search_fields = ("name",)
 
 
+class AssessmentTypeModelAdmin(ModelAdmin):
+    model = AssessmentType
+    menu_label = "Type d'Évaluation"
+    menu_icon = "folder-inverse"
+    add_to_settings_menu = False
+
+
+class AssessmentModelAdmin(ModelAdmin):
+    model = Assessment
+    menu_label = "Évaluation"
+    menu_icon = "date"
+    add_to_settings_menu = False
+    search_fields = ("municipality__name", "epci__name")
+
+
+class ParticipationModelAdmin(ModelAdmin):
+    model = Participation
+    menu_label = "Participations aux évaluations"
+    menu_icon = "user"
+    add_to_settings_menu = False
+    search_fields = (
+        "user__username",
+        "assessment__municipality__name",
+        "assessment__epci__name",
+    )
+    permission_helper_class = CanNotEditPermissionHelper
+
+
+class AssessmentAdminGroup(ModelAdminGroup):
+    menu_label = "Évaluations"
+    menu_order = 212
+    menu_icon = "date"
+    items = (
+        AssessmentTypeModelAdmin,
+        AssessmentModelAdmin,
+        ParticipationModelAdmin,
+    )
+
+
 class RegionModelAdmin(ModelAdmin):
     model = Region
     menu_label = "Régions"
@@ -315,44 +355,13 @@ class EPCIModelAdmin(ModelAdmin):
 
 class LocalityAdminGroup(ModelAdminGroup):
     menu_label = "Localités"
-    menu_order = 212
+    menu_order = 214
     menu_icon = "home"
     items = (
         RegionModelAdmin,
         DepartmentModelAdmin,
         CommuneModelAdmin,
         EPCIModelAdmin,
-    )
-
-
-class AssessmentModelAdmin(ModelAdmin):
-    model = Assessment
-    menu_label = "Évaluation"
-    menu_icon = "date"
-    add_to_settings_menu = False
-    search_fields = ("municipality__name", "epci__name")
-
-
-class ParticipationModelAdmin(ModelAdmin):
-    model = Participation
-    menu_label = "Participations aux évaluations"
-    menu_icon = "user"
-    add_to_settings_menu = False
-    search_fields = (
-        "user__username",
-        "assessment__municipality__name",
-        "assessment__epci__name",
-    )
-    permission_helper_class = CanNotEditPermissionHelper
-
-
-class AssessmentAdminGroup(ModelAdminGroup):
-    menu_label = "Évaluations"
-    menu_order = 214
-    menu_icon = "date"
-    items = (
-        AssessmentModelAdmin,
-        ParticipationModelAdmin,
     )
 
 

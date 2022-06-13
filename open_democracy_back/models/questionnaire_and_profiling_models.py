@@ -18,38 +18,12 @@ from wagtail.search import index
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
 
-SIMPLE_RICH_TEXT_FIELD_FEATURE = [
-    "bold",
-    "italic",
-    "link",
-    "ol",
-    "ul",
-]
-
-NUMERICAL_OPERATOR = [
-    ("<", "<"),
-    (">", ">"),
-    ("<=", "<="),
-    (">=", ">="),
-    ("!=", "!="),
-    ("=", "="),
-]
-
-
-class BooleanOperator(models.TextChoices):
-    AND = "and", "et"
-    OR = "or", "ou"
-
-
-class QuestionType(models.TextChoices):
-    OPEN = "open", "Ouverte"
-    UNIQUE_CHOICE = "unique_choice", "Choix unique"
-    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
-    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
-    BOOLEAN = "boolean", "Binaire oui / non"
-    PERCENTAGE = "percentage", "Pourcentage"
-    # Inactive question type
-    # CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"
+from open_democracy_back.utils import (
+    NUMERICAL_OPERATOR,
+    SIMPLE_RICH_TEXT_FIELD_FEATURE,
+    BooleanOperator,
+    QuestionType,
+)
 
 
 @register_snippet
@@ -490,6 +464,12 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         related_name="questions_that_depend_on_me",
         blank=True,
     )
+    assessment_types = models.ManyToManyField(
+        "open_democracy_back.AssessmentType",
+        verbose_name="Types d'évaluation concernés",
+        related_name="questions",
+        blank=True,
+    )
 
     # Profiling questions fields
     profiling_question = models.BooleanField(default=False)
@@ -566,6 +546,7 @@ class QuestionnaireQuestion(Question):
         FieldPanel("criteria"),
         *Question.principal_panels,
         FieldPanel("profiles", widget=forms.CheckboxSelectMultiple),
+        FieldPanel("assessment_types", widget=forms.CheckboxSelectMultiple),
         FieldPanel("objectivity"),
         FieldPanel("method"),
         *Question.commun_types_panels,

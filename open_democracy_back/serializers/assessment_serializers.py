@@ -9,6 +9,7 @@ from open_democracy_back.models.assessment_models import (
     EPCI,
     Assessment,
     AssessmentResponse,
+    AssessmentType,
     Municipality,
 )
 from open_democracy_back.serializers.participation_serializers import (
@@ -63,6 +64,31 @@ class EpciSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class AssessmentTypeSerializer(serializers.ModelSerializer):
+    pdf_url = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_pdf_url(obj: AssessmentType):
+        if obj.pdf:
+            return obj.pdf.file.url
+        return None
+
+    class Meta:
+        model = AssessmentType
+        fields = [
+            "id",
+            "name",
+            "assessment_type",
+            "for_who",
+            "what",
+            "for_what",
+            "results",
+            "price",
+            "pdf_url",
+        ]
+        read_only_fields = fields
+
+
 class AssessmentSerializer(serializers.ModelSerializer):
     epci = EpciSerializer(many=False, read_only=True)
     municipality = MunicipalitySerializer(many=False, read_only=True)
@@ -91,7 +117,8 @@ class AssessmentSerializer(serializers.ModelSerializer):
         model = Assessment
         fields = [
             "id",
-            "type",
+            "assessment_type",
+            "locality_type",
             "initiated_by_user",
             "initiator_type",
             "initialized_to_the_name_of",

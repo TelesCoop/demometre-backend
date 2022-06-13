@@ -255,16 +255,16 @@ class Assessment(TimeStampedModel, ClusterableModel):
 
     @property
     def population(self):
-        if self.type == LocalityType.MUNICIPALITY:
+        if self.locality_type == LocalityType.MUNICIPALITY:
             return self.municipality.population
-        if self.type == LocalityType.INTERCOMMUNALITY:
+        if self.locality_type == LocalityType.INTERCOMMUNALITY:
             return self.epci.population
 
     @property
     def collectivity_name(self):
-        if self.type == LocalityType.MUNICIPALITY:
+        if self.locality_type == LocalityType.MUNICIPALITY:
             return self.municipality.name
-        if self.type == LocalityType.INTERCOMMUNALITY:
+        if self.locality_type == LocalityType.INTERCOMMUNALITY:
             return self.epci.name
 
     panels = [

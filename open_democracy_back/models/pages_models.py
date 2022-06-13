@@ -288,10 +288,56 @@ class ReferentialPage(Page):
         blank=True,
         help_text="si ce champs est vide l'explication des piliers ne s'affichera pas",
     )
+    pillar_block_content = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Contenu textuelle piliers",
+        help_text="s'il n'y a pas de contenu l'explication des piliers ne s'affichera pas",
+    )
+    pillar_block_image = models.ForeignKey(
+        "wagtailimages.Image",
+        verbose_name="Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    marker_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre explication marqueurs",
+        blank=True,
+        help_text="si ce champs est vide l'explication des marqueurs ne s'affichera pas",
+    )
+    marker_block_content = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Contenu textuelle marqueurs",
+        help_text="s'il n'y a pas de contenu l'explication des marqueurs ne s'affichera pas",
+    )
+
+    criteria_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre explication critères évaluation",
+        blank=True,
+        help_text="si ce champs est vide l'explication des critères d'évaluation ne s'affichera pas",
+    )
+    criteria_block_content = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Contenu textuelle critères évaluation",
+        help_text="s'il n'y a pas de contenu l'explication des critères d'évaluation ne s'affichera pas",
+    )
 
     content_panels = Page.content_panels + [
         FieldPanel("introduction"),
         FieldPanel("pillar_block_title"),
+        FieldPanel("pillar_block_content"),
+        ImageChooserPanel("pillar_block_image"),
+        FieldPanel("marker_block_title"),
+        FieldPanel("marker_block_content"),
+        FieldPanel("criteria_block_title"),
+        FieldPanel("criteria_block_content"),
     ]
 
     class Meta:

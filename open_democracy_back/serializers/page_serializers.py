@@ -103,6 +103,12 @@ class ReferentialPageSerializer(PageSerialiserWithLocale):
         model = ReferentialPage
         fields = PAGE_FIELDS + [
             "pillar_block_title",
+            "pillar_block_content",
+            "pillar_block_image",
+            "marker_block_title",
+            "marker_block_content",
+            "criteria_block_title",
+            "criteria_block_content",
         ]
         read_only_fields = fields
 

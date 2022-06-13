@@ -97,7 +97,9 @@ class HomePageSerializer(PageSerialiserWithLocale):
 class ReferentialPageSerializer(PageSerialiserWithLocale):
     class Meta:
         model = ReferentialPage
-        fields = PAGE_FIELDS
+        fields = PAGE_FIELDS + [
+            "pillar_block_title",
+        ]
         read_only_fields = fields
 
 

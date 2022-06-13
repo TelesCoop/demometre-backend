@@ -126,8 +126,16 @@ class ReferentialPage(Page):
 
     introduction = models.CharField(max_length=255, default="")
 
+    pillar_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre explication pilier",
+        blank=True,
+        help_text="si ce champs est vide l'explication des piliers ne s'affichera pas",
+    )
+
     content_panels = Page.content_panels + [
         FieldPanel("introduction"),
+        FieldPanel("pillar_block_title"),
     ]
 
     class Meta:

@@ -323,7 +323,7 @@ class ReferentialPage(Page):
     criteria_block_content = RichTextField(
         default="",
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Contenu textuelle critères évaluation",
+        verbose_name="Contenu",
     )
 
     content_panels = Page.content_panels + [

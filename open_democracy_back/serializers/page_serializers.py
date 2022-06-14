@@ -99,12 +99,20 @@ class HomePageSerializer(PageSerialiserWithLocale):
 
 
 class ReferentialPageSerializer(PageSerialiserWithLocale):
+    pillar_block_image_url = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_pillar_block_image_url(obj: ReferentialPage):
+        if obj.pillar_block_image:
+            return obj.pillar_block_image.file.url
+        return None
+
     class Meta:
         model = ReferentialPage
         fields = PAGE_FIELDS + [
             "pillar_block_title",
             "pillar_block_content",
-            "pillar_block_image",
+            "pillar_block_image_url",
             "marker_block_title",
             "marker_block_content",
             "criteria_block_title",

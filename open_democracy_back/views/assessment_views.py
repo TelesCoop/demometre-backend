@@ -235,8 +235,6 @@ class CompletedQuestionsInitializationView(APIView):
 #     "percentage": PercentageStrategy(),
 # }
 
-MAX_SCORE = 4
-
 
 class QuestionnaireScoreView(APIView):
     def get(self, request, assessment_pk):
@@ -259,7 +257,7 @@ class QuestionnaireScoreView(APIView):
             )
             .values("question_id")
             .annotate(
-                score=(Avg("boolean_response_int") / MAX_SCORE),
+                score=(Avg("boolean_response_int")),
                 count=Count("question_id"),
             )
         )
@@ -272,20 +270,20 @@ class QuestionnaireScoreView(APIView):
             )
             .values("question_id")
             .annotate(
-                score=Avg("unique_choice_response__associated_score"),
+                score=Avg("unique_choice_response__linearized_score"),
                 count=Count("question_id"),
             )
         )
 
         # MULTIPLE_CHOICE
-        # scores["multiple_choice_score"] = assessment_participation_responses.filter(question__type=QuestionType.MULTIPLE_CHOICE).annotate(multiple_choice_score_max=Greatest('multiple_choice_response__associated_score')).values('question_id', 'multiple_choice_score_max').annotate(values=Avg('multiple_choice_score_max'))
+        # scores["multiple_choice_score"] = assessment_participation_responses.filter(question__type=QuestionType.MULTIPLE_CHOICE).annotate(multiple_choice_score_max=Greatest('multiple_choice_response__linearized_score')).values('question_id', 'multiple_choice_score_max').annotate(values=Avg('multiple_choice_score_max'))
         multiple_choice_scores = (
             assessment_participation_responses.filter(
                 question__type=QuestionType.MULTIPLE_CHOICE
             )
             .annotate(
                 multiple_choice_score_max=Max(
-                    "multiple_choice_response__associated_score"
+                    "multiple_choice_response__linearized_score"
                 )
             )
             .values("question_id", "multiple_choice_score_max")
@@ -326,7 +324,7 @@ class QuestionnaireScoreView(APIView):
                     <= response.percentage_response
                     <= percentage_range.upper_bound
                 ):
-                    score = percentage_range.associated_score
+                    score = percentage_range.linearized_score
                     break
             if score is None:
                 if hasattr(settings, "production"):
@@ -344,8 +342,7 @@ class QuestionnaireScoreView(APIView):
                 {
                     "question_id": key,
                     "score": percentage_sum_per_question[key]
-                    / percentage_len_per_question[key]
-                    / MAX_SCORE,
+                    / percentage_len_per_question[key],
                     "count": percentage_len_per_question[key],
                 }
             )

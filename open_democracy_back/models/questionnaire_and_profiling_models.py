@@ -604,7 +604,7 @@ SCORE_MAP = {
 }
 
 
-class Score:
+class Score(models.Model):
     associated_score = models.IntegerField(
         verbose_name="Score associé",
         blank=True,
@@ -621,9 +621,13 @@ class Score:
     )
 
     @staticmethod
-    def update_score(_, instance):
+    def update_score(sender, **kwargs):
+        instance = kwargs.get("instance")
         if instance.associated_score is not None:
             instance.linearized_score = SCORE_MAP[instance.associated_score]
+
+    class Meta:
+        abstract = True
 
 
 class ResponseChoice(TimeStampedModel, Orderable, Score):
@@ -642,6 +646,11 @@ class ResponseChoice(TimeStampedModel, Orderable, Score):
         verbose_name="Description de la réponse",
         help_text="Texte précisant la réponse (définition, exemple, reformulation). Si la question est fermée à échelle la description ne s'affichera pas.",
     )
+    panels = [
+        FieldPanel("response_choice"),
+        FieldPanel("description"),
+        FieldPanel("associated_score"),
+    ]
 
     def __str__(self):
         return self.response_choice
@@ -652,7 +661,7 @@ class ResponseChoice(TimeStampedModel, Orderable, Score):
 
 
 # Update linearized score on save
-pre_save.connect(Score.update_score, ResponseChoice)
+pre_save.connect(Score.update_score, sender=ResponseChoice)
 
 
 class PercentageRange(TimeStampedModel, Orderable, Score):
@@ -691,7 +700,7 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
 
 
 # Update linearized score on save
-pre_save.connect(Score.update_score, PercentageRange)
+pre_save.connect(Score.update_score, sender=PercentageRange)
 
 
 class Category(TimeStampedModel, Orderable):

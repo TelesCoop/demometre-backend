@@ -48,5 +48,3 @@ class QuestionType(models.TextChoices):
     CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
     BOOLEAN = "boolean", "Binaire oui / non"
     PERCENTAGE = "percentage", "Pourcentage"
-    # Inactive question type
-    # CLOSED_WITH_RANKING = "closed_with_ranking", "Fermée avec classement"

@@ -282,6 +282,12 @@ class ReferentialPage(Page):
 
     introduction = models.CharField(max_length=255, default="")
 
+    description = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+    )
+
     pillar_block_title = models.CharField(
         max_length=68,
         verbose_name="Titre",
@@ -328,6 +334,7 @@ class ReferentialPage(Page):
 
     content_panels = Page.content_panels + [
         FieldPanel("introduction"),
+        FieldPanel("description"),
         MultiFieldPanel(
             [
                 FieldPanel("pillar_block_title"),

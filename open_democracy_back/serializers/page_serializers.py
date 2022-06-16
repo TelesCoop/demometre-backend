@@ -114,6 +114,7 @@ class ReferentialPageSerializer(PageSerialiserWithLocale):
     class Meta:
         model = ReferentialPage
         fields = PAGE_FIELDS + [
+            "description",
             "pillar_block_title",
             "pillar_block_content",
             "pillar_block_image_url",

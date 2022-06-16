@@ -8,7 +8,11 @@ from open_democracy_back.models.contents_models import (
     Partner,
     Resource,
 )
-from open_democracy_back.models.pages_models import EvaluationInitPage, UsagePage
+from open_democracy_back.models.pages_models import (
+    EvaluationInitPage,
+    EvaluationQuestionnairePage,
+    UsagePage,
+)
 from open_democracy_back.serializers.assessment_serializers import (
     AssessmentTypeSerializer,
 )
@@ -170,5 +174,24 @@ class EvaluationInitPageSerializer(PageSerialiserWithLocale):
             "representativity_title",
             "representativity_description",
             "initialization_validation",
+        ]
+        read_only_fields = fields
+
+
+class EvaluationQuestionnairePageSerializer(PageSerialiserWithLocale):
+    class Meta:
+        model = EvaluationQuestionnairePage
+        fields = [
+            "id",
+            "locale_code",
+            "start_title",
+            "start_text",
+            "intermediate_step_title",
+            "intermediate_step_text_logged_in",
+            "intermediate_step_text_logged_out",
+            "is_intermediate_step_title_with_pillar_names",
+            "finished_title",
+            "finished_text_logged_in",
+            "finished_text_logged_out",
         ]
         read_only_fields = fields

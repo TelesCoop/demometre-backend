@@ -1,6 +1,8 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django import forms
 from django.db.models import Q
+from django.db.models.signals import pre_save
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -425,19 +427,6 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         verbose_name="Permet d'expliciter une autre question",
     )
 
-    false_associated_score = models.IntegerField(
-        verbose_name="Score associé à une réponse négative",
-        blank=True,
-        null=True,
-        help_text="Si pertinant",
-    )
-    true_associated_score = models.IntegerField(
-        verbose_name="Score associé à une réponse positive",
-        blank=True,
-        null=True,
-        help_text="Si pertinant",
-    )
-
     max_multiple_choices = models.IntegerField(
         verbose_name="Nombre maximal de choix possible",
         blank=True,
@@ -573,13 +562,6 @@ class QuestionnaireQuestion(Question):
             "percentage_ranges",
             label="Score associé aux réponses d'une question de pourcentage",
         ),
-        FieldRowPanel(
-            [
-                FieldPanel("true_associated_score"),
-                FieldPanel("false_associated_score"),
-            ],
-            heading="Scores associés aux réponses d'une question binaire",
-        ),
         *Question.explanation_panels,
     ]
 
@@ -633,7 +615,37 @@ class ProfilingQuestion(Question):
         proxy = True
 
 
-class ResponseChoice(TimeStampedModel, Orderable):
+SCORE_MAP = {
+    4: 1,
+    3: 0.66,
+    2: 0.33,
+    1: 0,
+}
+
+
+class Score:
+    associated_score = models.IntegerField(
+        verbose_name="Score associé",
+        blank=True,
+        null=True,
+        help_text="Si pertinant",
+        validators=[MinValueValidator(1), MaxValueValidator(4)],
+    )
+
+    linearized_score = models.FloatField(
+        verbose_name="Score associé linéarisé",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+    )
+
+    @staticmethod
+    def update_score(_, instance):
+        if instance.associated_score is not None:
+            instance.linearized_score = SCORE_MAP[instance.associated_score]
+
+
+class ResponseChoice(TimeStampedModel, Orderable, Score):
     question = ParentalKey(
         Question, on_delete=models.CASCADE, related_name="response_choices"
     )
@@ -650,10 +662,6 @@ class ResponseChoice(TimeStampedModel, Orderable):
         help_text="Texte précisant la réponse (définition, exemple, reformulation). Si la question est fermée à échelle la description ne s'affichera pas.",
     )
 
-    associated_score = models.IntegerField(
-        verbose_name="Score associé", blank=True, null=True, help_text="Si pertinant"
-    )
-
     def __str__(self):
         return self.response_choice
 
@@ -662,7 +670,11 @@ class ResponseChoice(TimeStampedModel, Orderable):
         verbose_name = "Choix de réponse"
 
 
-class PercentageRange(TimeStampedModel, Orderable):
+# Update linearized score on save
+pre_save.connect(Score.update_score, ResponseChoice)
+
+
+class PercentageRange(TimeStampedModel, Orderable, Score):
     question = ParentalKey(
         Question, on_delete=models.CASCADE, related_name="percentage_ranges"
     )
@@ -677,10 +689,6 @@ class PercentageRange(TimeStampedModel, Orderable):
         help_text="Si la réponse est inférieur ou égale à",
     )
 
-    associated_score = models.IntegerField(
-        verbose_name="Score associé",
-        help_text="Si pertinant.",
-    )
     panels = [
         MultiFieldPanel(
             [
@@ -699,6 +707,10 @@ class PercentageRange(TimeStampedModel, Orderable):
     class Meta:
         verbose_name_plural = "Scores pour les différentes fourchettes"
         verbose_name = "Score pour une fourcette donnée"
+
+
+# Update linearized score on save
+pre_save.connect(Score.update_score, PercentageRange)
 
 
 class Category(TimeStampedModel, Orderable):

@@ -1,18 +1,20 @@
 import logging
 
-# import re
-from abc import ABC, abstractmethod
+from collections import defaultdict
 
 from datetime import date
+
+import rollbar
 from django.contrib.auth.models import User
-from django.db.models import Avg, Case, When, Value, IntegerField, Max
-from django.db.models.functions import Greatest
+from django.db.models import Avg, Case, When, Value, IntegerField, Max, Count
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response as RestResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
+
+from open_democracy_back import settings
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
@@ -33,7 +35,6 @@ from open_democracy_back.serializers.assessment_serializers import (
     AssessmentResponseSerializer,
     AssessmentSerializer,
 )
-
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -234,12 +235,15 @@ class CompletedQuestionsInitializationView(APIView):
 #     "percentage": PercentageStrategy(),
 # }
 
+MAX_SCORE = 4
+
 
 class QuestionnaireScoreView(APIView):
     def get(self, request, assessment_pk):
         scores = {}
         assessment_participation_responses = ParticipationResponse.objects.filter(
-            participation__assessment_id=assessment_pk
+            participation__assessment_id=assessment_pk,
+            question__profiling_question=False,
         ).exclude(has_passed=True)
         # Average
         scores["boolean_score"] = (
@@ -254,22 +258,28 @@ class QuestionnaireScoreView(APIView):
                 )
             )
             .values("question_id")
-            .annotate(Avg("boolean_response_int"))
+            .annotate(
+                score=(Avg("boolean_response_int") / MAX_SCORE),
+                count=Count("question_id"),
+            )
         )
 
         # UNIQUE_CHOICE
-        ## TODO create field to determine Zscore when score change and use it there
+        # TODO create field to determine Zscore when score change and use it there
         scores["unique_choice_score"] = (
             assessment_participation_responses.filter(
                 question__type=QuestionType.UNIQUE_CHOICE
             )
             .values("question_id")
-            .annotate(Avg("unique_choice_response__associated_score"))
+            .annotate(
+                score=Avg("unique_choice_response__associated_score"),
+                count=Count("question_id"),
+            )
         )
 
         # MULTIPLE_CHOICE
         # scores["multiple_choice_score"] = assessment_participation_responses.filter(question__type=QuestionType.MULTIPLE_CHOICE).annotate(multiple_choice_score_max=Greatest('multiple_choice_response__associated_score')).values('question_id', 'multiple_choice_score_max').annotate(values=Avg('multiple_choice_score_max'))
-        scores["multiple_choice_score"] = (
+        multiple_choice_scores = (
             assessment_participation_responses.filter(
                 question__type=QuestionType.MULTIPLE_CHOICE
             )
@@ -278,18 +288,66 @@ class QuestionnaireScoreView(APIView):
                     "multiple_choice_response__associated_score"
                 )
             )
-            .values("question_id")
-            .annotate(values=Avg("multiple_choice_score_max"))
+            .values("question_id", "multiple_choice_score_max")
         )
+
+        multiple_choice_score_dict = defaultdict(lambda: 0)
+        multiple_choice_score_len_dict = defaultdict(lambda: 0)
+        for score in multiple_choice_scores:
+            multiple_choice_score_dict[score["question_id"]] += (
+                score["multiple_choice_score_max"]
+                if isinstance(score["multiple_choice_score_max"], int)
+                else 0
+            )
+            multiple_choice_score_len_dict[score["question_id"]] += 1
+
+        scores["multiple_choice_score"] = []
+        for key in multiple_choice_score_dict:
+            scores["multiple_choice_score"].append(
+                {
+                    "question_id": key,
+                    "score": multiple_choice_score_dict[key]
+                    / multiple_choice_score_len_dict[key],
+                    "count": multiple_choice_score_len_dict[key],
+                }
+            )
+        # percentage
+        percentage_responses = assessment_participation_responses.filter(
+            question__type=QuestionType.PERCENTAGE
+        ).prefetch_related("question__percentage_ranges")
+
+        percentage_sum_per_question = defaultdict(lambda: 0)
+        percentage_len_per_question = defaultdict(lambda: 0)
+        for response in percentage_responses:
+            score = None
+            for percentage_range in response.question.percentage_ranges.all():
+                if (
+                    percentage_range.lower_bound
+                    <= response.percentage_response
+                    <= percentage_range.upper_bound
+                ):
+                    score = percentage_range.associated_score
+                    break
+            if score is None:
+                if hasattr(settings, "production"):
+                    rollbar.report_message(
+                        f"Response {response.id} of percentage question {response.question_id} don't have score",
+                        "warning",
+                    )
+                continue
+
+            percentage_sum_per_question[response.question_id] += score
+            percentage_len_per_question[response.question_id] += 1
+        scores["percentage_score"] = []
+        for key in percentage_sum_per_question:
+            scores["percentage_score"].append(
+                {
+                    "question_id": key,
+                    "score": percentage_sum_per_question[key]
+                    / percentage_len_per_question[key]
+                    / MAX_SCORE,
+                    "count": percentage_len_per_question[key],
+                }
+            )
+
         return RestResponse(scores, status=status.HTTP_200_OK)
-
-
-# class QuestionnaireScoreView(APIView):
-#     def get(self, request, assessment_pk):
-#         scores = {}
-#
-#         assessment_participation_responses = ProfilingQuestion.objects.filter(participationresponses__participation__assessment_id=assessment_pk)
-#         # Average
-#         breakpoint()
-#         scores["boolean_score"] = assessment_participation_responses.values('id').filter(type=QuestionType.BOOLEAN).aggregate(Avg('participationresponses__boolean_response'))["participationresponses__boolean_response__avg"]
-#         return RestResponse(scores, status=status.HTTP_200_OK)

@@ -8,11 +8,6 @@ if (
     var rulesForMultipleChoiceQuestion = document.querySelector("#id_max_multiple_choices").closest(".object")
     var rulesForClosedWithScaleQuestion = document.querySelector("#id_categories-ADD").closest(".object")
     try {
-        var rulesForBinaryQuestion = document.querySelector("#id_true_associated_score").closest(".object")
-    } catch {
-        var rulesForBinaryQuestion = document.createElement("div");
-    }
-    try {
         var rulesForPercentageQuestion = document.querySelector("#id_percentage_ranges-TOTAL_FORMS").closest(".object")
     } catch {
         var rulesForPercentageQuestion = document.createElement("div");

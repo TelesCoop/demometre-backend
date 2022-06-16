@@ -5,6 +5,7 @@ from open_democracy_back.views.content_views import BlogPostView, ResourceView
 from open_democracy_back.views.page_views import (
     EvaluationInitPageView,
     EvaluationIntroPageView,
+    EvaluationQuestionnairePageView,
     HomePageView,
     ReferentialPageView,
     UsagePageView,
@@ -47,6 +48,11 @@ router.register(
 )
 router.register(
     r"evaluation-init-pages", EvaluationInitPageView, basename="EvaluationInitPage"
+)
+router.register(
+    r"evaluation-questionnaire-pages",
+    EvaluationQuestionnairePageView,
+    basename="EvaluationInitPage",
 )
 router.register(r"blog-posts", BlogPostView, basename="BlogPost")
 router.register(r"resources", ResourceView, basename="Resources")

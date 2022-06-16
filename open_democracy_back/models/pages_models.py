@@ -149,12 +149,12 @@ class UsagePage(Page):
 
     step_of_use_title = models.CharField(
         max_length=68,
-        verbose_name="Titre du bloc retours d'expérience",
+        verbose_name="Titre",
         blank=True,
         help_text="Si ce champ est vide les étapes d'utilisation du DémoMètre ne s'afficheront pas",
     )
     step_of_use_intro = models.CharField(
-        max_length=510, verbose_name="Intro du bloc retours d'expérience", blank=True
+        max_length=510, verbose_name="Intro", blank=True
     )
     steps_of_use = StreamField(
         [
@@ -177,12 +177,12 @@ class UsagePage(Page):
 
     participate_block_title = models.CharField(
         max_length=68,
-        verbose_name="Titre du bloc retours d'expérience",
+        verbose_name="Titre",
         blank=True,
         help_text="Si ce champ est vide les étapes d'utilisation du DémoMètre ne s'afficheront pas",
     )
     participate_block_intro = models.CharField(
-        max_length=510, verbose_name="Intro du bloc retours d'expérience", blank=True
+        max_length=510, verbose_name="Intro", blank=True
     )
     participate_left_paragraph = RichTextField(
         default="",
@@ -199,12 +199,12 @@ class UsagePage(Page):
 
     start_assessment_block_title = models.CharField(
         max_length=68,
-        verbose_name="Titre du bloc retours d'expérience",
+        verbose_name="Titre",
         blank=True,
         help_text="Si ce champ est vide les étapes d'utilisation du DémoMètre ne s'afficheront pas",
     )
     start_assessment_block_intro = models.CharField(
-        max_length=510, verbose_name="Intro du bloc retours d'expérience", blank=True
+        max_length=510, verbose_name="Intro", blank=True
     )
     start_assessment_block_data = StreamField(
         [
@@ -443,3 +443,79 @@ class EvaluationInitPage(Page):
 
     class Meta:
         verbose_name = "Initialisation d'une évaluation"
+
+
+class EvaluationQuestionnairePage(Page):
+    parent_page_types = ["HomePage"]
+    subpage_types: List[str] = []
+    max_count_per_parent = 1
+    preview_modes = None
+
+    start_title = models.CharField(
+        max_length=128,
+        verbose_name="Titre",
+    )
+    start_text = models.TextField(
+        verbose_name="Texte",
+        default="",
+    )
+
+    intermediate_step_title = models.CharField(
+        max_length=128,
+        verbose_name="Titre",
+    )
+    is_intermediate_step_title_with_pillar_names = models.BooleanField(
+        default=True,
+        verbose_name="Afficher dans le titre le liste des piliers terminés",
+    )
+    intermediate_step_text_logged_in = models.TextField(
+        verbose_name="Texte pour un utilisateur connecté",
+        default="",
+    )
+    intermediate_step_text_logged_out = models.TextField(
+        verbose_name="Texte pour un utilisateur non connecté",
+        default="",
+    )
+
+    finished_title = models.CharField(
+        max_length=128,
+        verbose_name="Titre",
+    )
+    finished_text_logged_in = models.TextField(
+        verbose_name="Texte pour un utilisateur connecté",
+        default="",
+    )
+    finished_text_logged_out = models.TextField(
+        verbose_name="Texte pour un utilisateur non connecté",
+        default="",
+    )
+
+    content_panels = Page.content_panels + [
+        MultiFieldPanel(
+            [
+                FieldPanel("start_title"),
+                FieldPanel("start_text"),
+            ],
+            heading="Commencement de l'évaluation",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("intermediate_step_title"),
+                FieldPanel("intermediate_step_text_logged_in"),
+                FieldPanel("intermediate_step_text_logged_out"),
+                FieldPanel("is_intermediate_step_title_with_pillar_names"),
+            ],
+            heading="Etape intermédiaire (évaluation en cours et au moins un pilier terminé)",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("finished_title"),
+                FieldPanel("finished_text_logged_in"),
+                FieldPanel("finished_text_logged_out"),
+            ],
+            heading="L'Evaluation est terminée, toutes les questions ont été répondu",
+        ),
+    ]
+
+    class Meta:
+        verbose_name = "Déroulement de l'évaluation"

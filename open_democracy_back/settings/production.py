@@ -37,3 +37,6 @@ ANYMAIL = {
 EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
 DEFAULT_FROM_EMAIL = "no-reply@telescoop.fr"
 SERVER_EMAIL = "no-reply@telescoop.fr"
+
+BASE_URL = "http://democratieouverte.tlscp.fr"
+FRONT_END_URL = "http://democratieouverte.tlscp.fr"

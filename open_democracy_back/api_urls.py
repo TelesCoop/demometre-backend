@@ -1,11 +1,14 @@
 from django.urls import path, include
 from rest_framework import routers
+from open_democracy_back.views.content_views import BlogPostView, ResourceView
 
 from open_democracy_back.views.page_views import (
     EvaluationInitPageView,
     EvaluationIntroPageView,
+    EvaluationQuestionnairePageView,
     HomePageView,
     ReferentialPageView,
+    UsagePageView,
 )
 from open_democracy_back.views.participation_views import (
     ParticipationResponseView,
@@ -40,12 +43,20 @@ from .views.questionnaire_views import (
 router = routers.DefaultRouter()
 router.register(r"home-pages", HomePageView, basename="HomePage")
 router.register(r"referential-pages", ReferentialPageView, basename="ReferentialPage")
+router.register(r"usage-pages", UsagePageView, basename="UsagePage")
 router.register(
     r"evaluation-intro-pages", EvaluationIntroPageView, basename="EvaluationIntroPage"
 )
 router.register(
     r"evaluation-init-pages", EvaluationInitPageView, basename="EvaluationInitPage"
 )
+router.register(
+    r"evaluation-questionnaire-pages",
+    EvaluationQuestionnairePageView,
+    basename="EvaluationInitPage",
+)
+router.register(r"blog-posts", BlogPostView, basename="BlogPost")
+router.register(r"resources", ResourceView, basename="Resources")
 router.register(r"participations", ParticipationView, basename="Participation")
 router.register(
     r"participation-responses", ParticipationResponseView, basename="Response"

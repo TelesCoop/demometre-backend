@@ -125,7 +125,7 @@ class AssessmentsView(
                     f"There is several municipality corresponding to zip_code: {zip_code} (we are using the first occurence)"
                 )
             assessment = Assessment.objects.get_or_create(
-                type=locality_type, municipality=municipality.first()
+                locality_type=locality_type, municipality=municipality.first()
             )
         elif locality_type == LocalityType.INTERCOMMUNALITY:
             epci = EPCI.objects.filter(
@@ -142,7 +142,7 @@ class AssessmentsView(
                     f"There is several EPCI corresponding to zip_code: {zip_code} (we are using the first occurence)"
                 )
             assessment = Assessment.objects.get_or_create(
-                type=locality_type, epci=epci.first()
+                locality_type=locality_type, epci=epci.first()
             )
 
         else:

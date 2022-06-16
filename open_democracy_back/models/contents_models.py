@@ -1,10 +1,13 @@
 import datetime
 
 from django.db import models
+from django import forms
 from wagtail.admin.edit_handlers import FieldPanel
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
+
+from open_democracy_back.models.questionnaire_and_profiling_models import Pillar
 
 
 @register_snippet
@@ -32,7 +35,7 @@ class Feedback(index.Indexed, models.Model):
         FieldPanel("person_name"),
         ImageChooserPanel("picture"),
         FieldPanel("person_context"),
-        FieldPanel("quote"),
+        FieldPanel("quote", widget=forms.Textarea),
         FieldPanel("publish"),
     ]
 
@@ -57,25 +60,29 @@ class Article(index.Indexed, models.Model):
         on_delete=models.SET_NULL,
         related_name="+",
     )
-    title = models.CharField(max_length=64, verbose_name="Title")
+    title = models.CharField(max_length=128, verbose_name="Title")
     publication_date = models.DateTimeField(
         verbose_name="Date de publication",
         default=datetime.datetime.now,
         help_text="Permet de trier l'ordre d'affichage des articles de blog",
     )
     short_description = models.CharField(
-        max_length=510, blank=True, null=True, verbose_name="Description courte"
+        max_length=1024, blank=True, null=True, verbose_name="Description courte"
     )
     external_link = models.CharField(
         verbose_name="lien externe", blank=True, null=True, max_length=300
     )
+    pillars = models.ManyToManyField(
+        Pillar, related_name="%(class)ss", blank=True, verbose_name="Piliers concernés"
+    )
 
     panels = [
-        FieldPanel("title"),
+        FieldPanel("title", widget=forms.Textarea),
         ImageChooserPanel("image"),
         FieldPanel("publication_date"),
-        FieldPanel("short_description"),
+        FieldPanel("short_description", widget=forms.Textarea),
         FieldPanel("external_link"),
+        FieldPanel("pillars", widget=forms.CheckboxSelectMultiple),
     ]
 
     search_fields = [
@@ -102,6 +109,7 @@ class Resource(Article):
     class Meta:
         verbose_name = "Ressource"
         verbose_name_plural = "Ressources"
+        ordering = ["-publication_date"]
 
 
 @register_snippet

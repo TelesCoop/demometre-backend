@@ -6,9 +6,7 @@ DEBUG = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-35rbfpb*$*g#+za7iz0*w1+$80)@*le31f--mv3287c*th273p"
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-BASE_URL = "http://localhost:8000/"
+BASE_URL = "http://localhost:8000"
 
 FRONT_END_URL = "http://localhost:3000"
 SESSION_COOKIE_SAMESITE = None

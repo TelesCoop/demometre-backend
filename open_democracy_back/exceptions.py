@@ -4,7 +4,6 @@ from rest_framework import status
 from rest_framework.views import exception_handler
 from enum import Enum
 
-
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 

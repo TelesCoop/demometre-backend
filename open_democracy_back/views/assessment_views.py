@@ -4,9 +4,19 @@ from collections import defaultdict
 
 from datetime import date
 
+import pandas as pd
 import rollbar
 from django.contrib.auth.models import User
-from django.db.models import Avg, Case, When, Value, IntegerField, Max, Count
+from django.db.models import (
+    Avg,
+    Case,
+    When,
+    Value,
+    IntegerField,
+    Max,
+    Count,
+    FloatField,
+)
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response as RestResponse
@@ -18,7 +28,12 @@ from open_democracy_back import settings
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
-from open_democracy_back.models import Assessment, ParticipationResponse, QuestionType
+from open_democracy_back.models import (
+    Assessment,
+    ParticipationResponse,
+    QuestionType,
+    SCORE_MAP,
+)
 from open_democracy_back.models.assessment_models import (
     EPCI,
     AssessmentResponse,
@@ -243,8 +258,8 @@ class QuestionnaireScoreView(APIView):
             participation__assessment_id=assessment_pk,
             question__profiling_question=False,
         ).exclude(has_passed=True)
-        # Average
-        scores["boolean_score"] = (
+        # BOOLEAN
+        scores[QuestionType.BOOLEAN] = (
             assessment_participation_responses.filter(
                 question__type=QuestionType.BOOLEAN
             )
@@ -255,20 +270,35 @@ class QuestionnaireScoreView(APIView):
                     output_field=IntegerField(),
                 )
             )
-            .values("question_id")
+            .values(
+                "question_id",
+                "question__criteria_id",
+                "question__criteria__marker_id",
+                "question__criteria__marker__pillar_id",
+            )
             .annotate(
-                score=(Avg("boolean_response_int")),
+                avg=Avg("boolean_response_int"),
                 count=Count("question_id"),
+                score=Case(
+                    When(avg__gte=0.5, then=Value(SCORE_MAP[2])),
+                    default=Value(SCORE_MAP[1]),
+                    output_field=FloatField(),
+                ),
             )
         )
 
         # UNIQUE_CHOICE
         # TODO create field to determine Zscore when score change and use it there
-        scores["unique_choice_score"] = (
+        scores[QuestionType.UNIQUE_CHOICE] = (
             assessment_participation_responses.filter(
                 question__type=QuestionType.UNIQUE_CHOICE
             )
-            .values("question_id")
+            .values(
+                "question_id",
+                "question__criteria_id",
+                "question__criteria__marker_id",
+                "question__criteria__marker__pillar_id",
+            )
             .annotate(
                 score=Avg("unique_choice_response__linearized_score"),
                 count=Count("question_id"),
@@ -286,36 +316,74 @@ class QuestionnaireScoreView(APIView):
                     "multiple_choice_response__linearized_score"
                 )
             )
-            .values("question_id", "multiple_choice_score_max")
+            .values(
+                "question_id",
+                "multiple_choice_score_max",
+                "question__criteria_id",
+                "question__criteria__marker_id",
+                "question__criteria__marker__pillar_id",
+            )
         )
 
-        multiple_choice_score_dict = defaultdict(lambda: 0)
-        multiple_choice_score_len_dict = defaultdict(lambda: 0)
+        multiple_choice_score_dict = defaultdict(
+            lambda: {
+                "score": 0,
+                "count": 0,
+                "question__criteria_id": None,
+                "question__criteria__marker_id": None,
+                "question__criteria__marker__pillar_id": None,
+            }
+        )
         for score in multiple_choice_scores:
-            multiple_choice_score_dict[score["question_id"]] += (
+            multiple_choice_score_dict[score["question_id"]]["score"] += (
                 score["multiple_choice_score_max"]
                 if isinstance(score["multiple_choice_score_max"], int)
                 else 0
             )
-            multiple_choice_score_len_dict[score["question_id"]] += 1
+            multiple_choice_score_dict[score["question_id"]][
+                "question__criteria_id"
+            ] = score["question__criteria_id"]
+            multiple_choice_score_dict[score["question_id"]][
+                "question__criteria__marker_id"
+            ] = score["question__criteria__marker_id"]
+            multiple_choice_score_dict[score["question_id"]][
+                "question__criteria__marker__pillar_id"
+            ] = score["question__criteria__marker__pillar_id"]
+            multiple_choice_score_dict[score["question_id"]]["count"] += 1
 
-        scores["multiple_choice_score"] = []
+        scores[QuestionType.PERCENTAGE.MULTIPLE_CHOICE] = []
         for key in multiple_choice_score_dict:
-            scores["multiple_choice_score"].append(
+            scores[QuestionType.PERCENTAGE.MULTIPLE_CHOICE].append(
                 {
                     "question_id": key,
-                    "score": multiple_choice_score_dict[key]
-                    / multiple_choice_score_len_dict[key],
-                    "count": multiple_choice_score_len_dict[key],
+                    "score": multiple_choice_score_dict[key]["score"]
+                    / multiple_choice_score_dict[key]["count"],
+                    "count": multiple_choice_score_dict[key]["count"],
+                    "question__criteria_id": multiple_choice_score_dict[key][
+                        "question__criteria_id"
+                    ],
+                    "question__criteria__marker_id": multiple_choice_score_dict[key][
+                        "question__criteria__marker_id"
+                    ],
+                    "question__criteria__marker__pillar_id": multiple_choice_score_dict[
+                        key
+                    ]["question__criteria__marker__pillar_id"],
                 }
             )
         # percentage
         percentage_responses = assessment_participation_responses.filter(
             question__type=QuestionType.PERCENTAGE
-        ).prefetch_related("question__percentage_ranges")
+        ).prefetch_related("question__percentage_ranges", "question__criteria__marker")
 
-        percentage_sum_per_question = defaultdict(lambda: 0)
-        percentage_len_per_question = defaultdict(lambda: 0)
+        percentage_score_dict = defaultdict(
+            lambda: {
+                "score": 0,
+                "count": 0,
+                "question__criteria_id": None,
+                "question__criteria__marker_id": None,
+                "question__criteria__marker__pillar_id": None,
+            }
+        )
         for response in percentage_responses:
             score = None
             for percentage_range in response.question.percentage_ranges.all():
@@ -334,17 +402,77 @@ class QuestionnaireScoreView(APIView):
                     )
                 continue
 
-            percentage_sum_per_question[response.question_id] += score
-            percentage_len_per_question[response.question_id] += 1
-        scores["percentage_score"] = []
-        for key in percentage_sum_per_question:
-            scores["percentage_score"].append(
+            percentage_score_dict[response.question_id]["score"] += score
+            percentage_score_dict[response.question_id]["count"] += 1
+            percentage_score_dict[response.question_id][
+                "question__criteria_id"
+            ] = response.question.criteria_id
+            percentage_score_dict[response.question_id][
+                "question__criteria__marker_id"
+            ] = response.question.criteria.marker_id
+            percentage_score_dict[response.question_id][
+                "question__criteria__marker__pillar_id"
+            ] = response.question.criteria.marker.pillar_id
+
+        scores[QuestionType.PERCENTAGE.PERCENTAGE] = []
+        for key in percentage_score_dict:
+            scores[QuestionType.PERCENTAGE].append(
                 {
                     "question_id": key,
-                    "score": percentage_sum_per_question[key]
-                    / percentage_len_per_question[key],
-                    "count": percentage_len_per_question[key],
+                    "score": percentage_score_dict[key]["score"]
+                    / percentage_score_dict[key]["count"],
+                    "count": percentage_score_dict[key]["count"],
+                    "question__criteria_id": percentage_score_dict[key][
+                        "question__criteria_id"
+                    ],
+                    "question__criteria__marker_id": percentage_score_dict[key][
+                        "question__criteria__marker_id"
+                    ],
+                    "question__criteria__marker__pillar_id": percentage_score_dict[key][
+                        "question__criteria__marker__pillar_id"
+                    ],
                 }
             )
 
+        score_by_question_id = {}
+        for question_type in [
+            QuestionType.BOOLEAN,
+            QuestionType.UNIQUE_CHOICE,
+            QuestionType.MULTIPLE_CHOICE,
+            QuestionType.PERCENTAGE,
+        ]:
+            for score in scores[question_type]:
+                score_by_question_id[score["question_id"]] = score
+                score_by_question_id[score["question_id"]]["type"] = question_type
+
+        df = pd.DataFrame.from_dict(score_by_question_id).transpose()
+        criteria_mean = (
+            df.groupby(
+                [
+                    "question__criteria_id",
+                    "question__criteria__marker_id",
+                    "question__criteria__marker__pillar_id",
+                ]
+            )["score"]
+            .mean()
+            .reset_index()
+        )
+        marker_mean = (
+            criteria_mean.groupby(
+                [
+                    "question__criteria__marker_id",
+                    "question__criteria__marker__pillar_id",
+                ]
+            )["score"]
+            .mean()
+            .reset_index()
+        )
+        pillar_mean = (
+            marker_mean.groupby("question__criteria__marker__pillar_id")["score"]
+            .mean()
+            .reset_index()
+        )
+        # df.loc["question__criteria_id"].apply(int)
+        print(df)
+        breakpoint()
         return RestResponse(scores, status=status.HTTP_200_OK)

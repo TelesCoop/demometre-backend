@@ -11,6 +11,7 @@ from open_democracy_back.models.contents_models import (
 from open_democracy_back.models.pages_models import (
     EvaluationInitPage,
     EvaluationQuestionnairePage,
+    ProjectPage,
     UsagePage,
 )
 from open_democracy_back.serializers.assessment_serializers import (
@@ -150,6 +151,97 @@ class UsagePageSerializer(PageSerialiserWithLocale):
             "start_assessment_block_intro",
             "start_assessment_block_data",
             "assessment_types_details",
+        ]
+        read_only_fields = fields
+
+
+class ProjectPageSerializer(PageSerialiserWithLocale):
+    intro_image_url = serializers.SerializerMethodField()
+    images_url = serializers.SerializerMethodField()
+    svgs_url = serializers.SerializerMethodField()
+    partners = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_intro_image_url(obj: ProjectPage):
+        if obj.intro_image:
+            return obj.intro_image.file.url
+        return None
+
+    @staticmethod
+    def get_images_url(obj: ProjectPage):
+        images = []
+        ids = []
+        for impact in obj.impact_block_data:
+            if impact.value["image"].id not in ids:
+                images.append(
+                    {
+                        "id": impact.value["image"].id,
+                        "url": impact.value["image"].file.url,
+                    }
+                )
+                ids.append(impact.value["image"].id)
+        for why in obj.why_block_data:
+            if why.block.name == "image" and why.value.id not in ids:
+                images.append(
+                    {
+                        "id": why.value.id,
+                        "url": why.value.file.url,
+                    }
+                )
+                ids.append(why.value.id)
+        return images
+
+    @staticmethod
+    def get_svgs_url(obj: ProjectPage):
+        svgs = []
+        ids = []
+        for objective in obj.objective_block_data:
+            if objective.value["svg"].id not in ids:
+                svgs.append(
+                    {
+                        "id": objective.value["svg"].id,
+                        "url": objective.value["svg"].file.url,
+                    }
+                )
+                ids.append(objective.value["svg"].id)
+        for how in obj.how_block_data:
+            if how.block.name == "cards":
+                for card in how.value:
+                    if card["svg"].id not in ids:
+                        svgs.append({"id": card["svg"].id, "url": card["svg"].file.url})
+                        ids.append(card["svg"].id)
+        return svgs
+
+    @staticmethod
+    def get_partners(obj: ProjectPage):
+        partners = []
+        ids = []
+        for group in obj.who_partner_sub_block_data:
+            for partner in group.value["partners"]:
+                if partner.id not in ids:
+                    partners.append(PartnerSerializer(partner, read_only=True).data)
+                    ids.append(partner.id)
+        return partners
+
+    class Meta:
+        model = ProjectPage
+        fields = PAGE_FIELDS + [
+            "tag_line",
+            "intro_image_url",
+            "why_block_title",
+            "why_block_data",
+            "objective_block_title",
+            "objective_block_data",
+            "impact_block_title",
+            "impact_block_data",
+            "who_block_title",
+            "who_partner_sub_block_title",
+            "who_partner_sub_block_data",
+            "how_block_title",
+            "how_block_data",
+            "images_url",
+            "svgs_url",
+            "partners",
         ]
         read_only_fields = fields
 

@@ -282,8 +282,84 @@ class ReferentialPage(Page):
 
     introduction = models.CharField(max_length=255, default="")
 
+    description = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+    )
+
+    pillar_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre",
+        blank=True,
+        help_text="si ce champs est vide l'explication des piliers ne s'affichera pas",
+    )
+    pillar_block_content = RichTextField(
+        default="",
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Contenu",
+    )
+    pillar_block_image = models.ForeignKey(
+        "wagtailimages.Image",
+        verbose_name="Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    marker_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre",
+        blank=True,
+        help_text="si ce champs est vide l'explication des marqueurs ne s'affichera pas",
+    )
+    marker_block_content = RichTextField(
+        default="",
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Contenu",
+    )
+
+    criteria_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre",
+        blank=True,
+        help_text="si ce champs est vide l'explication des critères d'évaluation ne s'affichera pas",
+    )
+    criteria_block_content = RichTextField(
+        default="",
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Contenu",
+    )
+
     content_panels = Page.content_panels + [
         FieldPanel("introduction"),
+        FieldPanel("description"),
+        MultiFieldPanel(
+            [
+                FieldPanel("pillar_block_title"),
+                FieldPanel("pillar_block_content"),
+                ImageChooserPanel("pillar_block_image"),
+            ],
+            heading="Explication des piliers",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("marker_block_title"),
+                FieldPanel("marker_block_content"),
+            ],
+            heading="Explication des marqueurs",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("criteria_block_title"),
+                FieldPanel("criteria_block_content"),
+            ],
+            heading="Explication des critères d'évaluation",
+        ),
     ]
 
     class Meta:

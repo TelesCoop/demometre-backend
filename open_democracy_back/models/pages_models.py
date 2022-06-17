@@ -296,6 +296,7 @@ class ReferentialPage(Page):
     )
     pillar_block_content = RichTextField(
         default="",
+        blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
         verbose_name="Contenu",
     )
@@ -316,6 +317,7 @@ class ReferentialPage(Page):
     )
     marker_block_content = RichTextField(
         default="",
+        blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
         verbose_name="Contenu",
     )
@@ -328,6 +330,7 @@ class ReferentialPage(Page):
     )
     criteria_block_content = RichTextField(
         default="",
+        blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
         verbose_name="Contenu",
     )
@@ -341,7 +344,7 @@ class ReferentialPage(Page):
                 FieldPanel("pillar_block_content"),
                 ImageChooserPanel("pillar_block_image"),
             ],
-            heading="Explication des pilliers",
+            heading="Explication des piliers",
         ),
         MultiFieldPanel(
             [

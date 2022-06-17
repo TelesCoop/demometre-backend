@@ -2,10 +2,8 @@ import logging
 
 
 from datetime import date
-from typing import Dict, List
+from typing import Dict
 
-import numpy as np
-import pandas as pd
 from django.contrib.auth.models import User
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import api_view, permission_classes
@@ -19,8 +17,6 @@ from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateMode
 
 from open_democracy_back.models import (
     Assessment,
-    ParticipationResponse,
-    QuestionType,
 )
 from open_democracy_back.models.assessment_models import (
     EPCI,
@@ -34,7 +30,9 @@ from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
 )
 from open_democracy_back.permissions import IsAssessmentAdminOrReadOnly
-from open_democracy_back.scoring import SCORES_FN_BY_QUESTION_TYPE
+from open_democracy_back.scoring import (
+    get_scores_by_assessment_pk,
+)
 from open_democracy_back.serializers.assessment_serializers import (
     AssessmentResponseSerializer,
     AssessmentSerializer,
@@ -200,100 +198,5 @@ class CompletedQuestionsInitializationView(APIView):
 
 class QuestionnaireScoreView(APIView):
     def get(self, request, assessment_pk):
-        assessment_participation_responses = ParticipationResponse.objects.filter(
-            participation__assessment_id=assessment_pk,
-            question__profiling_question=False,
-        ).exclude(has_passed=True)
-
-        score_by_question_id: Dict[str, float] = {}
-        df_dict: [str, List] = {
-            "question_id": [],
-            "criteria_id": [],
-            "marker_id": [],
-            "pillar_id": [],
-            "score": [],
-            "type": [],
-        }
-        for question_type in [
-            QuestionType.BOOLEAN,
-            QuestionType.UNIQUE_CHOICE,
-            QuestionType.MULTIPLE_CHOICE,
-            QuestionType.PERCENTAGE,
-        ]:
-            question_type_scores = SCORES_FN_BY_QUESTION_TYPE[question_type.value](
-                assessment_participation_responses
-            )
-            for score in question_type_scores:
-                score_by_question_id[score["question_id"]] = score["score"]
-                df_dict["question_id"].append(score["question_id"])
-                df_dict["criteria_id"].append(score["question__criteria_id"])
-                df_dict["marker_id"].append(score["question__criteria__marker_id"])
-                df_dict["pillar_id"].append(
-                    score["question__criteria__marker__pillar_id"]
-                )
-                df_dict["score"].append(score["score"])
-                df_dict["type"].append(question_type.value)
-
-        df = pd.DataFrame.from_dict(df_dict)
-        boolean_df_by_criteria = (
-            df[df.type == QuestionType.BOOLEAN]
-            .groupby(
-                [
-                    "criteria_id",
-                    "marker_id",
-                    "pillar_id",
-                ]
-            )["score"]
-            .sum()
-            .reset_index()
-            .rename(columns={"score": "boolean_score_sum"})
-        )
-        df = df[df.type != QuestionType.BOOLEAN]
-        criteria_mean = (
-            df.groupby(
-                [
-                    "criteria_id",
-                    "marker_id",
-                    "pillar_id",
-                ]
-            )
-            .agg({"score": "sum", "question_id": "count"})
-            .reset_index()
-            .rename(columns={"question_id": "count", "score": "score_sum"})
-        )
-        criteria_mean_merge = criteria_mean.merge(
-            boolean_df_by_criteria[["criteria_id", "boolean_score_sum"]],
-            on="criteria_id",
-            how="left",
-        )
-        criteria_mean_merge["boolean_score_sum"] = criteria_mean_merge[
-            "boolean_score_sum"
-        ].replace(np.nan, 0)
-        criteria_mean_merge["score_sum_sum"] = (
-            criteria_mean_merge["score_sum"] + criteria_mean_merge["boolean_score_sum"]
-        )
-        criteria_mean_merge["score"] = (
-            criteria_mean_merge["score_sum_sum"] / criteria_mean_merge["count"]
-        )
-
-        marker_mean = (
-            criteria_mean_merge.groupby(
-                [
-                    "marker_id",
-                    "pillar_id",
-                ]
-            )["score"]
-            .mean()
-            .reset_index()
-        )
-        pillar_mean = marker_mean.groupby("pillar_id")["score"].mean().reset_index()
-
-        scores: Dict[str, Dict[str, int]] = {
-            "by_question_id": score_by_question_id,
-            "by_criteria_id": dict(
-                zip(criteria_mean_merge.criteria_id, criteria_mean_merge.score)
-            ),
-            "by_marker_id": dict(zip(marker_mean.marker_id, marker_mean.score)),
-            "by_pillar_id": dict(zip(pillar_mean.pillar_id, pillar_mean.score)),
-        }
+        scores: Dict[str, Dict[str, float]] = get_scores_by_assessment_pk(assessment_pk)
         return RestResponse(scores, status=status.HTTP_200_OK)

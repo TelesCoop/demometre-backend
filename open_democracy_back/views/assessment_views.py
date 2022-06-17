@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from datetime import date
 
+import numpy as np
 import pandas as pd
 import rollbar
 from django.contrib.auth.models import User
@@ -253,13 +254,13 @@ class CompletedQuestionsInitializationView(APIView):
 
 class QuestionnaireScoreView(APIView):
     def get(self, request, assessment_pk):
-        scores = {}
+        scores_by_question_type = {}
         assessment_participation_responses = ParticipationResponse.objects.filter(
             participation__assessment_id=assessment_pk,
             question__profiling_question=False,
         ).exclude(has_passed=True)
         # BOOLEAN
-        scores[QuestionType.BOOLEAN] = (
+        scores_by_question_type[QuestionType.BOOLEAN] = (
             assessment_participation_responses.filter(
                 question__type=QuestionType.BOOLEAN
             )
@@ -289,7 +290,7 @@ class QuestionnaireScoreView(APIView):
 
         # UNIQUE_CHOICE
         # TODO create field to determine Zscore when score change and use it there
-        scores[QuestionType.UNIQUE_CHOICE] = (
+        scores_by_question_type[QuestionType.UNIQUE_CHOICE] = (
             assessment_participation_responses.filter(
                 question__type=QuestionType.UNIQUE_CHOICE
             )
@@ -306,7 +307,7 @@ class QuestionnaireScoreView(APIView):
         )
 
         # MULTIPLE_CHOICE
-        # scores["multiple_choice_score"] = assessment_participation_responses.filter(question__type=QuestionType.MULTIPLE_CHOICE).annotate(multiple_choice_score_max=Greatest('multiple_choice_response__linearized_score')).values('question_id', 'multiple_choice_score_max').annotate(values=Avg('multiple_choice_score_max'))
+        # scores_by_question_type["multiple_choice_score"] = assessment_participation_responses.filter(question__type=QuestionType.MULTIPLE_CHOICE).annotate(multiple_choice_score_max=Greatest('multiple_choice_response__linearized_score')).values('question_id', 'multiple_choice_score_max').annotate(values=Avg('multiple_choice_score_max'))
         multiple_choice_scores = (
             assessment_participation_responses.filter(
                 question__type=QuestionType.MULTIPLE_CHOICE
@@ -351,9 +352,9 @@ class QuestionnaireScoreView(APIView):
             ] = score["question__criteria__marker__pillar_id"]
             multiple_choice_score_dict[score["question_id"]]["count"] += 1
 
-        scores[QuestionType.PERCENTAGE.MULTIPLE_CHOICE] = []
+        scores_by_question_type[QuestionType.PERCENTAGE.MULTIPLE_CHOICE] = []
         for key in multiple_choice_score_dict:
-            scores[QuestionType.PERCENTAGE.MULTIPLE_CHOICE].append(
+            scores_by_question_type[QuestionType.PERCENTAGE.MULTIPLE_CHOICE].append(
                 {
                     "question_id": key,
                     "score": multiple_choice_score_dict[key]["score"]
@@ -414,9 +415,9 @@ class QuestionnaireScoreView(APIView):
                 "question__criteria__marker__pillar_id"
             ] = response.question.criteria.marker.pillar_id
 
-        scores[QuestionType.PERCENTAGE.PERCENTAGE] = []
+        scores_by_question_type[QuestionType.PERCENTAGE.PERCENTAGE] = []
         for key in percentage_score_dict:
-            scores[QuestionType.PERCENTAGE].append(
+            scores_by_question_type[QuestionType.PERCENTAGE].append(
                 {
                     "question_id": key,
                     "score": percentage_score_dict[key]["score"]
@@ -435,44 +436,85 @@ class QuestionnaireScoreView(APIView):
             )
 
         score_by_question_id = {}
+        df_dict = {}
         for question_type in [
             QuestionType.BOOLEAN,
             QuestionType.UNIQUE_CHOICE,
             QuestionType.MULTIPLE_CHOICE,
             QuestionType.PERCENTAGE,
         ]:
-            for score in scores[question_type]:
-                score_by_question_id[score["question_id"]] = score
-                score_by_question_id[score["question_id"]]["type"] = question_type
+            for score in scores_by_question_type[question_type]:
+                score_by_question_id[score["question_id"]] = score["score"]
+                df_dict[score["question_id"]] = score
+                df_dict[score["question_id"]]["type"] = question_type
 
-        df = pd.DataFrame.from_dict(score_by_question_id).transpose()
+        df = pd.DataFrame.from_dict(df_dict).transpose()
+        df = df.rename(
+            columns={
+                "question__criteria_id": "criteria_id",
+                "question__criteria__marker_id": "marker_id",
+                "question__criteria__marker__pillar_id": "pillar_id",
+            }
+        )
+        boolean_df_by_criteria = (
+            df[df.type == QuestionType.BOOLEAN]
+            .groupby(
+                [
+                    "criteria_id",
+                    "marker_id",
+                    "pillar_id",
+                ]
+            )["score"]
+            .sum()
+            .reset_index()
+            .rename(columns={"score": "boolean_score_sum"})
+        )
+        df = df[df.type != QuestionType.BOOLEAN]
         criteria_mean = (
             df.groupby(
                 [
-                    "question__criteria_id",
-                    "question__criteria__marker_id",
-                    "question__criteria__marker__pillar_id",
+                    "criteria_id",
+                    "marker_id",
+                    "pillar_id",
                 ]
-            )["score"]
-            .mean()
+            )
+            .agg({"score": "sum", "question_id": "count"})
             .reset_index()
+            .rename(columns={"question_id": "count", "score": "score_sum"})
         )
+        criteria_mean_merge = criteria_mean.merge(
+            boolean_df_by_criteria[["criteria_id", "boolean_score_sum"]],
+            on="criteria_id",
+            how="left",
+        )
+        criteria_mean_merge["boolean_score_sum"] = criteria_mean_merge[
+            "boolean_score_sum"
+        ].replace(np.nan, 0)
+        criteria_mean_merge["score_sum_sum"] = (
+            criteria_mean_merge["score_sum"] + criteria_mean_merge["boolean_score_sum"]
+        )
+        criteria_mean_merge["score"] = (
+            criteria_mean_merge["score_sum_sum"] / criteria_mean_merge["count"]
+        )
+
         marker_mean = (
-            criteria_mean.groupby(
+            criteria_mean_merge.groupby(
                 [
-                    "question__criteria__marker_id",
-                    "question__criteria__marker__pillar_id",
+                    "marker_id",
+                    "pillar_id",
                 ]
             )["score"]
             .mean()
             .reset_index()
         )
-        pillar_mean = (
-            marker_mean.groupby("question__criteria__marker__pillar_id")["score"]
-            .mean()
-            .reset_index()
-        )
-        # df.loc["question__criteria_id"].apply(int)
-        print(df)
-        breakpoint()
+        pillar_mean = marker_mean.groupby("pillar_id")["score"].mean().reset_index()
+
+        scores = {
+            "by_question_id": score_by_question_id,
+            "by_criteria_id": dict(
+                zip(criteria_mean_merge.criteria_id, criteria_mean_merge.score)
+            ),
+            "by_marker_id": dict(zip(marker_mean.marker_id, marker_mean.score)),
+            "by_pillar_id": dict(zip(pillar_mean.pillar_id, pillar_mean.score)),
+        }
         return RestResponse(scores, status=status.HTTP_200_OK)

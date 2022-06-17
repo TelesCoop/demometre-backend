@@ -103,7 +103,7 @@ urlpatterns = [
         CompletedQuestionsInitializationView.as_view(),
     ),
     path(
-        "assessments/<int:assessment_pk>/questions/score",
+        "assessments/<int:assessment_pk>/scores",
         QuestionnaireScoreView.as_view(),
     ),
 ]

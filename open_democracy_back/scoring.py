@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import TypedDict, List
+from typing import TypedDict, List, DefaultDict, Dict, Callable
 
 import rollbar
 from django.db.models import Case, When, Value, IntegerField, Avg, FloatField, Max
@@ -15,6 +15,10 @@ class QuestionScore(TypedDict):
     question__criteria__marker_id: int
     question__criteria__marker__pillar_id: int
     score: int
+
+
+class QuestionScoreAverage(QuestionScore):
+    count: int
 
 
 def get_score_of_boolean_question(queryset) -> List[QuestionScore]:
@@ -80,7 +84,7 @@ def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
         )
     )
 
-    multiple_choice_score_dict = defaultdict(
+    multiple_choice_score_dict: DefaultDict[QuestionScoreAverage] = defaultdict(
         lambda: {
             "score": 0,
             "count": 0,
@@ -106,23 +110,23 @@ def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
         ] = score["question__criteria__marker__pillar_id"]
         multiple_choice_score_dict[score["question_id"]]["count"] += 1
 
-    result = []
+    result: List[QuestionScore] = []
     for key in multiple_choice_score_dict:
         result.append(
-            {
-                "question_id": key,
-                "score": multiple_choice_score_dict[key]["score"]
+            QuestionScore(
+                question_id=key,
+                score=multiple_choice_score_dict[key]["score"]
                 / multiple_choice_score_dict[key]["count"],
-                "question__criteria_id": multiple_choice_score_dict[key][
+                question__criteria_id=multiple_choice_score_dict[key][
                     "question__criteria_id"
                 ],
-                "question__criteria__marker_id": multiple_choice_score_dict[key][
+                question__criteria__marker_id=multiple_choice_score_dict[key][
                     "question__criteria__marker_id"
                 ],
-                "question__criteria__marker__pillar_id": multiple_choice_score_dict[
-                    key
-                ]["question__criteria__marker__pillar_id"],
-            }
+                question__criteria__marker__pillar_id=multiple_choice_score_dict[key][
+                    "question__criteria__marker__pillar_id"
+                ],
+            )
         )
 
     return result
@@ -133,7 +137,7 @@ def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
         question__type=QuestionType.PERCENTAGE
     ).prefetch_related("question__percentage_ranges", "question__criteria__marker")
 
-    percentage_scores_dict = defaultdict(
+    percentage_scores_dict: DefaultDict[QuestionScoreAverage] = defaultdict(
         lambda: {
             "score": 0,
             "count": 0,
@@ -172,29 +176,28 @@ def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
             "question__criteria__marker__pillar_id"
         ] = response.question.criteria.marker.pillar_id
 
-    result = []
+    result: List[QuestionScore] = []
     for key in percentage_scores_dict:
         result.append(
-            {
-                "question_id": key,
-                "score": percentage_scores_dict[key]["score"]
+            QuestionScore(
+                question_id=key,
+                score=percentage_scores_dict[key]["score"]
                 / percentage_scores_dict[key]["count"],
-                "count": percentage_scores_dict[key]["count"],
-                "question__criteria_id": percentage_scores_dict[key][
+                question__criteria_id=percentage_scores_dict[key][
                     "question__criteria_id"
                 ],
-                "question__criteria__marker_id": percentage_scores_dict[key][
+                question__criteria__marker_id=percentage_scores_dict[key][
                     "question__criteria__marker_id"
                 ],
-                "question__criteria__marker__pillar_id": percentage_scores_dict[key][
+                question__criteria__marker__pillar_id=percentage_scores_dict[key][
                     "question__criteria__marker__pillar_id"
                 ],
-            }
+            )
         )
     return result
 
 
-SCORES_FN_BY_QUESTION_TYPE = {
+SCORES_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
     QuestionType.BOOLEAN.value: get_score_of_boolean_question,
     QuestionType.UNIQUE_CHOICE.value: get_score_of_unique_choice_question,
     QuestionType.MULTIPLE_CHOICE.value: get_score_of_multiple_choice_question,

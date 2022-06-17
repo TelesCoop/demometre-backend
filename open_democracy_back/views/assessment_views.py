@@ -5,6 +5,7 @@ from datetime import date
 from typing import Dict
 
 from django.contrib.auth.models import User
+from django.views.decorators.cache import cache_page
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response as RestResponse
@@ -197,6 +198,8 @@ class CompletedQuestionsInitializationView(APIView):
 
 
 class QuestionnaireScoreView(APIView):
+    # Cache page everyday
+    @cache_page(60 * 60 * 24)
     def get(self, request, assessment_pk):
         scores: Dict[str, Dict[str, float]] = get_scores_by_assessment_pk(assessment_pk)
         return RestResponse(scores, status=status.HTTP_200_OK)

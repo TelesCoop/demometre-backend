@@ -2,6 +2,7 @@ import logging
 
 
 from datetime import date
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -204,8 +205,8 @@ class QuestionnaireScoreView(APIView):
             question__profiling_question=False,
         ).exclude(has_passed=True)
 
-        score_by_question_id = {}
-        df_dict = {
+        score_by_question_id: Dict[str, float] = {}
+        df_dict: [str, List] = {
             "question_id": [],
             "criteria_id": [],
             "marker_id": [],
@@ -287,7 +288,7 @@ class QuestionnaireScoreView(APIView):
         )
         pillar_mean = marker_mean.groupby("pillar_id")["score"].mean().reset_index()
 
-        scores = {
+        scores: Dict[str, Dict[str, int]] = {
             "by_question_id": score_by_question_id,
             "by_criteria_id": dict(
                 zip(criteria_mean_merge.criteria_id, criteria_mean_merge.score)

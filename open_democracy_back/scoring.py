@@ -84,14 +84,14 @@ def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
         )
     )
 
-    multiple_choice_score_dict: DefaultDict[QuestionScoreAverage] = defaultdict(
-        lambda: {
-            "score": 0,
-            "count": 0,
-            "question__criteria_id": None,
-            "question__criteria__marker_id": None,
-            "question__criteria__marker__pillar_id": None,
-        }
+    multiple_choice_score_dict: DefaultDict[str, QuestionScoreAverage] = defaultdict(
+        lambda: QuestionScoreAverage(
+            score=0,
+            count=0,
+            question__criteria_id=None,
+            question__criteria__marker_id=None,
+            question__criteria__marker__pillar_id=None,
+        )
     )
     for score in multiple_choice_scores:
         multiple_choice_score_dict[score["question_id"]]["score"] += (
@@ -137,14 +137,15 @@ def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
         question__type=QuestionType.PERCENTAGE
     ).prefetch_related("question__percentage_ranges", "question__criteria__marker")
 
-    percentage_scores_dict: DefaultDict[QuestionScoreAverage] = defaultdict(
-        lambda: {
-            "score": 0,
-            "count": 0,
-            "question__criteria_id": None,
-            "question__criteria__marker_id": None,
-            "question__criteria__marker__pillar_id": None,
-        }
+    percentage_scores_dict: DefaultDict[str, QuestionScoreAverage] = defaultdict(
+        lambda: QuestionScoreAverage(
+            score=0,
+            count=0,
+            question__criteria_id=None,
+            question__criteria__marker_id=None,
+            question__criteria__marker__pillar_id=None,
+        ),
+        {},
     )
     for response in percentage_responses:
         score = None
@@ -198,8 +199,8 @@ def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
 
 
 SCORES_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
-    QuestionType.BOOLEAN.value: get_score_of_boolean_question,
-    QuestionType.UNIQUE_CHOICE.value: get_score_of_unique_choice_question,
-    QuestionType.MULTIPLE_CHOICE.value: get_score_of_multiple_choice_question,
-    QuestionType.PERCENTAGE.value: get_score_of_percentage_question,
+    QuestionType.BOOLEAN.value: get_score_of_boolean_question,  # type: ignore
+    QuestionType.UNIQUE_CHOICE.value: get_score_of_unique_choice_question,  # type: ignore
+    QuestionType.MULTIPLE_CHOICE.value: get_score_of_multiple_choice_question,  # type: ignore
+    QuestionType.PERCENTAGE.value: get_score_of_percentage_question,  # type: ignore
 }

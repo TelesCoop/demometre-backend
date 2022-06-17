@@ -436,7 +436,14 @@ class QuestionnaireScoreView(APIView):
             )
 
         score_by_question_id = {}
-        df_dict = {}
+        df_dict = {
+            "question_id": [],
+            "criteria_id": [],
+            "marker_id": [],
+            "pillar_id": [],
+            "score": [],
+            "type": [],
+        }
         for question_type in [
             QuestionType.BOOLEAN,
             QuestionType.UNIQUE_CHOICE,
@@ -445,17 +452,16 @@ class QuestionnaireScoreView(APIView):
         ]:
             for score in scores_by_question_type[question_type]:
                 score_by_question_id[score["question_id"]] = score["score"]
-                df_dict[score["question_id"]] = score
-                df_dict[score["question_id"]]["type"] = question_type
+                df_dict["question_id"].append(score["question_id"])
+                df_dict["criteria_id"].append(score["question__criteria_id"])
+                df_dict["marker_id"].append(score["question__criteria__marker_id"])
+                df_dict["pillar_id"].append(
+                    score["question__criteria__marker__pillar_id"]
+                )
+                df_dict["score"].append(score["score"])
+                df_dict["type"].append(question_type.value)
 
-        df = pd.DataFrame.from_dict(df_dict).transpose()
-        df = df.rename(
-            columns={
-                "question__criteria_id": "criteria_id",
-                "question__criteria__marker_id": "marker_id",
-                "question__criteria__marker__pillar_id": "pillar_id",
-            }
-        )
+        df = pd.DataFrame.from_dict(df_dict)
         boolean_df_by_criteria = (
             df[df.type == QuestionType.BOOLEAN]
             .groupby(

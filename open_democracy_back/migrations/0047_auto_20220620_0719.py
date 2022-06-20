@@ -7,23 +7,29 @@ import wagtail.core.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('open_democracy_back', '0046_delete_closedwithrankingresponse'),
+        ("open_democracy_back", "0046_auto_20220616_1825"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='referentialpage',
-            name='criteria_block_content',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Contenu'),
+            model_name="referentialpage",
+            name="criteria_block_content",
+            field=wagtail.core.fields.RichTextField(
+                blank=True, default="", verbose_name="Contenu"
+            ),
         ),
         migrations.AlterField(
-            model_name='referentialpage',
-            name='marker_block_content',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Contenu'),
+            model_name="referentialpage",
+            name="marker_block_content",
+            field=wagtail.core.fields.RichTextField(
+                blank=True, default="", verbose_name="Contenu"
+            ),
         ),
         migrations.AlterField(
-            model_name='referentialpage',
-            name='pillar_block_content',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Contenu'),
+            model_name="referentialpage",
+            name="pillar_block_content",
+            field=wagtail.core.fields.RichTextField(
+                blank=True, default="", verbose_name="Contenu"
+            ),
         ),
     ]

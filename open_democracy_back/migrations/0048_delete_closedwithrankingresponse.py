@@ -6,11 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('open_democracy_back', '0045_auto_20220615_1358'),
+        ("open_democracy_back", "0047_auto_20220620_0719"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='ClosedWithRankingResponse',
+            name="ClosedWithRankingResponse",
         ),
     ]

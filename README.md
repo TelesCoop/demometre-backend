@@ -45,3 +45,9 @@ Cf le README correspondant à l'app Tweets
 
 Le système de traduction utilisé est [wagtail-localize](https://www.wagtail-localize.org/)
 > Attention : Si une langue est rajouté il faudra (en plus du système de base de wagtail localize) adapter le switch de langue du header
+
+
+
+### Commit de suppression des questions avec classement
+
+https://gitlab.com/telescoop/democratie-ouverte/back/-/commit/7a901bffae7f54ead328b4d84819fa2716b1786b

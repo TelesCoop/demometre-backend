@@ -535,7 +535,7 @@ class ProjectPage(Page):
             ),
         ],
         blank=True,
-        verbose_name="Les impacts",
+        verbose_name="Contenu",
     )
 
     content_panels = Page.content_panels + [

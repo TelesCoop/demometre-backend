@@ -470,7 +470,7 @@ class ProjectPage(Page):
     )
     who_partner_sub_block_title = models.CharField(
         max_length=68,
-        verbose_name="Titre - partenaires",
+        verbose_name="Partenaires - titre",
         blank=True,
         help_text="Si ce champ est vide le bloc ne s'affichera pas",
     )
@@ -488,7 +488,9 @@ class ProjectPage(Page):
                     label="Type de partenaires",
                 ),
             )
-        ]
+        ],
+        blank=True,
+        verbose_name="Partenaires - contenu",
     )
 
     how_block_title = models.CharField(

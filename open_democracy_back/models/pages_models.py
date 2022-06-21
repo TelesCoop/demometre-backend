@@ -477,7 +477,7 @@ class ProjectPage(Page):
     who_partner_sub_block_data = StreamField(
         [
             (
-                "group",
+                "group_partners",
                 blocks.StructBlock(
                     [
                         ("title", blocks.CharBlock(label="Titre")),
@@ -508,7 +508,7 @@ class ProjectPage(Page):
                 ),
             ),
             (
-                "cards",
+                "step",
                 blocks.ListBlock(
                     blocks.StructBlock(
                         [
@@ -530,7 +530,7 @@ class ProjectPage(Page):
                         ]
                     ),
                     label_format="Carte : {title}",
-                    label="Cartes",
+                    label="Etapes",
                 ),
             ),
         ],

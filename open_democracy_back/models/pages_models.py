@@ -11,7 +11,10 @@ from wagtail.admin.edit_handlers import (
 )
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.images.blocks import ImageChooserBlock
+from wagtail.snippets.blocks import SnippetChooserBlock
 from wagtail.core.models import Page
+from wagtailsvg.blocks import SvgChooserBlock
+from open_democracy_back.models.contents_models import Partner
 from open_democracy_back.utils import (
     SIMPLE_RICH_TEXT_FIELD_FEATURE,
     ManagedAssessmentType,
@@ -364,6 +367,228 @@ class ReferentialPage(Page):
 
     class Meta:
         verbose_name = "Référentiel"
+
+
+class ProjectPage(Page):
+    parent_page_types = ["HomePage"]
+    subpage_types: List[str] = []
+    max_count_per_parent = 1
+    preview_modes = None
+
+    tag_line = models.CharField(
+        max_length=510, default="", verbose_name="Phrase d'accroche"
+    )
+    introduction = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Introduction",
+        blank=True,
+    )
+    intro_image = models.ForeignKey(
+        "wagtailimages.Image",
+        verbose_name="Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    why_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre",
+        blank=True,
+        help_text="Si ce champ est vide le bloc ne s'affichera pas",
+    )
+    why_block_data = StreamField(
+        [
+            (
+                "richtext",
+                blocks.RichTextBlock(
+                    label="Paragraphe",
+                    features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+                ),
+            ),
+            ("image", ImageChooserBlock(label="Image")),
+        ],
+        blank=True,
+        verbose_name="Texte",
+    )
+
+    objective_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre",
+        blank=True,
+        help_text="Si ce champ est vide le bloc ne s'affichera pas",
+    )
+    objective_block_data = StreamField(
+        [
+            (
+                "objective",
+                blocks.StructBlock(
+                    [
+                        ("svg", SvgChooserBlock(label="Icon au format svg")),
+                        ("title", blocks.CharBlock(label="Titre")),
+                    ],
+                    label_format="Objectif : {title}",
+                    label="Objectif",
+                ),
+            )
+        ],
+        blank=True,
+        verbose_name="Les objectifs",
+    )
+
+    impact_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre",
+        blank=True,
+        help_text="Si ce champ est vide le bloc ne s'affichera pas",
+    )
+    impact_block_data = StreamField(
+        [
+            (
+                "impact",
+                blocks.StructBlock(
+                    [
+                        ("image", ImageChooserBlock(label="Image")),
+                        ("title", blocks.CharBlock(label="Titre")),
+                    ],
+                    label_format="Impact : {title}",
+                    label="Impact",
+                ),
+            )
+        ],
+        blank=True,
+        verbose_name="Les impacts",
+    )
+
+    who_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre",
+        blank=True,
+        help_text="Si ce champ est vide le bloc ne s'affichera pas",
+    )
+    who_partner_sub_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre - partenaires",
+        blank=True,
+        help_text="Si ce champ est vide le bloc ne s'affichera pas",
+    )
+    who_partner_sub_block_data = StreamField(
+        [
+            (
+                "group_partners",
+                blocks.StructBlock(
+                    [
+                        ("title", blocks.CharBlock(label="Titre")),
+                        ("description", blocks.CharBlock(label="Description")),
+                        ("partners", blocks.ListBlock(SnippetChooserBlock(Partner))),
+                    ],
+                    label_format="{title}",
+                    label="Type de partenaires",
+                ),
+            )
+        ]
+    )
+
+    how_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Titre",
+        blank=True,
+        help_text="Si ce champ est vide le bloc ne s'affichera pas",
+    )
+    how_block_data = StreamField(
+        [
+            ("title", blocks.CharBlock(label="Titre")),
+            (
+                "richtext",
+                blocks.RichTextBlock(
+                    label="Paragraphe",
+                    features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+                ),
+            ),
+            (
+                "step",
+                blocks.ListBlock(
+                    blocks.StructBlock(
+                        [
+                            ("svg", SvgChooserBlock(label="Icon au format svg")),
+                            ("title", blocks.CharBlock(label="Titre")),
+                            (
+                                "richtext",
+                                blocks.RichTextBlock(
+                                    label="Descriptif",
+                                    features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+                                ),
+                            ),
+                            (
+                                "link",
+                                blocks.CharBlock(
+                                    label="Lien en savoir plus", required=False
+                                ),
+                            ),
+                        ]
+                    ),
+                    label_format="Carte : {title}",
+                    label="Etapes",
+                ),
+            ),
+        ],
+        blank=True,
+        verbose_name="Contenu",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("tag_line", widget=forms.Textarea),
+        FieldPanel("introduction"),
+        ImageChooserPanel("intro_image"),
+        MultiFieldPanel(
+            [
+                FieldPanel("why_block_title"),
+                StreamFieldPanel("why_block_data", classname="full"),
+            ],
+            heading="Bloc pourquoi",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("objective_block_title"),
+                StreamFieldPanel("objective_block_data", classname="full"),
+            ],
+            heading="Bloc objectif",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("impact_block_title"),
+                StreamFieldPanel("impact_block_data", classname="full"),
+            ],
+            heading="Bloc Impact",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("who_block_title"),
+                MultiFieldPanel(
+                    [
+                        FieldPanel("who_partner_sub_block_title"),
+                        StreamFieldPanel(
+                            "who_partner_sub_block_data", classname="full"
+                        ),
+                    ],
+                    heading="Sous bloc : Partenaire",
+                ),
+            ],
+            heading="Bloc Avec Qui",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("how_block_title"),
+                StreamFieldPanel("how_block_data", classname="full"),
+            ],
+            heading="Bloc Comment",
+        ),
+    ]
+
+    class Meta:
+        verbose_name = "Page du projet"
 
 
 class EvaluationIntroPage(Page):

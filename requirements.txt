@@ -11,3 +11,4 @@ rollbar>=0.16,<0.17
 telescoop_backup==0.0.8
 wagtail>=2.16,<2.17
 wagtail-localize>=1.1,<1.2
+wagtailsvg==0.0.32

@@ -4,6 +4,7 @@ from open_democracy_back.models.pages_models import (
     EvaluationIntroPage,
     EvaluationQuestionnairePage,
     HomePage,
+    ProjectPage,
     ReferentialPage,
     UsagePage,
 )
@@ -13,6 +14,7 @@ from open_democracy_back.serializers.page_serializers import (
     EvaluationIntroPageSerializer,
     EvaluationQuestionnairePageSerializer,
     HomePageSerializer,
+    ProjectPageSerializer,
     ReferentialPageSerializer,
     UsagePageSerializer,
 )
@@ -43,6 +45,15 @@ class ReferentialPageView(
 ):
     serializer_class = ReferentialPageSerializer
     queryset = ReferentialPage.objects.all()
+
+
+class ProjectPageView(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = ProjectPageSerializer
+    queryset = ProjectPage.objects.all()
 
 
 class EvaluationIntroPageView(

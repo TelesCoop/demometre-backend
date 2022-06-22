@@ -154,9 +154,11 @@ class ResponseSerializer(serializers.ModelSerializer):
     )
 
     def create(self, validated_data):
-        closed_with_scale_response_categories_data = validated_data.pop(
-            "closed_with_scale_response_categories"
-        )
+        closed_with_scale_response_categories_data = []
+        if "closed_with_scale_response_categories" in validated_data.keys():
+            closed_with_scale_response_categories_data = validated_data.pop(
+                "closed_with_scale_response_categories"
+            )
         response = super().create(validated_data)
         for item in closed_with_scale_response_categories_data:
             participation_response = (
@@ -174,9 +176,11 @@ class ResponseSerializer(serializers.ModelSerializer):
         return response
 
     def update(self, instance, validated_data):
-        closed_with_scale_response_categories_data = validated_data.pop(
-            "closed_with_scale_response_categories"
-        )
+        closed_with_scale_response_categories_data = []
+        if "closed_with_scale_response_categories" in validated_data.keys():
+            closed_with_scale_response_categories_data = validated_data.pop(
+                "closed_with_scale_response_categories"
+            )
         response = super().update(instance, validated_data)
         for item in closed_with_scale_response_categories_data:
             closedWithScaleCategoryResponse = (

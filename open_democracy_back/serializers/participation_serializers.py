@@ -150,7 +150,7 @@ class ResponseSerializer(serializers.ModelSerializer):
         required=False,
     )
     closed_with_scale_response_categories = ClosedWithScaleCategoryResponseSerializer(
-        many=True
+        many=True, required=False
     )
 
     def create(self, validated_data):

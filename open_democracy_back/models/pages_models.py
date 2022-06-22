@@ -8,6 +8,8 @@ from wagtail.admin.edit_handlers import (
     MultiFieldPanel,
     StreamFieldPanel,
     FieldRowPanel,
+    ObjectList,
+    TabbedInterface,
 )
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.images.blocks import ImageChooserBlock
@@ -124,6 +126,9 @@ class HomePage(Page):
             heading="Partenaires",
         ),
     ]
+
+    # Admin tabs list (Remove promotion and settings tabs)
+    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
 
     class Meta:
         verbose_name = "Page d'accueil"
@@ -273,6 +278,9 @@ class UsagePage(Page):
         ),
     ]
 
+    # Admin tabs list (Remove promotion and settings tabs)
+    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
+
     class Meta:
         verbose_name = "Page des utilisations possibles"
 
@@ -364,6 +372,9 @@ class ReferentialPage(Page):
             heading="Explication des critères d'évaluation",
         ),
     ]
+
+    # Admin tabs list (Remove promotion and settings tabs)
+    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
 
     class Meta:
         verbose_name = "Référentiel"
@@ -589,6 +600,9 @@ class ProjectPage(Page):
         ),
     ]
 
+    # Admin tabs list (Remove promotion and settings tabs)
+    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
+
     class Meta:
         verbose_name = "Page du projet"
 
@@ -619,6 +633,9 @@ class EvaluationIntroPage(Page):
         FieldPanel("introduction"),
         FieldPanel("data_consent"),
     ]
+
+    # Admin tabs list (Remove promotion and settings tabs)
+    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
 
     class Meta:
         verbose_name = "Intro à l'évaluation"
@@ -677,6 +694,9 @@ class EvaluationInitPage(Page):
         FieldPanel("representativity_description"),
         FieldPanel("initialization_validation"),
     ]
+
+    # Admin tabs list (Remove promotion and settings tabs)
+    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
 
     class Meta:
         verbose_name = "Initialisation d'une évaluation"
@@ -753,6 +773,9 @@ class EvaluationQuestionnairePage(Page):
             heading="L'Evaluation est terminée, toutes les questions ont été répondu",
         ),
     ]
+
+    # Admin tabs list (Remove promotion and settings tabs)
+    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
 
     class Meta:
         verbose_name = "Déroulement de l'évaluation"

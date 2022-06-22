@@ -5,13 +5,16 @@ from my_auth.utils import get_authenticated_or_anonymous_user_from_request
 from open_democracy_back.exceptions import ErrorCode
 
 from open_democracy_back.models import Assessment
+from open_democracy_back.models.assessment_models import AssessmentResponse
 
 from open_democracy_back.models.participation_models import (
+    ClosedWithScaleCategoryResponse,
     Participation,
     ParticipationResponse,
     ParticipationPillarCompleted,
 )
 from open_democracy_back.models.questionnaire_and_profiling_models import (
+    Category,
     Role,
     Question,
     ResponseChoice,
@@ -25,12 +28,14 @@ RESPONSE_FIELDS = [
     "multiple_choice_response_ids",
     "boolean_response",
     "percentage_response",
+    "closed_with_scale_response_categories",
 ]
 OPTIONAL_RESPONSE_FIELDS = [
     "unique_choice_response_id",
     "multiple_choice_response_ids",
     "boolean_response",
     "percentage_response",
+    "closed_with_scale_response_categories",
 ]
 
 
@@ -89,6 +94,46 @@ class ParticipationSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_profiling_questions_completed"]
 
 
+class ClosedWithScaleCategoryResponseSerializer(serializers.ModelSerializer):
+    participation_response_id = serializers.PrimaryKeyRelatedField(
+        source="participation_response",
+        queryset=ParticipationResponse.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    assessment_response_id = serializers.PrimaryKeyRelatedField(
+        source="assessment_response",
+        queryset=AssessmentResponse.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    category_id = serializers.PrimaryKeyRelatedField(
+        source="category",
+        queryset=Category.objects.all(),
+        required=False,
+    )
+    response_choice_id = serializers.PrimaryKeyRelatedField(
+        source="response_choice",
+        queryset=ResponseChoice.objects.all(),
+        required=True,
+    )
+
+    class Meta:
+        model = ClosedWithScaleCategoryResponse
+        fields = [
+            "id",
+            "participation_response_id",
+            "assessment_response_id",
+            "category_id",
+            "response_choice_id",
+        ]
+        optional_fields = [
+            "participation_response_id",
+            "assessment_response_id",
+            "category_id",
+        ]
+
+
 class ResponseSerializer(serializers.ModelSerializer):
     question_id = serializers.PrimaryKeyRelatedField(
         source="question", queryset=Question.objects.all()
@@ -104,6 +149,44 @@ class ResponseSerializer(serializers.ModelSerializer):
         queryset=ResponseChoice.objects.all(),
         required=False,
     )
+    closed_with_scale_response_categories = ClosedWithScaleCategoryResponseSerializer(
+        many=True
+    )
+
+    def create(self, validated_data):
+        closed_with_scale_response_categories_data = validated_data.pop(
+            "closed_with_scale_response_categories"
+        )
+        response = super().create(validated_data)
+        for item in closed_with_scale_response_categories_data:
+            participation_response = (
+                response if response.__class__ == ParticipationResponse else None
+            )
+            assessment_response = (
+                response if response.__class__ == AssessmentResponse else None
+            )
+            ClosedWithScaleCategoryResponse.objects.create(
+                category=item["category"],
+                response_choice=item["response_choice"],
+                participation_response=participation_response,
+                assessment_response=assessment_response,
+            )
+        return response
+
+    def update(self, instance, validated_data):
+        closed_with_scale_response_categories_data = validated_data.pop(
+            "closed_with_scale_response_categories"
+        )
+        response = super().update(instance, validated_data)
+        for item in closed_with_scale_response_categories_data:
+            closedWithScaleCategoryResponse = (
+                response.closed_with_scale_response_categories.get(
+                    category=item["category"]
+                )
+            )
+            closedWithScaleCategoryResponse.response_choice = item["response_choice"]
+            closedWithScaleCategoryResponse.save()
+        return response
 
     class Meta:
         asbtract = True

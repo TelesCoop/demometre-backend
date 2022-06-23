@@ -12,9 +12,19 @@ class AuthSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True, max_length=100)
     password = serializers.CharField(write_only=True, required=True, max_length=100)
 
+    is_anonymous = serializers.BooleanField(source="extra_data.is_anonymous")
+
     class Meta:
         model = User
-        fields = ("id", "username", "first_name", "last_name", "email", "password")
+        fields = (
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "password",
+            "is_anonymous",
+        )
 
     def validate_password(self, value):
         errors = None
@@ -28,15 +38,7 @@ class AuthSerializer(serializers.ModelSerializer):
         return make_password(value)
 
 
-class AnonymousSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=True, max_length=150)
-    email = serializers.CharField(required=True, max_length=150)
-
-    class Meta:
-        model = User
-        fields = ("id", "username", "email")
-
-
+# TODO clean this function
 class CurrentUserOrAnonymousField(serializers.CurrentUserDefault):
     def __call__(self, serializer_field):
         if isinstance(serializer_field.context["request"].user, AnonymousUser):

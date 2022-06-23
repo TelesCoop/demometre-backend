@@ -16,7 +16,7 @@ from my_auth.emails import email_reset_password_link
 from my_auth.models import UserResetKey
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 
-from .serializers import AnonymousSerializer, AuthSerializer
+from .serializers import AuthSerializer
 
 # Regular expression for validating an Email
 regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
@@ -118,13 +118,7 @@ def frontend_logout(request):
 @ensure_csrf_cookie
 def who_am_i(request):
     """Returns information about the current user."""
-    anonymous_name = request.query_params.get("anonymous")
-    if request.user.is_anonymous and anonymous_name:
-        return Response(
-            AnonymousSerializer(
-                {"username": anonymous_name, "email": anonymous_name}
-            ).data
-        )
+
     if request.user.is_anonymous:
         raise NotAuthenticated()
 
@@ -187,4 +181,4 @@ def front_end_create_anonymous(request):
     # log user
     login(request, user)
 
-    return Response(status=201, data=AnonymousSerializer(user).data)
+    return Response(status=201, data=AuthSerializer(user).data)

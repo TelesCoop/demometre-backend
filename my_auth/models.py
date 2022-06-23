@@ -25,5 +25,7 @@ class UserExtraData(models.Model):
 # TODO create migration to force user to have extra_data
 @receiver(post_save, sender=get_user_model())
 def create_user_extra_data(sender, instance, created, **kwargs):
-    if not instance.extra_data:
+    try:
+        instance.extra_data
+    except UserExtraData.DoesNotExist:
         UserExtraData.objects.create(user=instance)

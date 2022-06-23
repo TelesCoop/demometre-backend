@@ -6,7 +6,6 @@ from rest_framework import mixins, viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response as RestResponse
-from my_auth.utils import get_authenticated_or_anonymous_user_from_request
 
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 from open_democracy_back.models.participation_models import (
@@ -126,9 +125,8 @@ class ParticipationView(
     serializer_class = ParticipationSerializer
 
     def get_queryset(self) -> QuerySet:
-        user = get_authenticated_or_anonymous_user_from_request(self.request)
         return Participation.objects.filter(
-            user_id=user.id,
+            user_id=self.request.user.id,
             assessment__initialization_date__lte=timezone.now(),
         )
 
@@ -145,8 +143,9 @@ class ParticipationResponseView(
     serializer_class = ParticipationResponseSerializer
 
     def get_queryset(self):
-        user = get_authenticated_or_anonymous_user_from_request(self.request)
-        query = ParticipationResponse.objects.filter(participation__user_id=user.id)
+        query = ParticipationResponse.objects.filter(
+            participation__user_id=self.request.user.id
+        )
 
         context = self.request.query_params.get("context")
         if context:

@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import TypedDict, List, DefaultDict, Dict, Callable, Any
 
+import numpy as np
 import pandas as pd
 import rollbar
 from django.db.models import Case, When, Value, IntegerField, Avg, FloatField, Max
@@ -280,7 +281,7 @@ def get_scores_by_assessment_pk(assessment_pk: int) -> Dict[str, Dict[str, float
 
     return {
         "by_question_id": score_by_question_id,
-        "by_criteria_id": dict(criterias_score),
-        "by_marker_id": dict(markers_score),
-        "by_pillar_id": dict(pillars_score),
+        "by_criteria_id": dict(criterias_score.replace({np.nan: None})),
+        "by_marker_id": dict(markers_score.replace({np.nan: None})),
+        "by_pillar_id": dict(pillars_score.replace({np.nan: None})),
     }

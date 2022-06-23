@@ -21,7 +21,6 @@ if (
             questionType == "closed_with_scale") {
             rulesForResponseChoiceQuestions.style.display = "block";
             rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForBinaryQuestion.style.display = "none";
             rulesForMultipleChoiceQuestion.style.display = "none";
             rulesForPercentageQuestion.style.display = "none";
             if (questionType == "multiple_choice") {
@@ -32,19 +31,16 @@ if (
         } else if (questionType == "boolean") {
             rulesForResponseChoiceQuestions.style.display = "none";
             rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForBinaryQuestion.style.display = "block";
             rulesForMultipleChoiceQuestion.style.display = "none";
             rulesForPercentageQuestion.style.display = "none";
         } else if (questionType == "percentage") {
             rulesForResponseChoiceQuestions.style.display = "none";
             rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForBinaryQuestion.style.display = "none";
             rulesForMultipleChoiceQuestion.style.display = "none";
             rulesForPercentageQuestion.style.display = "block";
         } else {
             rulesForResponseChoiceQuestions.style.display = "none";
             rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForBinaryQuestion.style.display = "none";
             rulesForMultipleChoiceQuestion.style.display = "none";
             rulesForPercentageQuestion.style.display = "none";
         }

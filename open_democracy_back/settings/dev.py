@@ -20,5 +20,3 @@ CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "no-reply@telescoop.fr"
-
-# INSTALLED_APPS.append("django_extensions")

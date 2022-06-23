@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import User
 from django.core import exceptions
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import password_validation
@@ -36,14 +36,3 @@ class AuthSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         return make_password(value)
-
-
-# TODO clean this function
-class CurrentUserOrAnonymousField(serializers.CurrentUserDefault):
-    def __call__(self, serializer_field):
-        if isinstance(serializer_field.context["request"].user, AnonymousUser):
-            anonymous_username = serializer_field.context["request"].query_params.get(
-                "anonymous"
-            )
-            return User.objects.get(username=anonymous_username)
-        return serializer_field.context["request"].user

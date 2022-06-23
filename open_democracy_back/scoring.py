@@ -104,6 +104,7 @@ def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
             if isinstance(score["multiple_choice_score_max"], float)
             else 0
         )
+        multiple_choice_score_dict[score["question_id"]]["count"] += 1
         multiple_choice_score_dict[score["question_id"]][
             "question__criteria_id"
         ] = score["question__criteria_id"]
@@ -113,7 +114,6 @@ def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
         multiple_choice_score_dict[score["question_id"]][
             "question__criteria__marker__pillar_id"
         ] = score["question__criteria__marker__pillar_id"]
-        multiple_choice_score_dict[score["question_id"]]["count"] += 1
 
     result: List[QuestionScore] = []
     for key in multiple_choice_score_dict:

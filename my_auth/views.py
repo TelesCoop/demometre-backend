@@ -35,7 +35,6 @@ def frontend_signup(request):
                     "last_name": "Doe",
                     "email": "email@ex.com",
                     "password": "secret_pa$$w0rD",
-                    "anonymous": None
                 }
 
     Returns:
@@ -49,23 +48,25 @@ def frontend_signup(request):
         raise ValidationFieldError("email", code=ErrorCode.EMAIL_NOT_VALID.value)
     data["username"] = data["email"]
 
-    if "anonymous" in data and data["anonymous"]:
-        user = User.objects.get(username=data["anonymous"])
+    if request.user.is_authenticated and request.user.extra_data.is_anonymous:
+        user = request.user
         user.first_name = data["first_name"]
         user.last_name = data["last_name"]
         user.email = data["email"]
         user.username = data["username"]
         user.set_password(data["password"])
+        user_extra_data = user.extra_data
+        user_extra_data.is_anonymous = False
+        user_extra_data.save()
     else:
         user = AuthSerializer(data=data)
         user.is_valid(raise_exception=True)
+
     user.save()
 
-    userAuth = authenticate(username=data["username"], password=data["password"])
-    userAuth.backend = AUTHENTICATION_BACKENDS[0]
-    login(request, userAuth)
+    login(request, user)
 
-    return Response(status=201, data=AuthSerializer(userAuth).data)
+    return Response(status=201, data=AuthSerializer(user).data)
 
 
 @api_view(["POST"])
@@ -119,7 +120,7 @@ def frontend_logout(request):
 def who_am_i(request):
     """Returns information about the current user."""
 
-    if request.user.is_anonymous:
+    if not request.user.is_authenticated:
         raise NotAuthenticated()
 
     return Response(AuthSerializer(request.user).data)

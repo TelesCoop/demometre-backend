@@ -1,19 +1,25 @@
 import logging
 
-# import re
 
 from datetime import date
+from typing import Dict
+
 from django.contrib.auth.models import User
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response as RestResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
+
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
-from open_democracy_back.models import Assessment
+from open_democracy_back.models import (
+    Assessment,
+)
 from open_democracy_back.models.assessment_models import (
     EPCI,
     AssessmentResponse,
@@ -26,11 +32,13 @@ from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
 )
 from open_democracy_back.permissions import IsAssessmentAdminOrReadOnly
+from open_democracy_back.scoring import (
+    get_scores_by_assessment_pk,
+)
 from open_democracy_back.serializers.assessment_serializers import (
     AssessmentResponseSerializer,
     AssessmentSerializer,
 )
-
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -188,3 +196,11 @@ class CompletedQuestionsInitializationView(APIView):
 
         serializer = AssessmentSerializer(assessment)
         return RestResponse(serializer.data, status=status.HTTP_200_OK)
+
+
+class QuestionnaireScoreView(APIView):
+    # Cache page everyday
+    @method_decorator(cache_page(60 * 60 * 24))
+    def get(self, request, assessment_pk):
+        scores: Dict[str, Dict[str, float]] = get_scores_by_assessment_pk(assessment_pk)
+        return RestResponse(scores, status=status.HTTP_200_OK)

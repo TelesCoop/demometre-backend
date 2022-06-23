@@ -26,6 +26,7 @@ from .views.assessment_views import (
     AssessmentsView,
     CompletedQuestionsInitializationView,
     initialize_assessment,
+    QuestionnaireScoreView,
 )
 from .views.profiling_views import (
     ProfilingQuestionView,
@@ -102,5 +103,9 @@ urlpatterns = [
     path(
         "assessments/<int:assessment_pk>/questions/completed/",
         CompletedQuestionsInitializationView.as_view(),
+    ),
+    path(
+        "assessments/<int:assessment_pk>/scores",
+        QuestionnaireScoreView.as_view(),
     ),
 ]

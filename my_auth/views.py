@@ -135,7 +135,9 @@ def who_am_i(request):
 def front_end_reset_password_link(request):
     """Send a reset password link"""
     try:
-        user = User.objects.get(email=request.data.get("email"))
+        user = User.objects.get(
+            email=request.data.get("email"), extra_data__is_anonymous=False
+        )
     except User.DoesNotExist:
         raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL.value)
     if UserResetKey.objects.get(user=user):
@@ -175,9 +177,14 @@ def front_end_reset_password(request):
 
 
 @api_view(["POST"])
-def front_end_create_anonymous(_):
+def front_end_create_anonymous(request):
     """Create anonymous user without email and password to save data related"""
     anonymous_name = "anonymous-" + str(User.objects.last().id + 1)
     user = User.objects.create(username=anonymous_name, email=anonymous_name)
+    user.extra_data.is_anonymous = True
+    user.save()
+
+    # log user
+    login(request, user)
 
     return Response(status=201, data=AnonymousSerializer(user).data)

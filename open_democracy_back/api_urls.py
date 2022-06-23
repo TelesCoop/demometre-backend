@@ -7,6 +7,7 @@ from open_democracy_back.views.page_views import (
     EvaluationIntroPageView,
     EvaluationQuestionnairePageView,
     HomePageView,
+    ProjectPageView,
     ReferentialPageView,
     UsagePageView,
 )
@@ -44,6 +45,7 @@ router = routers.DefaultRouter()
 router.register(r"home-pages", HomePageView, basename="HomePage")
 router.register(r"referential-pages", ReferentialPageView, basename="ReferentialPage")
 router.register(r"usage-pages", UsagePageView, basename="UsagePage")
+router.register(r"project-pages", ProjectPageView, basename="UsagePage")
 router.register(
     r"evaluation-intro-pages", EvaluationIntroPageView, basename="EvaluationIntroPage"
 )

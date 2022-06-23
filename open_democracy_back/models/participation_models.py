@@ -92,28 +92,26 @@ class ParticipationResponse(Response):
         unique_together = ["participation", "question"]
 
 
-class ClosedWithRankingResponse(models.Model):
-    response = models.ForeignKey(
-        ParticipationResponse,
-        on_delete=models.CASCADE,
-        related_name="closed_with_ranking_responses_ordered",
-    )
-    response_choice = models.ForeignKey(ResponseChoice, on_delete=models.CASCADE)
-
-    class Meta:
-        order_with_respect_to = "response"
-
-
 class ClosedWithScaleCategoryResponse(models.Model):
-    response = models.ForeignKey(
+    participation_response = models.ForeignKey(
         ParticipationResponse,
         on_delete=models.CASCADE,
         related_name="closed_with_scale_response_categories",
+        null=True,
+        blank=True,
+    )
+    assessment_response = models.ForeignKey(
+        "open_democracy_back.AssessmentResponse",
+        on_delete=models.CASCADE,
+        related_name="closed_with_scale_response_categories",
+        null=True,
+        blank=True,
     )
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
         related_name="closed_with_scale_category_responses",
+        null=True,
         blank=True,
     )
     response_choice = models.ForeignKey(ResponseChoice, on_delete=models.CASCADE)

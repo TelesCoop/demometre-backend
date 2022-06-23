@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "my_auth",
     "search",
     "telescoop_backup",
+    "wagtailsvg",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail_localize",
@@ -60,6 +61,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "anymail",
+    "generic_chooser",
 ]
 
 MIDDLEWARE = [
@@ -177,6 +179,7 @@ MEDIA_URL = "/media/"
 # Wagtail settings
 
 WAGTAIL_SITE_NAME = "open_democracy_back"
+WAGTAILSVG_UPLOAD_FOLDER = "svg"
 
 # Search
 # https://docs.wagtail.io/en/stable/topics/search/backends.html

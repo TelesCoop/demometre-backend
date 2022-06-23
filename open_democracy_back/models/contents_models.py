@@ -44,7 +44,7 @@ class Feedback(index.Indexed, models.Model):
     ]
 
     def __str__(self):
-        return self.person_name + " (publié)" if self.publish else ""
+        return self.person_name + (" (publié)" if self.publish else "")
 
     class Meta:
         verbose_name = "Retour d'expériences"

@@ -16,7 +16,6 @@ if (
 
     function responseRules(questionType) {
         if (questionType == "unique_choice" ||
-            questionType == "closed_with_ranking" ||
             questionType == "multiple_choice" ||
             questionType == "closed_with_scale") {
             rulesForResponseChoiceQuestions.style.display = "block";

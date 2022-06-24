@@ -128,6 +128,9 @@ class Partner(index.Indexed, models.Model):
         help_text="Choisir la hauteur du logo (min 40px / max 120px)",
         verbose_name="Hauteur",
     )
+    show_in_home_page = models.BooleanField(
+        default=True, verbose_name="Afficher dans la page d'accueil"
+    )
 
     panels = [
         FieldPanel("name"),
@@ -138,6 +141,7 @@ class Partner(index.Indexed, models.Model):
             ],
             heading="Logo du partenaire",
         ),
+        FieldPanel("show_in_home_page"),
     ]
 
     search_fields = [

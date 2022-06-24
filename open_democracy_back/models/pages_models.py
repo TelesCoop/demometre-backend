@@ -305,11 +305,17 @@ class ReferentialPage(Page):
         blank=True,
         help_text="si ce champs est vide l'explication des piliers ne s'affichera pas",
     )
-    pillar_block_content = RichTextField(
+    pillar_block_left_content = RichTextField(
         default="",
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Contenu",
+        verbose_name="Paragraphe de gauche",
+    )
+    pillar_block_right_content = RichTextField(
+        default="",
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Paragraphe de droite",
     )
     pillar_block_image = models.ForeignKey(
         "wagtailimages.Image",
@@ -339,11 +345,17 @@ class ReferentialPage(Page):
         blank=True,
         help_text="si ce champs est vide l'explication des critères d'évaluation ne s'affichera pas",
     )
-    criteria_block_content = RichTextField(
+    criteria_block_left_content = RichTextField(
         default="",
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Contenu",
+        verbose_name="Paragraphe de gauche",
+    )
+    criteria_block_right_content = RichTextField(
+        default="",
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Paragraphe de droite",
     )
 
     content_panels = Page.content_panels + [
@@ -352,7 +364,13 @@ class ReferentialPage(Page):
         MultiFieldPanel(
             [
                 FieldPanel("pillar_block_title"),
-                FieldPanel("pillar_block_content"),
+                FieldRowPanel(
+                    [
+                        FieldPanel("pillar_block_left_content"),
+                        FieldPanel("pillar_block_right_content"),
+                    ],
+                    heading="Contenu",
+                ),
                 ImageChooserPanel("pillar_block_image"),
             ],
             heading="Explication des piliers",
@@ -367,7 +385,13 @@ class ReferentialPage(Page):
         MultiFieldPanel(
             [
                 FieldPanel("criteria_block_title"),
-                FieldPanel("criteria_block_content"),
+                FieldRowPanel(
+                    [
+                        FieldPanel("criteria_block_left_content"),
+                        FieldPanel("criteria_block_right_content"),
+                    ],
+                    heading="Contenu",
+                ),
             ],
             heading="Explication des critères d'évaluation",
         ),
@@ -437,7 +461,13 @@ class ProjectPage(Page):
                 "objective",
                 blocks.StructBlock(
                     [
-                        ("svg", SvgChooserBlock(label="Icon au format svg")),
+                        (
+                            "svg",
+                            SvgChooserBlock(
+                                label="Icon au format svg",
+                                help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG",
+                            ),
+                        ),
                         ("title", blocks.CharBlock(label="Titre")),
                     ],
                     label_format="Objectif : {title}",
@@ -525,7 +555,13 @@ class ProjectPage(Page):
                 blocks.ListBlock(
                     blocks.StructBlock(
                         [
-                            ("svg", SvgChooserBlock(label="Icon au format svg")),
+                            (
+                                "svg",
+                                SvgChooserBlock(
+                                    label="Icon au format svg",
+                                    help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG",
+                                ),
+                            ),
                             ("title", blocks.CharBlock(label="Titre")),
                             (
                                 "richtext",

@@ -117,12 +117,14 @@ class ReferentialPageSerializer(PageSerialiserWithLocale):
         fields = PAGE_FIELDS + [
             "description",
             "pillar_block_title",
-            "pillar_block_content",
+            "pillar_block_left_content",
+            "pillar_block_right_content",
             "pillar_block_image_url",
             "marker_block_title",
             "marker_block_content",
             "criteria_block_title",
-            "criteria_block_content",
+            "criteria_block_left_content",
+            "criteria_block_right_content",
         ]
         read_only_fields = fields
 

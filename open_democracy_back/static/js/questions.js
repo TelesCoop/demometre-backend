@@ -8,11 +8,6 @@ if (
     var rulesForMultipleChoiceQuestion = document.querySelector("#id_max_multiple_choices").closest(".object")
     var rulesForClosedWithScaleQuestion = document.querySelector("#id_categories-ADD").closest(".object")
     try {
-        var rulesForBinaryQuestion = document.querySelector("#id_true_associated_score").closest(".object")
-    } catch {
-        var rulesForBinaryQuestion = document.createElement("div");
-    }
-    try {
         var rulesForPercentageQuestion = document.querySelector("#id_percentage_ranges-TOTAL_FORMS").closest(".object")
     } catch {
         var rulesForPercentageQuestion = document.createElement("div");
@@ -25,7 +20,6 @@ if (
             questionType == "closed_with_scale") {
             rulesForResponseChoiceQuestions.style.display = "block";
             rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForBinaryQuestion.style.display = "none";
             rulesForMultipleChoiceQuestion.style.display = "none";
             rulesForPercentageQuestion.style.display = "none";
             if (questionType == "multiple_choice") {
@@ -36,19 +30,16 @@ if (
         } else if (questionType == "boolean") {
             rulesForResponseChoiceQuestions.style.display = "none";
             rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForBinaryQuestion.style.display = "block";
             rulesForMultipleChoiceQuestion.style.display = "none";
             rulesForPercentageQuestion.style.display = "none";
         } else if (questionType == "percentage") {
             rulesForResponseChoiceQuestions.style.display = "none";
             rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForBinaryQuestion.style.display = "none";
             rulesForMultipleChoiceQuestion.style.display = "none";
             rulesForPercentageQuestion.style.display = "block";
         } else {
             rulesForResponseChoiceQuestions.style.display = "none";
             rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForBinaryQuestion.style.display = "none";
             rulesForMultipleChoiceQuestion.style.display = "none";
             rulesForPercentageQuestion.style.display = "none";
         }

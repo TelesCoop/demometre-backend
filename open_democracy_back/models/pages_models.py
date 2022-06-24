@@ -437,7 +437,13 @@ class ProjectPage(Page):
                 "objective",
                 blocks.StructBlock(
                     [
-                        ("svg", SvgChooserBlock(label="Icon au format svg")),
+                        (
+                            "svg",
+                            SvgChooserBlock(
+                                label="Icon au format svg",
+                                help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG",
+                            ),
+                        ),
                         ("title", blocks.CharBlock(label="Titre")),
                     ],
                     label_format="Objectif : {title}",
@@ -525,7 +531,13 @@ class ProjectPage(Page):
                 blocks.ListBlock(
                     blocks.StructBlock(
                         [
-                            ("svg", SvgChooserBlock(label="Icon au format svg")),
+                            (
+                                "svg",
+                                SvgChooserBlock(
+                                    label="Icon au format svg",
+                                    help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG",
+                                ),
+                            ),
                             ("title", blocks.CharBlock(label="Titre")),
                             (
                                 "richtext",

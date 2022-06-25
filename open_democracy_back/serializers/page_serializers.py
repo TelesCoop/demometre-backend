@@ -78,7 +78,8 @@ class HomePageSerializer(PageSerialiserWithLocale):
     def get_partners(_):
         partners = []
         for partner in Partner.objects.all():
-            partners.append(PartnerSerializer(partner, read_only=True).data)
+            if partner.show_in_home_page:
+                partners.append(PartnerSerializer(partner, read_only=True).data)
         return partners
 
     class Meta:

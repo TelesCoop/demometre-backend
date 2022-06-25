@@ -658,6 +658,7 @@ class ResponseChoice(TimeStampedModel, Orderable, Score):
     class Meta:
         verbose_name_plural = "Choix de réponse"
         verbose_name = "Choix de réponse"
+        ordering = ["sort_order"]
 
 
 # Update linearized score on save
@@ -697,6 +698,7 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
     class Meta:
         verbose_name_plural = "Scores pour les différentes fourchettes"
         verbose_name = "Score pour une fourcette donnée"
+        ordering = ["sort_order"]
 
 
 # Update linearized score on save
@@ -720,6 +722,7 @@ class Category(TimeStampedModel, Orderable):
 
     class Meta:
         verbose_name = "Catégorie"
+        ordering = ["sort_order"]
 
 
 class GenericRule(TimeStampedModel, Orderable, ClusterableModel):

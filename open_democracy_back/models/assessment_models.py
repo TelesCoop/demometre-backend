@@ -253,6 +253,15 @@ class Assessment(TimeStampedModel, ClusterableModel):
     )
     end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
 
+    expert = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        verbose_name="Expert",
+        related_name="assessments",
+        blank=True,
+        null=True,
+    )
+
     @property
     def population(self):
         if self.locality_type == LocalityType.MUNICIPALITY:
@@ -269,6 +278,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
 
     panels = [
         FieldPanel("assessment_type"),
+        FieldPanel("expert"),
         FieldPanel("locality_type"),
         SnippetChooserPanel("municipality"),
         SnippetChooserPanel("epci"),

@@ -166,7 +166,7 @@ class ParticipationResponseView(
         else:
             rollbar.report_message(
                 f"Need participation_id to retrieve participation responses of user {user.email} but got {participation_id} in {context} context",
-                "warning",
+                "error",
             )
 
         return query

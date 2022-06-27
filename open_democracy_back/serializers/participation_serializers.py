@@ -12,6 +12,7 @@ from open_democracy_back.models.participation_models import (
     Participation,
     ParticipationResponse,
     ParticipationPillarCompleted,
+    Workshop,
 )
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Category,
@@ -227,3 +228,20 @@ class ParticipationResponseSerializer(ResponseSerializer):
         model = ParticipationResponse
         fields = RESPONSE_FIELDS + ["participation_id"]
         optional_fields = OPTIONAL_RESPONSE_FIELDS
+
+
+class WorkshopSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=CurrentUserOrAnonymousField())
+    assessment_id = AssessmentField(source="assessment")
+    participations = ParticipationSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Workshop
+        fields = [
+            "id",
+            "name",
+            "animator",
+            "assessment_id",
+            "date",
+            "participations",
+        ]

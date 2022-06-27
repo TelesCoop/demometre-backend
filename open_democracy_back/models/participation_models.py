@@ -12,6 +12,22 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
 )
 
 
+class Workshop(models.Model):
+    assessment = models.ForeignKey(
+        "open_democracy_back.Assessment",
+        on_delete=models.CASCADE,
+        related_name="workshops",
+    )
+    date = models.DateField(null=True, blank=True, verbose_name="Date")
+    animator = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="workshops"
+    )
+    name = models.CharField(max_length=128, verbose_name="Nom", default="")
+
+    class Meta:
+        verbose_name = "Atelier"
+
+
 class Participation(models.Model):
     # TODO : on delete : remove participation or clean personnal data and keep responses ?
     user = models.ForeignKey(
@@ -34,6 +50,13 @@ class Participation(models.Model):
     is_profiling_questions_completed = models.BooleanField(default=False)
     is_pillar_questions_completed = models.ManyToManyField(
         Pillar, through="ParticipationPillarCompleted"
+    )
+    workshop = models.ForeignKey(
+        Workshop,
+        related_name="participations",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
     )
 
     def __str__(self):

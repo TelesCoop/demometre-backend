@@ -82,6 +82,8 @@ class RuleContext:
         self.rule = rule
 
     def does_respect_rule(self, response: Response) -> bool:
+        if not response:
+            return False
         return self._strategy.does_respect_rule(self.rule, response)
 
 
@@ -90,7 +92,9 @@ def isProfileRelevant(profileType, profilingQuestionResponses):
         return all(
             [
                 RuleContext(rule).does_respect_rule(
-                    profilingQuestionResponses.get(question=rule.conditional_question),
+                    profilingQuestionResponses.filter(
+                        question=rule.conditional_question
+                    ).first(),
                 )
                 for rule in profileType.rules.all()
             ]
@@ -99,7 +103,9 @@ def isProfileRelevant(profileType, profilingQuestionResponses):
         return any(
             [
                 RuleContext(rule).does_respect_rule(
-                    profilingQuestionResponses.get(question=rule.conditional_question),
+                    profilingQuestionResponses.filter(
+                        question=rule.conditional_question
+                    ).first(),
                 )
                 for rule in profileType.rules.all()
             ]

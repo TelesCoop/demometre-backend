@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import operator
+import rollbar
 from django.utils import timezone
 from django.db.models import QuerySet
 from rest_framework import mixins, viewsets, status
@@ -82,6 +83,8 @@ class RuleContext:
         self.rule = rule
 
     def does_respect_rule(self, response: Response) -> bool:
+        if not response:
+            return False
         return self._strategy.does_respect_rule(self.rule, response)
 
 
@@ -90,7 +93,9 @@ def isProfileRelevant(profileType, profilingQuestionResponses):
         return all(
             [
                 RuleContext(rule).does_respect_rule(
-                    profilingQuestionResponses.get(question=rule.conditional_question),
+                    profilingQuestionResponses.filter(
+                        question=rule.conditional_question
+                    ).first(),
                 )
                 for rule in profileType.rules.all()
             ]
@@ -99,7 +104,9 @@ def isProfileRelevant(profileType, profilingQuestionResponses):
         return any(
             [
                 RuleContext(rule).does_respect_rule(
-                    profilingQuestionResponses.get(question=rule.conditional_question),
+                    profilingQuestionResponses.filter(
+                        question=rule.conditional_question
+                    ).first(),
                 )
                 for rule in profileType.rules.all()
             ]
@@ -154,8 +161,13 @@ class ParticipationResponseView(
             query = query.filter(question__profiling_question=is_profiling_question)
 
         participation_id = self.request.query_params.get("participation_id")
-        if participation_id:
+        if participation_id and type(participation_id) is int:
             query = query.filter(participation_id=participation_id)
+        else:
+            rollbar.report_message(
+                f"Need participation_id to retrieve participation responses of user {user.email} but got {participation_id} in {context} context",
+                "warning",
+            )
 
         return query
 

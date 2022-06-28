@@ -12,8 +12,10 @@ from wagtail.admin.edit_handlers import (
     InlinePanel,
     FieldRowPanel,
     MultiFieldPanel,
+    StreamFieldPanel,
 )
-from wagtail.core.fields import RichTextField
+from wagtail.core import blocks
+from wagtail.core.fields import RichTextField, StreamField
 
 from wagtail.core.models import TranslatableMixin, Orderable
 from wagtail.search import index
@@ -266,6 +268,30 @@ class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
         verbose_name="Pour aller plus loin",
     )
 
+    explanatory = StreamField(
+        [
+            (
+                "category",
+                blocks.StructBlock(
+                    [
+                        ("title", blocks.CharBlock(label="Titre")),
+                        (
+                            "description",
+                            blocks.RichTextBlock(
+                                label="Description",
+                                features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+                            ),
+                        ),
+                    ],
+                    label_format="Catégorie : {title}",
+                    label="Catégorie",
+                ),
+            )
+        ],
+        blank=True,
+        verbose_name="Explicatif du critère",
+    )
+
     panels = (
         [
             FieldPanel("marker"),
@@ -280,6 +306,7 @@ class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
             FieldPanel("sources"),
             FieldPanel("to_go_further"),
             FieldPanel("use_case"),
+            StreamFieldPanel("explanatory"),
         ]
     )
 

@@ -161,6 +161,7 @@ class CriteriaSerializer(serializers.ModelSerializer):
             "use_case",
             "sources",
             "to_go_further",
+            "explanatory",
         ] + REFERENTIAL_FIELDS
         read_only_fields = fields
 

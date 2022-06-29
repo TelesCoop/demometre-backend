@@ -157,10 +157,6 @@ class CriteriaSerializer(serializers.ModelSerializer):
             "question_ids",
             "thematic_tags",
             "definition_ids",
-            "legal_frame",
-            "use_case",
-            "sources",
-            "to_go_further",
             "explanatory",
         ] + REFERENTIAL_FIELDS
         read_only_fields = fields

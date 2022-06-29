@@ -243,31 +243,6 @@ class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
         ThematicTag, blank=True, verbose_name="Thématiques"
     )
 
-    legal_frame = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Cadre légal",
-    )
-    use_case = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Exemples inspirants",
-    )
-    sources = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Sources",
-    )
-    to_go_further = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Pour aller plus loin",
-    )
-
     explanatory = StreamField(
         [
             (
@@ -302,10 +277,6 @@ class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
         + ReferentielFields.panels
         + [
             InlinePanel("related_definition_ordered", label="Définitions"),
-            FieldPanel("legal_frame"),
-            FieldPanel("sources"),
-            FieldPanel("to_go_further"),
-            FieldPanel("use_case"),
             StreamFieldPanel("explanatory"),
         ]
     )

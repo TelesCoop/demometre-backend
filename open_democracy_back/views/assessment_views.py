@@ -4,7 +4,7 @@ import logging
 from datetime import date
 from typing import Dict
 
-from django.contrib.auth.models import User
+from my_auth.models import User
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import mixins, viewsets, status

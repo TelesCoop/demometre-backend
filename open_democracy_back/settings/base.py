@@ -216,3 +216,5 @@ REST_FRAMEWORK = {
     ),
     "EXCEPTION_HANDLER": "open_democracy_back.exceptions.custom_exception_handler",
 }
+
+AUTH_USER_MODEL = "my_auth.User"

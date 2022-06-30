@@ -46,6 +46,6 @@ class RGPDSettingsSerializer(serializers.ModelSerializer):
             "terms_of_use_url",
             "terms_of_sale_url",
             "confidentiality_policy_url",
-            "content_license",
+            "content_license_url",
         ]
         read_only_fields = fields

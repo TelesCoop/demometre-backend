@@ -44,7 +44,7 @@ class RGPDSettings(BaseSetting):
         null=True,
         on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name="licence contenu",
+        verbose_name="Licence Contenu",
     )
 
     panels = [

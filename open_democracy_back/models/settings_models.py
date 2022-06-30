@@ -38,12 +38,21 @@ class RGPDSettings(BaseSetting):
         related_name="+",
         verbose_name="Politique de confidentialité",
     )
+    content_license = models.ForeignKey(
+        Document,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="licence contenu",
+    )
 
     panels = [
         DocumentChooserPanel("legal_mention"),
         DocumentChooserPanel("terms_of_use"),
         DocumentChooserPanel("terms_of_sale"),
         DocumentChooserPanel("confidentiality_policy"),
+        DocumentChooserPanel("content_license"),
     ]
 
     class Meta:

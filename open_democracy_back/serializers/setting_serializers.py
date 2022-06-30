@@ -7,6 +7,7 @@ class RGPDSettingsSerializer(serializers.ModelSerializer):
     terms_of_use_url = serializers.SerializerMethodField()
     terms_of_sale_url = serializers.SerializerMethodField()
     confidentiality_policy_url = serializers.SerializerMethodField()
+    content_license_url = serializers.SerializerMethodField()
 
     @staticmethod
     def get_legal_mention_url(obj: RGPDSettings):
@@ -32,6 +33,12 @@ class RGPDSettingsSerializer(serializers.ModelSerializer):
             return obj.confidentiality_policy.file.url
         return None
 
+    @staticmethod
+    def get_content_license_url(obj: RGPDSettings):
+        if obj.content_license:
+            return obj.content_license.file.url
+        return None
+
     class Meta:
         model = RGPDSettings
         fields = [
@@ -39,5 +46,6 @@ class RGPDSettingsSerializer(serializers.ModelSerializer):
             "terms_of_use_url",
             "terms_of_sale_url",
             "confidentiality_policy_url",
+            "content_license",
         ]
         read_only_fields = fields

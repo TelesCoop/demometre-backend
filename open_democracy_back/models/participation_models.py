@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
+from open_democracy_back.models.animator_models import Workshop
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Category,
@@ -10,22 +11,6 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Role,
     Pillar,
 )
-
-
-class Workshop(models.Model):
-    assessment = models.ForeignKey(
-        "open_democracy_back.Assessment",
-        on_delete=models.CASCADE,
-        related_name="workshops",
-    )
-    date = models.DateField(null=True, blank=True, verbose_name="Date")
-    animator = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="workshops"
-    )
-    name = models.CharField(max_length=128, verbose_name="Nom", default="")
-
-    class Meta:
-        verbose_name = "Atelier"
 
 
 class Participation(models.Model):

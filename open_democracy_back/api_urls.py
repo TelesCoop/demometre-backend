@@ -1,5 +1,9 @@
 from django.urls import path, include
 from rest_framework import routers
+from open_democracy_back.views.animator_views import (
+    WorkshopParticipantView,
+    WorkshopView,
+)
 from open_democracy_back.views.content_views import BlogPostView, ResourceView
 
 from open_democracy_back.views.page_views import (
@@ -25,6 +29,7 @@ from .views.assessment_views import (
     AssessmentView,
     AssessmentsView,
     CompletedQuestionsInitializationView,
+    InProgressAssessmentsView,
     initialize_assessment,
     QuestionnaireScoreView,
 )
@@ -72,10 +77,15 @@ router.register(
     QuestionnaireQuestionView,
     basename="QuestionnaireQuestion",
 )
+router.register(r"workshops", WorkshopView, basename="Workshop")
+# router.register(r"participants", ParticipantView, basename="Participant")
 
 
 urlpatterns = [
     path("assessments/", AssessmentsView.as_view({"get": "list"})),
+    path(
+        "assessments/in-progress/", InProgressAssessmentsView.as_view({"get": "list"})
+    ),
     path("assessments/by-locality/", AssessmentsView.as_view({"get": "get_or_create"})),
     path("assessments/<int:pk>/", AssessmentView.as_view({"get": "retrieve"})),
     path("assessments/<int:pk>/initialization/", initialize_assessment),
@@ -105,7 +115,11 @@ urlpatterns = [
         CompletedQuestionsInitializationView.as_view(),
     ),
     path(
-        "assessments/<int:assessment_pk>/scores",
+        "assessments/<int:assessment_pk>/scores/",
         QuestionnaireScoreView.as_view(),
+    ),
+    path(
+        "workshops/<int:workshop_pk>/participant/",
+        WorkshopParticipantView.as_view({"post": "create"}),
     ),
 ]

@@ -1,9 +1,7 @@
 import logging
-
-
 from datetime import date
 from typing import Dict
-
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -104,10 +102,7 @@ def initialize_assessment(request, pk):
     return RestResponse(status=200, data=AssessmentSerializer(assessment).data)
 
 
-class AssessmentsView(
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
-):
+class AssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = AssessmentSerializer
     queryset = Assessment.objects.all()
 
@@ -160,10 +155,14 @@ class AssessmentsView(
         return RestResponse(status=200, data=self.serializer_class(assessment[0]).data)
 
 
-class AssessmentView(
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
+class InProgressAssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = AssessmentSerializer
+    queryset = Assessment.objects.filter(
+        initialization_date__lte=timezone.now()
+    ).exclude(end_date__lt=timezone.now())
+
+
+class AssessmentView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_class = AssessmentSerializer
     queryset = Assessment.objects.all()
 

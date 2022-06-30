@@ -19,6 +19,9 @@ from open_democracy_back.views.participation_views import (
 from open_democracy_back.views.representativity_views import (
     RepresentativityCriteriaView,
 )
+from open_democracy_back.views.setting_views import (
+    RGPDSettingsView,
+)
 
 from .views.assessment_views import (
     AssessmentResponseView,
@@ -57,6 +60,7 @@ router.register(
     EvaluationQuestionnairePageView,
     basename="EvaluationInitPage",
 )
+router.register(r"settings", RGPDSettingsView, basename="Settings")
 router.register(r"blog-posts", BlogPostView, basename="BlogPost")
 router.register(r"resources", ResourceView, basename="Resources")
 router.register(r"participations", ParticipationView, basename="Participation")

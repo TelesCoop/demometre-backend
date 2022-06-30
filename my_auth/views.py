@@ -4,7 +4,8 @@ from datetime import datetime
 
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from my_auth.models import User
+
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view, permission_classes
@@ -25,7 +26,7 @@ regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
 @api_view(["POST"])
 def frontend_signup(request):
     """
-    Sign up user. If anonymous user, change it to known user
+    Sign up user. If unknown user, change it to known user
 
     Args:
         request:
@@ -48,7 +49,7 @@ def frontend_signup(request):
         raise ValidationFieldError("email", code=ErrorCode.EMAIL_NOT_VALID.value)
     data["username"] = data["email"]
 
-    if request.user.is_authenticated and request.user.extra_data.is_anonymous:
+    if request.user.is_authenticated and request.user.is_unknown_user:
         user = request.user
         user.first_name = data["first_name"]
         user.last_name = data["last_name"]
@@ -56,7 +57,7 @@ def frontend_signup(request):
         user.username = data["username"]
         user.set_password(data["password"])
         user_extra_data = user.extra_data
-        user_extra_data.is_anonymous = False
+        user_extra_data.is_unknown_user = False
         user_extra_data.save()
     else:
         user = AuthSerializer(data=data)
@@ -130,9 +131,7 @@ def who_am_i(request):
 def front_end_reset_password_link(request):
     """Send a reset password link"""
     try:
-        user = User.objects.get(
-            email=request.data.get("email"), extra_data__is_anonymous=False
-        )
+        user = User.objects.get(email=request.data.get("email"), is_unknown_user=False)
     except User.DoesNotExist:
         raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL.value)
     if UserResetKey.objects.get(user=user):
@@ -172,11 +171,12 @@ def front_end_reset_password(request):
 
 
 @api_view(["POST"])
-def front_end_create_anonymous(request):
-    """Create anonymous user without email and password to save data related"""
+def front_end_create_unknown_user(request):
+    """Create unknown user without email and password to save data related"""
     anonymous_name = "anonymous-" + str(User.objects.last().id + 1)
-    user = User.objects.create(username=anonymous_name, email=anonymous_name)
-    user.extra_data.is_anonymous = True
+    user = User.objects.create(
+        username=anonymous_name, email=anonymous_name, is_unknown_user=True
+    )
     user.save()
 
     # log user

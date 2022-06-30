@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from my_auth.models import User
 from django.core import exceptions
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import password_validation
@@ -12,8 +12,6 @@ class AuthSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True, max_length=100)
     password = serializers.CharField(write_only=True, required=True, max_length=100)
 
-    is_anonymous = serializers.BooleanField(source="extra_data.is_anonymous")
-
     class Meta:
         model = User
         fields = (
@@ -23,7 +21,7 @@ class AuthSerializer(serializers.ModelSerializer):
             "last_name",
             "email",
             "password",
-            "is_anonymous",
+            "is_unknown_user",
         )
 
     def validate_password(self, value):

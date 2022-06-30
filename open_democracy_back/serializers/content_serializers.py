@@ -76,4 +76,4 @@ class PartnerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Partner
-        fields = ["id", "name", "logo_image_url"]
+        fields = ["id", "name", "logo_image_url", "height", "show_in_home_page"]

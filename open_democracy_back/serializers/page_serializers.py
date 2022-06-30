@@ -78,7 +78,8 @@ class HomePageSerializer(PageSerialiserWithLocale):
     def get_partners(_):
         partners = []
         for partner in Partner.objects.all():
-            partners.append(PartnerSerializer(partner, read_only=True).data)
+            if partner.show_in_home_page:
+                partners.append(PartnerSerializer(partner, read_only=True).data)
         return partners
 
     class Meta:
@@ -117,12 +118,14 @@ class ReferentialPageSerializer(PageSerialiserWithLocale):
         fields = PAGE_FIELDS + [
             "description",
             "pillar_block_title",
-            "pillar_block_content",
+            "pillar_block_left_content",
+            "pillar_block_right_content",
             "pillar_block_image_url",
             "marker_block_title",
             "marker_block_content",
             "criteria_block_title",
-            "criteria_block_content",
+            "criteria_block_left_content",
+            "criteria_block_right_content",
         ]
         read_only_fields = fields
 

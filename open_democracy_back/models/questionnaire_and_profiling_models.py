@@ -12,8 +12,10 @@ from wagtail.admin.edit_handlers import (
     InlinePanel,
     FieldRowPanel,
     MultiFieldPanel,
+    StreamFieldPanel,
 )
-from wagtail.core.fields import RichTextField
+from wagtail.core import blocks
+from wagtail.core.fields import RichTextField, StreamField
 
 from wagtail.core.models import TranslatableMixin, Orderable
 from wagtail.search import index
@@ -241,29 +243,28 @@ class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
         ThematicTag, blank=True, verbose_name="Thématiques"
     )
 
-    legal_frame = RichTextField(
-        null=True,
+    explanatory = StreamField(
+        [
+            (
+                "category",
+                blocks.StructBlock(
+                    [
+                        ("title", blocks.CharBlock(label="Titre")),
+                        (
+                            "description",
+                            blocks.RichTextBlock(
+                                label="Description",
+                                features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+                            ),
+                        ),
+                    ],
+                    label_format="Catégorie : {title}",
+                    label="Catégorie",
+                ),
+            )
+        ],
         blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Cadre légal",
-    )
-    use_case = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Exemples inspirants",
-    )
-    sources = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Sources",
-    )
-    to_go_further = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Pour aller plus loin",
+        verbose_name="Explicatif du critère",
     )
 
     panels = (
@@ -276,10 +277,7 @@ class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
         + ReferentielFields.panels
         + [
             InlinePanel("related_definition_ordered", label="Définitions"),
-            FieldPanel("legal_frame"),
-            FieldPanel("sources"),
-            FieldPanel("to_go_further"),
-            FieldPanel("use_case"),
+            StreamFieldPanel("explanatory"),
         ]
     )
 
@@ -658,6 +656,7 @@ class ResponseChoice(TimeStampedModel, Orderable, Score):
     class Meta:
         verbose_name_plural = "Choix de réponse"
         verbose_name = "Choix de réponse"
+        ordering = ["sort_order"]
 
 
 # Update linearized score on save
@@ -697,6 +696,7 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
     class Meta:
         verbose_name_plural = "Scores pour les différentes fourchettes"
         verbose_name = "Score pour une fourcette donnée"
+        ordering = ["sort_order"]
 
 
 # Update linearized score on save
@@ -720,6 +720,7 @@ class Category(TimeStampedModel, Orderable):
 
     class Meta:
         verbose_name = "Catégorie"
+        ordering = ["sort_order"]
 
 
 class GenericRule(TimeStampedModel, Orderable, ClusterableModel):

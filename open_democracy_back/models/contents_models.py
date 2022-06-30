@@ -2,7 +2,8 @@ import datetime
 
 from django.db import models
 from django import forms
-from wagtail.admin.edit_handlers import FieldPanel
+from django.core.validators import MaxValueValidator, MinValueValidator
+from wagtail.admin.edit_handlers import FieldPanel, MultiFieldPanel
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
@@ -117,14 +118,30 @@ class Partner(index.Indexed, models.Model):
     name = models.CharField(max_length=64, verbose_name="Nom")
     logo_image = models.ForeignKey(
         "wagtailimages.Image",
-        verbose_name="Logo du partenaire",
+        verbose_name="Logo",
         on_delete=models.CASCADE,
         related_name="+",
+    )
+    height = models.IntegerField(
+        validators=[MinValueValidator(40), MaxValueValidator(120)],
+        default=60,
+        help_text="Choisir la hauteur du logo (min 40px / max 120px)",
+        verbose_name="Hauteur",
+    )
+    show_in_home_page = models.BooleanField(
+        default=True, verbose_name="Afficher dans la page d'accueil"
     )
 
     panels = [
         FieldPanel("name"),
-        ImageChooserPanel("logo_image"),
+        MultiFieldPanel(
+            [
+                ImageChooserPanel("logo_image"),
+                FieldPanel("height"),
+            ],
+            heading="Logo du partenaire",
+        ),
+        FieldPanel("show_in_home_page"),
     ]
 
     search_fields = [

@@ -53,13 +53,14 @@ class WorkshopParticipantView(
         # TODO : if username change but same exists id --> update username (regarder l'id du user envoyé par le frontend)
         try:
             user = User.objects.get(username=username)
+            # TODO : changer l'adresse mail si elle a été changé
         except ObjectDoesNotExist:
             user = User.objects.create(username=username, email=email)
         request.data["user_id"] = user.id
         responses_data = []
         if "responses" in request.data.keys():
             responses_data = request.data.pop("responses")
-        htmlresponse = super().create(request, *args, **kwargs)
+        htmlResponse = super().create(request, *args, **kwargs)
         participation = self.get_or_update_object(request, *args, **kwargs)
 
         for item in responses_data:
@@ -76,7 +77,10 @@ class WorkshopParticipantView(
                 serializer = ParticipantResponseSerializer(data=item)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-        return htmlresponse
+        htmlResponse.data = ParticipantWithProfilingResponsesSerializer(
+            participation
+        ).data
+        return htmlResponse
 
     def get_or_update_object(self, request, workshop_pk):
         return self.get_queryset(workshop_pk).get(

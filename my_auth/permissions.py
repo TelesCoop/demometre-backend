@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-from django.contrib.auth.models import User
+from my_auth.models import User
 
 
 class IsAuthenticatedOrAnonymous(BasePermission):

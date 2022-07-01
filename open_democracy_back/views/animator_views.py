@@ -8,6 +8,7 @@ from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateMode
 from open_democracy_back.models.animator_models import Workshop
 from open_democracy_back.models.participation_models import Participation
 from open_democracy_back.serializers.animator_serializers import (
+    FullWorkshopSerializer,
     ParticipantResponseSerializer,
     ParticipantWithProfilingResponsesSerializer,
     WorkshopSerializer,
@@ -31,6 +32,19 @@ class WorkshopView(
         return self.get_queryset().get(
             id=request.data.get("id"),
         )
+
+
+class FullWorkshopView(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [IsExpert]
+    serializer_class = FullWorkshopSerializer
+
+    def get_queryset(self) -> QuerySet:
+        user = User.objects.get(pk=self.request.user.id)
+        return Workshop.objects.filter(animator_id=user.id)
 
 
 class WorkshopParticipantView(

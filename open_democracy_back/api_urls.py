@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 from open_democracy_back.views.animator_views import (
+    FullWorkshopView,
     WorkshopParticipantView,
     WorkshopView,
 )
@@ -82,6 +83,7 @@ router.register(
     basename="QuestionnaireQuestion",
 )
 router.register(r"workshops", WorkshopView, basename="Workshop")
+router.register(r"full-workshops", FullWorkshopView, basename="FullWorkshop")
 # router.register(r"participants", ParticipantView, basename="Participant")
 
 

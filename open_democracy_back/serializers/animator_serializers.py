@@ -72,8 +72,8 @@ class WorkshopSerializer(serializers.ModelSerializer):
     assessment_id = serializers.PrimaryKeyRelatedField(
         source="assessment", queryset=Assessment.objects.all()
     )
-    participants = ParticipantWithProfilingResponsesSerializer(
-        source="participations", many=True, read_only=True
+    participant_ids = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True, source="participations"
     )
 
     class Meta:
@@ -84,5 +84,15 @@ class WorkshopSerializer(serializers.ModelSerializer):
             "animator",
             "assessment_id",
             "date",
-            "participants",
+            "participant_ids",
         ]
+
+
+class FullWorkshopSerializer(WorkshopSerializer):
+    participants = ParticipantWithProfilingResponsesSerializer(
+        source="participations", many=True, read_only=True
+    )
+
+    class Meta:
+        model = Workshop
+        fields = WorkshopSerializer.Meta.fields + ["participants"]

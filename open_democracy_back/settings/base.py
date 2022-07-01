@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "wagtailsvg",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
+    "wagtail.contrib.settings",
     "wagtail_localize",
     "wagtail_localize.locales",
     "wagtail.embeds",

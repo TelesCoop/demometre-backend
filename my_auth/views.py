@@ -56,9 +56,8 @@ def frontend_signup(request):
         user.email = data["email"]
         user.username = data["username"]
         user.set_password(data["password"])
-        user_extra_data = user.extra_data
-        user_extra_data.is_unknown_user = False
-        user_extra_data.save()
+        user.is_unknown_user = False
+        user.save()
     else:
         user = AuthSerializer(data=data)
         user.is_valid(raise_exception=True)

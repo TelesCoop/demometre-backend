@@ -1,4 +1,3 @@
-from my_auth.models import User
 from django.utils.html import format_html_join
 from django.templatetags.static import static
 from wagtail.contrib.modeladmin.options import (
@@ -12,6 +11,7 @@ from wagtail.core import hooks
 
 from wagtail.snippets import widgets as wagtailsnippets_widgets
 
+from my_auth.models import User
 from open_democracy_back.models import (
     Assessment,
     Criteria,

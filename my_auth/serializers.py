@@ -1,4 +1,5 @@
-from django.contrib.auth.models import User, AnonymousUser
+from my_auth.models import User
+from django.contrib.auth.models import AnonymousUser
 from django.core import exceptions
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import password_validation

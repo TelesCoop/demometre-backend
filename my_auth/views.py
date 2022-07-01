@@ -5,6 +5,7 @@ from datetime import datetime
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
 from django.contrib.auth import authenticate, login, logout
 from my_auth.models import User
+
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view, permission_classes
@@ -16,7 +17,7 @@ from my_auth.emails import email_reset_password_link
 from my_auth.models import UserResetKey
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 
-from .serializers import AnonymousSerializer, AuthSerializer
+from .serializers import AuthSerializer
 
 # Regular expression for validating an Email
 regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
@@ -25,7 +26,7 @@ regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
 @api_view(["POST"])
 def frontend_signup(request):
     """
-    Sign up user. If anonymous user, change it to known user
+    Sign up user. If unknown user, change it to known user
 
     Args:
         request:
@@ -35,7 +36,6 @@ def frontend_signup(request):
                     "last_name": "Doe",
                     "email": "email@ex.com",
                     "password": "secret_pa$$w0rD",
-                    "anonymous": None
                 }
 
     Returns:
@@ -49,23 +49,24 @@ def frontend_signup(request):
         raise ValidationFieldError("email", code=ErrorCode.EMAIL_NOT_VALID.value)
     data["username"] = data["email"]
 
-    if "anonymous" in data and data["anonymous"]:
-        user = User.objects.get(username=data["anonymous"])
+    if request.user.is_authenticated and request.user.is_unknown_user:
+        user = request.user
         user.first_name = data["first_name"]
         user.last_name = data["last_name"]
         user.email = data["email"]
         user.username = data["username"]
         user.set_password(data["password"])
+        user.is_unknown_user = False
+        user.save()
     else:
         user = AuthSerializer(data=data)
         user.is_valid(raise_exception=True)
+
     user.save()
 
-    userAuth = authenticate(username=data["username"], password=data["password"])
-    userAuth.backend = AUTHENTICATION_BACKENDS[0]
-    login(request, userAuth)
+    login(request, user)
 
-    return Response(status=201, data=AuthSerializer(userAuth).data)
+    return Response(status=201, data=AuthSerializer(user).data)
 
 
 @api_view(["POST"])
@@ -118,14 +119,8 @@ def frontend_logout(request):
 @ensure_csrf_cookie
 def who_am_i(request):
     """Returns information about the current user."""
-    anonymous_name = request.query_params.get("anonymous")
-    if request.user.is_anonymous and anonymous_name:
-        return Response(
-            AnonymousSerializer(
-                {"username": anonymous_name, "email": anonymous_name}
-            ).data
-        )
-    if request.user.is_anonymous:
+
+    if not request.user.is_authenticated:
         raise NotAuthenticated()
 
     return Response(AuthSerializer(request.user).data)
@@ -135,7 +130,7 @@ def who_am_i(request):
 def front_end_reset_password_link(request):
     """Send a reset password link"""
     try:
-        user = User.objects.get(email=request.data.get("email"))
+        user = User.objects.get(email=request.data.get("email"), is_unknown_user=False)
     except User.DoesNotExist:
         raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL.value)
     if UserResetKey.objects.get(user=user):
@@ -175,9 +170,15 @@ def front_end_reset_password(request):
 
 
 @api_view(["POST"])
-def front_end_create_anonymous(_):
-    """Create anonymous user without email and password to save data related"""
+def front_end_create_unknown_user(request):
+    """Create unknown user without email and password to save data related"""
     anonymous_name = "anonymous-" + str(User.objects.last().id + 1)
-    user = User.objects.create(username=anonymous_name, email=anonymous_name)
+    user = User.objects.create(
+        username=anonymous_name, email=anonymous_name, is_unknown_user=True
+    )
+    user.save()
 
-    return Response(status=201, data=AnonymousSerializer(user).data)
+    # log user
+    login(request, user)
+
+    return Response(status=201, data=AuthSerializer(user).data)

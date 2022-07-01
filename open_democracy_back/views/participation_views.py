@@ -164,7 +164,7 @@ class ParticipationResponseView(
             query = query.filter(participation_id=participation_id)
         else:
             rollbar.report_message(
-                f"Need participation_id to retrieve participation responses of user {user.email} but got {participation_id} in {context} context",
+                f"Need participation_id to retrieve participation responses of user {self.request.user.email} but got {participation_id} in {context} context",
                 "warning",
             )
 

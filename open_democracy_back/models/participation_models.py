@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from my_auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from open_democracy_back.models.animator_models import Workshop
 

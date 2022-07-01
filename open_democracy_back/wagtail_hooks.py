@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from my_auth.models import User
 from django.utils.html import format_html_join
 from django.templatetags.static import static
 from wagtail.contrib.modeladmin.options import (

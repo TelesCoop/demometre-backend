@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from my_auth.models import User
 from rest_framework import serializers
 from open_democracy_back.models.animator_models import Workshop
 from open_democracy_back.models.assessment_models import Assessment

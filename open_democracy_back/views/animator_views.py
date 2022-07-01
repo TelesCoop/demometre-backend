@@ -1,8 +1,8 @@
 from django.db.models import QuerySet
-from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import mixins, viewsets
 from my_auth.permissions import IsExpert
+from my_auth.models import User
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
 from open_democracy_back.models.animator_models import Workshop

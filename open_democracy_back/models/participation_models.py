@@ -122,4 +122,6 @@ class ClosedWithScaleCategoryResponse(models.Model):
         null=True,
         blank=True,
     )
-    response_choice = models.ForeignKey(ResponseChoice, on_delete=models.CASCADE)
+    response_choice = models.ForeignKey(
+        ResponseChoice, on_delete=models.SET_NULL, null=True, blank=True
+    )

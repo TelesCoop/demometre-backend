@@ -7,6 +7,9 @@ from open_democracy_back.models.participation_models import (
     ParticipationResponse,
 )
 from open_democracy_back.models.questionnaire_and_profiling_models import Role
+from open_democracy_back.serializers.assessment_serializers import (
+    AssessmentResponseSerializer,
+)
 from open_democracy_back.serializers.participation_serializers import (
     OPTIONAL_RESPONSE_FIELDS,
     RESPONSE_FIELDS,
@@ -92,7 +95,23 @@ class FullWorkshopSerializer(WorkshopSerializer):
     participants = ParticipantWithProfilingResponsesSerializer(
         source="participations", many=True, read_only=True
     )
+    assessment_responses = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_assessment_responses(obj: Workshop):
+        responses = []
+        for assessment_response in obj.assessment.responses.all():
+            responses.append(
+                AssessmentResponseSerializer(
+                    assessment_response,
+                    read_only=True,
+                ).data
+            )
+        return responses
 
     class Meta:
         model = Workshop
-        fields = WorkshopSerializer.Meta.fields + ["participants"]
+        fields = WorkshopSerializer.Meta.fields + [
+            "participants",
+            "assessment_responses",
+        ]

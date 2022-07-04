@@ -6,7 +6,10 @@ from my_auth.models import User
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
 from open_democracy_back.models.animator_models import Workshop
-from open_democracy_back.models.participation_models import Participation
+from open_democracy_back.models.participation_models import (
+    Participation,
+    ParticipationResponse,
+)
 from open_democracy_back.serializers.animator_serializers import (
     FullWorkshopSerializer,
     ParticipantResponseSerializer,
@@ -64,10 +67,15 @@ class WorkshopParticipantView(
     def create(self, request, *args, **kwargs):
         email = request.data["user_email"]
         username = request.data["user_username"]
-        # TODO : if username change but same exists id --> update username (regarder l'id du user envoyé par le frontend)
         try:
-            user = User.objects.get(username=username)
-            # TODO : changer l'adresse mail si elle a été changé
+            if "id" in request.data.keys():
+                participantId = request.data["id"]
+                user = Participation.objects.get(id=participantId).user
+            else:
+                user = User.objects.get(username=username)
+            user.username = username
+            user.email = email
+            user.save()
         except ObjectDoesNotExist:
             user = User.objects.create(username=username, email=email)
         request.data["user_id"] = user.id
@@ -99,4 +107,27 @@ class WorkshopParticipantView(
     def get_or_update_object(self, request, workshop_pk):
         return self.get_queryset(workshop_pk).get(
             user_id=request.data.get("user_id"),
+        )
+
+
+class WorkshopParticipantResponseView(
+    mixins.ListModelMixin,
+    UpdateOrCreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [IsExpert]
+    serializer_class = ParticipantResponseSerializer
+
+    def get_queryset(self, workshop_pk, participant_pk) -> QuerySet:
+        user = User.objects.get(pk=self.request.user.id)
+        return ParticipationResponse.objects.filter(
+            participation__workshop__animator_id=user.id,
+            participation__workshop_id=workshop_pk,
+            participation_id=participant_pk,
+        )
+
+    def get_or_update_object(self, request, workshop_pk, participant_pk):
+        return self.get_queryset(workshop_pk, participant_pk).get(
+            participation_id=request.data.get("participation_id"),
+            question_id=request.data.get("question_id"),
         )

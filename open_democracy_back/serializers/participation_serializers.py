@@ -111,6 +111,7 @@ class ClosedWithScaleCategoryResponseSerializer(serializers.ModelSerializer):
         source="response_choice",
         queryset=ResponseChoice.objects.all(),
         required=True,
+        allow_null=True,
     )
 
     class Meta:

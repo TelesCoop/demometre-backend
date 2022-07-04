@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 from open_democracy_back.views.animator_views import (
     FullWorkshopView,
+    WorkshopParticipantResponseView,
     WorkshopParticipantView,
     WorkshopView,
 )
@@ -127,5 +128,9 @@ urlpatterns = [
     path(
         "workshops/<int:workshop_pk>/participant/",
         WorkshopParticipantView.as_view({"post": "create"}),
+    ),
+    path(
+        "workshops/<int:workshop_pk>/participant/<int:participant_pk>/response",
+        WorkshopParticipantResponseView.as_view({"post": "create"}),
     ),
 ]

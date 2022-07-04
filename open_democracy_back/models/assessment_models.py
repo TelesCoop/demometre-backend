@@ -260,7 +260,10 @@ class Assessment(TimeStampedModel, ClusterableModel):
         related_name="assessments",
         blank=True,
         null=True,
+        limit_choices_to={"groups__name": "Experts"},
+        help_text="Pour ajouter un expert à la liste il faut créer / modifier l'utilisateur correspondant, aller dans l'onglet rôles et cocher la case Experts",
     )
+    royalty_payed = models.BooleanField(default=False, verbose_name="Redevance payée")
 
     @property
     def population(self):
@@ -279,6 +282,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
     panels = [
         FieldPanel("assessment_type"),
         FieldPanel("expert"),
+        FieldPanel("royalty_payed"),
         FieldPanel("locality_type"),
         SnippetChooserPanel("municipality"),
         SnippetChooserPanel("epci"),

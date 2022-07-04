@@ -1,11 +1,11 @@
 from rest_framework.permissions import BasePermission
+from open_democracy_back.models.animator_models import Workshop
 from open_democracy_back.models.assessment_models import Assessment
 
 
 class IsAssessmentAdminOrReadOnly(BasePermission):
     """
-    Allows access only to the assessment initiator.
-    TODO : access to expert
+    Allows access only to the assessment initiator and the assessment expert if there is one.
     """
 
     def has_permission(self, request, view):
@@ -15,7 +15,25 @@ class IsAssessmentAdminOrReadOnly(BasePermission):
             or request.query_params.get("assessment_id")
             or view.kwargs.get("assessment_pk", None)
         )
-        is_initator = bool(
-            Assessment.objects.get(id=assessment_id).initiated_by_user == request.user
+        assessment = Assessment.objects.get(id=assessment_id)
+        is_initator = bool(assessment.initiated_by_user == request.user)
+        is_expert = bool(assessment.expert == request.user)
+        return bool(
+            (is_authenticated and (is_initator or is_expert)) or request.method == "GET"
         )
-        return bool((is_authenticated and is_initator) or request.method == "GET")
+
+
+class IsWorkshopExpert(BasePermission):
+    """
+    Allows access only to the workshop expert.
+    """
+
+    def has_permission(self, request, view):
+        is_authenticated = bool(request.user and request.user.is_authenticated)
+        workshop_id = (
+            request.data.get("workshop_id")
+            or request.query_params.get("workshop_id")
+            or view.kwargs.get("workshop_pk", None)
+        )
+        is_expert = bool(Workshop.objects.get(id=workshop_id).animator == request.user)
+        return bool(is_authenticated and is_expert)

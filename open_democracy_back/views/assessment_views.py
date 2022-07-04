@@ -155,11 +155,15 @@ class AssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
         return RestResponse(status=200, data=self.serializer_class(assessment[0]).data)
 
 
-class InProgressAssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
+class AnimatorAssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = AssessmentSerializer
-    queryset = Assessment.objects.filter(
-        initialization_date__lte=timezone.now()
-    ).exclude(end_date__lt=timezone.now())
+
+    def get_queryset(self):
+        return Assessment.objects.filter(
+            initialization_date__lte=timezone.now(),
+            expert=self.request.user,
+            royalty_payed=True,
+        ).exclude(end_date__lt=timezone.now())
 
 
 class AssessmentView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):

@@ -11,6 +11,11 @@ class AuthSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(required=True, max_length=150)
     email = serializers.EmailField(required=True, max_length=100)
     password = serializers.CharField(write_only=True, required=True, max_length=100)
+    is_expert = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_is_expert(obj: User):
+        return bool(obj.groups.filter(name="Experts").count())
 
     class Meta:
         model = User
@@ -22,6 +27,7 @@ class AuthSerializer(serializers.ModelSerializer):
             "email",
             "password",
             "is_unknown_user",
+            "is_expert",
         )
 
     def validate_password(self, value):

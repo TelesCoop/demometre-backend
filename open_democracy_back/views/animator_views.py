@@ -1,7 +1,6 @@
 from django.db.models import QuerySet
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import mixins, viewsets
-from my_auth.permissions import IsExpert
 from my_auth.models import User
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
@@ -10,6 +9,7 @@ from open_democracy_back.models.participation_models import (
     Participation,
     ParticipationResponse,
 )
+from open_democracy_back.permissions import IsWorkshopExpert
 from open_democracy_back.serializers.animator_serializers import (
     FullWorkshopSerializer,
     ParticipantResponseSerializer,
@@ -24,12 +24,15 @@ class WorkshopView(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsExpert]
     serializer_class = WorkshopSerializer
 
     def get_queryset(self) -> QuerySet:
         user = User.objects.get(pk=self.request.user.id)
-        return Workshop.objects.filter(animator_id=user.id)
+
+        return Workshop.objects.filter(
+            animator_id=user.id,
+            assessment__royalty_payed=True,
+        )
 
     def get_or_update_object(self, request):
         return self.get_queryset().get(
@@ -42,7 +45,7 @@ class FullWorkshopView(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsExpert]
+    permission_classes = [IsWorkshopExpert]
     serializer_class = FullWorkshopSerializer
 
     def get_queryset(self) -> QuerySet:
@@ -55,7 +58,7 @@ class WorkshopParticipantView(
     UpdateOrCreateModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsExpert]
+    permission_classes = [IsWorkshopExpert]
     serializer_class = ParticipantWithProfilingResponsesSerializer
 
     def get_queryset(self, workshop_pk) -> QuerySet:
@@ -115,7 +118,7 @@ class WorkshopParticipantResponseView(
     UpdateOrCreateModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsExpert]
+    permission_classes = [IsWorkshopExpert]
     serializer_class = ParticipantResponseSerializer
 
     def get_queryset(self, workshop_pk, participant_pk) -> QuerySet:

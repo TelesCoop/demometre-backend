@@ -204,11 +204,79 @@ def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
     return result
 
 
+def get_score_of_closed_with_scale_question(queryset) -> List[QuestionScore]:
+    closed_with_scale_responses = queryset.filter(
+        question__type=QuestionType.CLOSED_WITH_SCALE
+    ).prefetch_related(
+        "closed_with_scale_response_categories__response_choice",
+        "question__criteria__marker",
+    )
+
+    score_by_question_id: DefaultDict[str, QuestionScoreAverage] = defaultdict(
+        lambda: QuestionScoreAverage(
+            score=0,
+            count=0,
+            question__criteria_id=-1,
+            question__criteria__marker_id=-1,
+            question__criteria__marker__pillar_id=-1,
+        )
+    )
+    for closed_with_scale_response in closed_with_scale_responses:
+        category_score: float = 0
+        category_count: int = 0
+        for (
+            closed_with_scale_response_categorie
+        ) in closed_with_scale_response.closed_with_scale_response_categories.all():
+            response_choice = closed_with_scale_response_categorie.response_choice
+            category_score += (
+                response_choice.linearized_score
+                if isinstance(response_choice.linearized_score, float)
+                else 0
+            )
+            category_count += 1
+
+        score_by_question_id[closed_with_scale_response.question_id]["score"] += (
+            category_score / category_count
+        )
+        score_by_question_id[closed_with_scale_response.question_id]["count"] += 1
+        score_by_question_id[closed_with_scale_response.question_id][
+            "question__criteria_id"
+        ] = closed_with_scale_response.question.criteria_id
+        score_by_question_id[closed_with_scale_response.question_id][
+            "question__criteria__marker_id"
+        ] = closed_with_scale_response.question.criteria.marker_id
+        score_by_question_id[closed_with_scale_response.question_id][
+            "question__criteria__marker__pillar_id"
+        ] = closed_with_scale_response.question.criteria.marker.pillar_id
+
+    result: List[QuestionScore] = []
+    for key in score_by_question_id:
+        result.append(
+            QuestionScore(
+                question_id=key,
+                score=score_by_question_id[key]["score"]
+                / score_by_question_id[key]["count"],
+                question__criteria_id=score_by_question_id[key][
+                    "question__criteria_id"
+                ],
+                question__criteria__marker_id=score_by_question_id[key][
+                    "question__criteria__marker_id"
+                ],
+                question__criteria__marker__pillar_id=score_by_question_id[key][
+                    "question__criteria__marker__pillar_id"
+                ],
+            )
+        )
+
+    return result
+
+
 SCORES_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
     QuestionType.BOOLEAN.value: get_score_of_boolean_question,  # type: ignore
     QuestionType.UNIQUE_CHOICE.value: get_score_of_unique_choice_question,  # type: ignore
     QuestionType.MULTIPLE_CHOICE.value: get_score_of_multiple_choice_question,  # type: ignore
     QuestionType.PERCENTAGE.value: get_score_of_percentage_question,  # type: ignore
+    QuestionType.CLOSED_WITH_SCALE.value: get_score_of_closed_with_scale_question,  # type: ignore
 }
 
 
@@ -262,6 +330,7 @@ def get_scores_by_assessment_pk(assessment_pk: int) -> Dict[str, Dict[str, float
         QuestionType.UNIQUE_CHOICE,
         QuestionType.MULTIPLE_CHOICE,
         QuestionType.PERCENTAGE,
+        QuestionType.CLOSED_WITH_SCALE,
     ]:
         question_type_scores = SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore
             assessment_responses

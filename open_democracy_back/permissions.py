@@ -34,6 +34,7 @@ class IsWorkshopExpert(BasePermission):
             request.data.get("workshop_id")
             or request.query_params.get("workshop_id")
             or view.kwargs.get("workshop_pk", None)
+            or view.kwargs.get("pk", None)
         )
         is_expert = bool(Workshop.objects.get(id=workshop_id).animator == request.user)
         return bool(is_authenticated and is_expert)

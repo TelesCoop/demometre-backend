@@ -14,7 +14,6 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
 
 
 class Participation(models.Model):
-    # TODO : on delete : remove participation or clean personnal data and keep responses ?
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="participations"
     )

@@ -12,6 +12,7 @@ from open_democracy_back.models.pages_models import (
     EvaluationInitPage,
     EvaluationQuestionnairePage,
     ProjectPage,
+    ResultsPage,
     UsagePage,
 )
 from open_democracy_back.serializers.assessment_serializers import (
@@ -127,6 +128,21 @@ class ReferentialPageSerializer(PageSerialiserWithLocale):
             "criteria_block_left_content",
             "criteria_block_right_content",
         ]
+        read_only_fields = fields
+
+
+class ResultsPageSerializer(PageSerialiserWithLocale):
+    intro_image_url = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_intro_image_url(obj: ResultsPage):
+        if obj.intro_image:
+            return obj.intro_image.file.url
+        return None
+
+    class Meta:
+        model = ResultsPage
+        fields = PAGE_FIELDS + ["tag_line", "intro_image_url"]
         read_only_fields = fields
 
 

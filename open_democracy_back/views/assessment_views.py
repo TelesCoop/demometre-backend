@@ -1,7 +1,9 @@
 import logging
 from datetime import date
 from typing import Dict
+
 from django.utils import timezone
+
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import mixins, viewsets, status
@@ -17,6 +19,7 @@ from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateMode
 
 from open_democracy_back.models import (
     Assessment,
+    Participation,
 )
 from open_democracy_back.models.assessment_models import (
     EPCI,
@@ -171,6 +174,19 @@ class AssessmentView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Assessment.objects.all()
 
 
+class CurrentAssessmentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        current_assessment = Assessment.objects.filter(
+            participations__in=Participation.objects.filter_current_available(
+                self.request.user, timezone.now()
+            ),
+        ).get()
+        serializer = AssessmentSerializer(current_assessment)
+        return RestResponse(serializer.data)
+
+
 class AssessmentResponseView(
     mixins.ListModelMixin, UpdateOrCreateModelMixin, viewsets.GenericViewSet
 ):
@@ -179,13 +195,27 @@ class AssessmentResponseView(
 
     def get_queryset(self):
         return AssessmentResponse.objects.filter(
-            assessment=self.request.query_params.get("assessment_id")
+            assessment__participations__in=Participation.objects.filter_available(
+                self.request.user.id, timezone.now()
+            ),
         )
 
     def get_or_update_object(self, request):
         return AssessmentResponse.objects.get(
             assessment_id=request.data.get("assessment_id"),
             question_id=request.data.get("question_id"),
+        )
+
+
+class CurrentAssessmentResponseView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = [IsAssessmentAdminOrReadOnly]
+    serializer_class = AssessmentResponseSerializer
+
+    def get_queryset(self):
+        return AssessmentResponse.objects.filter(
+            assessment__participations__in=Participation.objects.filter_current_available(
+                self.request.user, timezone.now()
+            ),
         )
 
 

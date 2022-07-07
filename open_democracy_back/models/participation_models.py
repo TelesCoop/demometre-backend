@@ -56,7 +56,11 @@ class Participation(models.Model):
     )
 
     def __str__(self):
-        return f"{self.user.username} - {str(self.assessment)}"
+        return (
+            f"{str(self.assessment)} - {self.user.username}"
+            if self.user
+            else f"{str(self.assessment)} - Atelier {self.workshop.name} - {self.participant.name}"
+        )
 
     def save(self, *args, **kwargs):
         is_new = not self.pk

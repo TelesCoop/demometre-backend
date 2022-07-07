@@ -147,7 +147,19 @@ class CloseWorkshopView(APIView):
         workshop.closed = True
         workshop.save()
 
-        # TODO : create user with all participants or attribut participation to existing user
+        for participation in workshop.participations.all():
+            # if there is a email create user or retrieve existing user and attribut him the participation
+            if participation.participant.email:
+                try:
+                    user = User.objects.get(email=participation.participant.email)
+                except ObjectDoesNotExist:
+                    user = User.objects.create(
+                        username=participation.participant.name,
+                        email=participation.participant.email,
+                    )
+                participation.user = user
+                participation.save()
+                # TODO : what append if there is a participation with this user and this assessment (like this it breaks)
 
         serializer = WorkshopSerializer(workshop)
         return RestResponse(serializer.data, status=status.HTTP_200_OK)

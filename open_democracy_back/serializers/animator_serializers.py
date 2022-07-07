@@ -1,6 +1,5 @@
-from my_auth.models import User
 from rest_framework import serializers
-from open_democracy_back.models.animator_models import Workshop
+from open_democracy_back.models.animator_models import Participant, Workshop
 from open_democracy_back.models.assessment_models import Assessment
 from open_democracy_back.models.participation_models import (
     Participation,
@@ -17,7 +16,7 @@ from open_democracy_back.serializers.participation_serializers import (
 )
 
 
-class ParticipantResponseSerializer(ResponseSerializer):
+class WorkshopParticipationResponseSerializer(ResponseSerializer):
     participation_id = serializers.PrimaryKeyRelatedField(
         source="participation", queryset=Participation.objects.all()
     )
@@ -29,9 +28,11 @@ class ParticipantResponseSerializer(ResponseSerializer):
         optional_fields = OPTIONAL_RESPONSE_FIELDS
 
 
-class ParticipantWithProfilingResponsesSerializer(serializers.ModelSerializer):
-    user_id = serializers.PrimaryKeyRelatedField(
-        source="user", queryset=User.objects.all(), required=False
+class WorkshopParticipationWithProfilingResponsesSerializer(
+    serializers.ModelSerializer
+):
+    participant_id = serializers.PrimaryKeyRelatedField(
+        source="participant", queryset=Participant.objects.all(), required=False
     )
     assessment_id = serializers.PrimaryKeyRelatedField(
         source="assessment", queryset=Assessment.objects.all()
@@ -43,31 +44,33 @@ class ParticipantWithProfilingResponsesSerializer(serializers.ModelSerializer):
         source="workshop", queryset=Workshop.objects.all()
     )
 
-    user_email = serializers.SerializerMethodField()
-    user_username = serializers.SerializerMethodField()
-    responses = ParticipantResponseSerializer(many=True, required=False, read_only=True)
+    participant_email = serializers.SerializerMethodField()
+    participant_name = serializers.SerializerMethodField()
+    responses = WorkshopParticipationResponseSerializer(
+        many=True, required=False, read_only=True
+    )
 
     @staticmethod
-    def get_user_email(obj: Participation):
-        return obj.user.email
+    def get_participant_email(obj: Participation):
+        return obj.participant.email
 
     @staticmethod
-    def get_user_username(obj: Participation):
-        return obj.user.username
+    def get_participant_name(obj: Participation):
+        return obj.participant.name
 
     class Meta:
         model = Participation
         fields = [
             "id",
-            "user_id",
-            "user_email",
-            "user_username",
+            "participant_id",
+            "participant_email",
+            "participant_name",
             "assessment_id",
             "workshop_id",
             "role_id",
             "responses",
         ]
-        optional_fields = ["user_id"]
+        optional_fields = ["participant_id"]
 
 
 class WorkshopSerializer(serializers.ModelSerializer):
@@ -75,7 +78,7 @@ class WorkshopSerializer(serializers.ModelSerializer):
     assessment_id = serializers.PrimaryKeyRelatedField(
         source="assessment", queryset=Assessment.objects.all()
     )
-    participant_ids = serializers.PrimaryKeyRelatedField(
+    participation_ids = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, source="participations"
     )
 
@@ -87,13 +90,14 @@ class WorkshopSerializer(serializers.ModelSerializer):
             "animator",
             "assessment_id",
             "date",
-            "participant_ids",
+            "closed",
+            "participation_ids",
         ]
 
 
 class FullWorkshopSerializer(WorkshopSerializer):
-    participants = ParticipantWithProfilingResponsesSerializer(
-        source="participations", many=True, read_only=True
+    participations = WorkshopParticipationWithProfilingResponsesSerializer(
+        many=True, read_only=True
     )
     assessment_responses = serializers.SerializerMethodField()
 
@@ -112,6 +116,6 @@ class FullWorkshopSerializer(WorkshopSerializer):
     class Meta:
         model = Workshop
         fields = WorkshopSerializer.Meta.fields + [
-            "participants",
+            "participations",
             "assessment_responses",
         ]

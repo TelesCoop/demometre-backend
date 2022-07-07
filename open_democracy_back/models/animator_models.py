@@ -1,5 +1,11 @@
 from django.db import models
 from my_auth.models import User
+from django.utils.translation import gettext_lazy as _
+
+
+class Participant(models.Model):
+    name = models.CharField(max_length=150)
+    email = models.EmailField(_("email address"), blank=True, unique=True)
 
 
 class Workshop(models.Model):
@@ -16,6 +22,7 @@ class Workshop(models.Model):
         limit_choices_to={"groups__name": "Experts"},
     )
     name = models.CharField(max_length=128, verbose_name="Nom", default="")
+    closed = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Atelier"

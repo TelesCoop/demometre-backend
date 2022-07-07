@@ -1,9 +1,10 @@
 from django.urls import path, include
 from rest_framework import routers
 from open_democracy_back.views.animator_views import (
+    CloseWorkshopView,
     FullWorkshopView,
-    WorkshopParticipantResponseView,
-    WorkshopParticipantView,
+    WorkshopParticipationResponseView,
+    WorkshopParticipationView,
     WorkshopView,
 )
 from open_democracy_back.views.content_views import BlogPostView, ResourceView
@@ -123,11 +124,15 @@ urlpatterns = [
         QuestionnaireScoreView.as_view(),
     ),
     path(
-        "workshops/<int:workshop_pk>/participant/",
-        WorkshopParticipantView.as_view({"post": "create"}),
+        "workshops/<int:workshop_pk>/participation/",
+        WorkshopParticipationView.as_view({"post": "create"}),
     ),
     path(
-        "workshops/<int:workshop_pk>/participant/<int:participant_pk>/response",
-        WorkshopParticipantResponseView.as_view({"post": "create"}),
+        "workshops/<int:workshop_pk>/participation/<int:participation_pk>/response/",
+        WorkshopParticipationResponseView.as_view({"post": "create"}),
+    ),
+    path(
+        "workshops/<int:workshop_pk>/closed/",
+        CloseWorkshopView.as_view(),
     ),
 ]

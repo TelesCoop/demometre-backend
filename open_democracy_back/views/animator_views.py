@@ -1,10 +1,12 @@
 from django.db.models import QuerySet
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status
+from rest_framework.views import APIView
+from rest_framework.response import Response as RestResponse
 from my_auth.models import User
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
-from open_democracy_back.models.animator_models import Workshop
+from open_democracy_back.models.animator_models import Participant, Workshop
 from open_democracy_back.models.participation_models import (
     Participation,
     ParticipationResponse,
@@ -12,8 +14,8 @@ from open_democracy_back.models.participation_models import (
 from open_democracy_back.permissions import IsWorkshopExpert
 from open_democracy_back.serializers.animator_serializers import (
     FullWorkshopSerializer,
-    ParticipantResponseSerializer,
-    ParticipantWithProfilingResponsesSerializer,
+    WorkshopParticipationResponseSerializer,
+    WorkshopParticipationWithProfilingResponsesSerializer,
     WorkshopSerializer,
 )
 
@@ -53,13 +55,13 @@ class FullWorkshopView(
         return Workshop.objects.filter(animator_id=user.id)
 
 
-class WorkshopParticipantView(
+class WorkshopParticipationView(
     mixins.ListModelMixin,
     UpdateOrCreateModelMixin,
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsWorkshopExpert]
-    serializer_class = ParticipantWithProfilingResponsesSerializer
+    serializer_class = WorkshopParticipationWithProfilingResponsesSerializer
 
     def get_queryset(self, workshop_pk) -> QuerySet:
         user = User.objects.get(pk=self.request.user.id)
@@ -68,20 +70,20 @@ class WorkshopParticipantView(
         )
 
     def create(self, request, *args, **kwargs):
-        email = request.data["user_email"]
-        username = request.data["user_username"]
+        email = request.data["participant_email"]
+        name = request.data["participant_name"]
         try:
             if "id" in request.data.keys():
-                participantId = request.data["id"]
-                user = Participation.objects.get(id=participantId).user
+                participationId = request.data["id"]
+                participant = Participation.objects.get(id=participationId).participant
             else:
-                user = User.objects.get(username=username)
-            user.username = username
-            user.email = email
-            user.save()
+                participant = Participant.objects.get(name=name)
+            participant.name = name
+            participant.email = email
+            participant.save()
         except ObjectDoesNotExist:
-            user = User.objects.create(username=username, email=email)
-        request.data["user_id"] = user.id
+            participant = Participant.objects.create(name=name, email=email)
+        request.data["participant_id"] = participant.id
         responses_data = []
         if "responses" in request.data.keys():
             responses_data = request.data.pop("responses")
@@ -95,42 +97,57 @@ class WorkshopParticipantView(
                 participationResponse = participation.responses.get(
                     question_id=item["question_id"]
                 )
-                serializer = ParticipantResponseSerializer(
+                serializer = WorkshopParticipationResponseSerializer(
                     participationResponse, data=item
                 )
             except ObjectDoesNotExist:
-                serializer = ParticipantResponseSerializer(data=item)
+                serializer = WorkshopParticipationResponseSerializer(data=item)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-        htmlResponse.data = ParticipantWithProfilingResponsesSerializer(
+        htmlResponse.data = WorkshopParticipationWithProfilingResponsesSerializer(
             participation
         ).data
         return htmlResponse
 
     def get_or_update_object(self, request, workshop_pk):
         return self.get_queryset(workshop_pk).get(
-            user_id=request.data.get("user_id"),
+            user_id=request.data.get("participation_id"),
         )
 
 
-class WorkshopParticipantResponseView(
+class WorkshopParticipationResponseView(
     mixins.ListModelMixin,
     UpdateOrCreateModelMixin,
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsWorkshopExpert]
-    serializer_class = ParticipantResponseSerializer
+    serializer_class = WorkshopParticipationResponseSerializer
 
-    def get_queryset(self, workshop_pk, participant_pk) -> QuerySet:
+    def get_queryset(self, workshop_pk, participation_pk) -> QuerySet:
         user = User.objects.get(pk=self.request.user.id)
         return ParticipationResponse.objects.filter(
             participation__workshop__animator_id=user.id,
             participation__workshop_id=workshop_pk,
-            participation_id=participant_pk,
+            participation_id=participation_pk,
         )
 
-    def get_or_update_object(self, request, workshop_pk, participant_pk):
-        return self.get_queryset(workshop_pk, participant_pk).get(
+    def get_or_update_object(self, request, workshop_pk, participation_pk):
+        return self.get_queryset(workshop_pk, participation_pk).get(
             participation_id=request.data.get("participation_id"),
             question_id=request.data.get("question_id"),
         )
+
+
+class CloseWorkshopView(APIView):
+    permission_classes = [IsWorkshopExpert]
+
+    def patch(self, request, workshop_pk):
+        user = User.objects.get(pk=self.request.user.id)
+        workshop = Workshop.objects.get(animator_id=user.id, id=workshop_pk)
+        workshop.closed = True
+        workshop.save()
+
+        # TODO : create user with all participants or attribut participation to existing user
+
+        serializer = WorkshopSerializer(workshop)
+        return RestResponse(serializer.data, status=status.HTTP_200_OK)

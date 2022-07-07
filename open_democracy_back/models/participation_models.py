@@ -1,7 +1,7 @@
 from django.db import models
 from my_auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
-from open_democracy_back.models.animator_models import Workshop
+from open_democracy_back.models.animator_models import Participant, Workshop
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Category,
@@ -14,9 +14,21 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
 
 
 class Participation(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="participations"
+    participant = models.ForeignKey(
+        Participant,
+        on_delete=models.CASCADE,
+        related_name="participations",
+        blank=True,
+        null=True,
     )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="participations",
+        blank=True,
+        null=True,
+    )
+
     assessment = models.ForeignKey(
         "open_democracy_back.Assessment",
         on_delete=models.CASCADE,
@@ -54,7 +66,7 @@ class Participation(models.Model):
                 self.is_pillar_questions_completed.add(pillar)
 
     class Meta:
-        unique_together = ["user", "assessment"]
+        unique_together = ["user", "participant", "assessment"]
 
 
 class ParticipationPillarCompleted(models.Model):

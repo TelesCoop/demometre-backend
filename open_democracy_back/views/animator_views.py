@@ -70,6 +70,9 @@ class WorkshopParticipationView(
         )
 
     def create(self, request, *args, **kwargs):
+        # Create or update a workshop participation with all its profiling responses
+
+        # 1 - Retrieve Participant if exists or create new one
         email = request.data["participant_email"]
         name = request.data["participant_name"]
         try:
@@ -83,13 +86,19 @@ class WorkshopParticipationView(
             participant.save()
         except ObjectDoesNotExist:
             participant = Participant.objects.create(name=name, email=email)
+        # Add participant_id in data dict before create or update participation
         request.data["participant_id"] = participant.id
+
+        # 2 - Pop responses from data before create or update participation (Otherwise serializer will reject it)
         responses_data = []
         if "responses" in request.data.keys():
             responses_data = request.data.pop("responses")
+
+        # 3 - Create or update participation
         htmlResponse = super().create(request, *args, **kwargs)
         participation = self.get_or_update_object(request, *args, **kwargs)
 
+        # 4 - Create or update all profiling responses of participation
         for item in responses_data:
             if "participation_id" not in item:
                 item["participation_id"] = participation.id
@@ -104,6 +113,8 @@ class WorkshopParticipationView(
                 serializer = WorkshopParticipationResponseSerializer(data=item)
             serializer.is_valid(raise_exception=True)
             serializer.save()
+
+        # 5 - Update htmlResponse data to respond with all participation responses data
         htmlResponse.data = WorkshopParticipationWithProfilingResponsesSerializer(
             participation
         ).data

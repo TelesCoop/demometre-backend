@@ -1,10 +1,7 @@
 import logging
-
-
 from datetime import date
 from typing import Dict
-
-from my_auth.models import User
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import mixins, viewsets, status
@@ -13,6 +10,7 @@ from rest_framework.response import Response as RestResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
+from my_auth.models import User
 
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
@@ -104,10 +102,7 @@ def initialize_assessment(request, pk):
     return RestResponse(status=200, data=AssessmentSerializer(assessment).data)
 
 
-class AssessmentsView(
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
-):
+class AssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = AssessmentSerializer
     queryset = Assessment.objects.all()
 
@@ -160,10 +155,18 @@ class AssessmentsView(
         return RestResponse(status=200, data=self.serializer_class(assessment[0]).data)
 
 
-class AssessmentView(
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
+class AnimatorAssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = AssessmentSerializer
+
+    def get_queryset(self):
+        return Assessment.objects.filter(
+            initialization_date__lte=timezone.now(),
+            expert=self.request.user,
+            royalty_payed=True,
+        ).exclude(end_date__lt=timezone.now())
+
+
+class AssessmentView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_class = AssessmentSerializer
     queryset = Assessment.objects.all()
 

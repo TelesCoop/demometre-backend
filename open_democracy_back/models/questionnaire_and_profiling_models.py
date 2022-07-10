@@ -82,31 +82,7 @@ class ProfileType(models.Model):
         verbose_name = "Type de profil"
 
 
-class ScoreFields(models.Model):
-    score_1 = models.TextField(
-        blank=True,
-        verbose_name="Signification",
-        help_text="Signification du résultat 1 dans le DémoMètre",
-        default="",
-    )
-    score_2 = models.TextField(
-        blank=True,
-        verbose_name="Signification",
-        help_text="Signification du résultat 2 dans le DémoMètre",
-        default="",
-    )
-    score_3 = models.TextField(
-        blank=True,
-        verbose_name="Signification",
-        help_text="Signification du résultat 3 dans le DémoMètre",
-        default="",
-    )
-    score_4 = models.TextField(
-        blank=True,
-        verbose_name="Signification",
-        help_text="Signification du résultat 4 dans le DémoMètre",
-        default="",
-    )
+class StrengthsAndWeaknessesFields(models.Model):
     weakness_1 = models.TextField(
         blank=True,
         verbose_name="Point faible",
@@ -129,6 +105,42 @@ class ScoreFields(models.Model):
         blank=True,
         verbose_name="Point fort",
         help_text="Point fort relevé pour une évaluation si le calcul de son score est de 4",
+        default="",
+    )
+    panels = [
+        FieldPanel("weakness_1"),
+        FieldPanel("weakness_2"),
+        FieldPanel("strength_3"),
+        FieldPanel("strength_4"),
+    ]
+
+    class Meta:
+        abstract = True
+
+
+class ScoreFields(StrengthsAndWeaknessesFields):
+    score_1 = models.TextField(
+        blank=True,
+        verbose_name="Signification",
+        help_text="Signification du résultat 1 dans le DémoMètre",
+        default="",
+    )
+    score_2 = models.TextField(
+        blank=True,
+        verbose_name="Signification",
+        help_text="Signification du résultat 2 dans le DémoMètre",
+        default="",
+    )
+    score_3 = models.TextField(
+        blank=True,
+        verbose_name="Signification",
+        help_text="Signification du résultat 3 dans le DémoMètre",
+        default="",
+    )
+    score_4 = models.TextField(
+        blank=True,
+        verbose_name="Signification",
+        help_text="Signification du résultat 4 dans le DémoMètre",
         default="",
     )
 
@@ -168,7 +180,7 @@ class ScoreFields(models.Model):
 
 
 @register_snippet
-class Pillar(index.Indexed, ScoreFields):
+class Pillar(models.Model):
     name = models.CharField(verbose_name="Nom", max_length=125)
     code = models.CharField(
         verbose_name="Code",
@@ -192,7 +204,7 @@ class Pillar(index.Indexed, ScoreFields):
     panels = [
         FieldPanel("code"),
         FieldPanel("description"),
-    ] + ScoreFields.panels
+    ]
 
     def __str__(self):
         return f"{self.code}: {self.name}"
@@ -272,7 +284,7 @@ class ThematicTag(TagBase):
 
 
 @register_snippet
-class Criteria(index.Indexed, ClusterableModel):
+class Criteria(index.Indexed, ClusterableModel, StrengthsAndWeaknessesFields):
     marker = models.ForeignKey(
         Marker,
         null=True,
@@ -330,7 +342,7 @@ class Criteria(index.Indexed, ClusterableModel):
         FieldPanel("description"),
         InlinePanel("related_definition_ordered", label="Définitions"),
         StreamFieldPanel("explanatory"),
-    ]
+    ] + StrengthsAndWeaknessesFields.panels
 
     search_fields = [index.SearchField("name", partial_match=True)]
 

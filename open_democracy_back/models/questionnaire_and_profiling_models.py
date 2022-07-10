@@ -82,8 +82,93 @@ class ProfileType(models.Model):
         verbose_name = "Type de profil"
 
 
+class ScoreFields(models.Model):
+    score_1 = models.TextField(
+        blank=True,
+        verbose_name="Signification",
+        help_text="Signification du résultat 1 dans le DémoMètre",
+        default="",
+    )
+    score_2 = models.TextField(
+        blank=True,
+        verbose_name="Signification",
+        help_text="Signification du résultat 2 dans le DémoMètre",
+        default="",
+    )
+    score_3 = models.TextField(
+        blank=True,
+        verbose_name="Signification",
+        help_text="Signification du résultat 3 dans le DémoMètre",
+        default="",
+    )
+    score_4 = models.TextField(
+        blank=True,
+        verbose_name="Signification",
+        help_text="Signification du résultat 4 dans le DémoMètre",
+        default="",
+    )
+    weakness_1 = models.TextField(
+        blank=True,
+        verbose_name="Point faible",
+        help_text="Point faible relevé pour une évaluation si le calcul de son score est de 1",
+        default="",
+    )
+    weakness_2 = models.TextField(
+        blank=True,
+        verbose_name="Point faible",
+        help_text="Point faible relevé pour une évaluation si le calcul de son score est de 2",
+        default="",
+    )
+    strength_3 = models.TextField(
+        blank=True,
+        verbose_name="Point fort",
+        help_text="Point fort relevé pour une évaluation si le calcul de son score est de 3",
+        default="",
+    )
+    strength_4 = models.TextField(
+        blank=True,
+        verbose_name="Point fort",
+        help_text="Point fort relevé pour une évaluation si le calcul de son score est de 4",
+        default="",
+    )
+
+    panels = [
+        MultiFieldPanel(
+            [
+                FieldPanel("score_1"),
+                FieldPanel("weakness_1"),
+            ],
+            heading="Score = 1",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("score_2"),
+                FieldPanel("weakness_2"),
+            ],
+            heading="Score = 2",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("score_3"),
+                FieldPanel("strength_3"),
+            ],
+            heading="Score = 3",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("score_4"),
+                FieldPanel("strength_4"),
+            ],
+            heading="Score = 4",
+        ),
+    ]
+
+    class Meta:
+        abstract = True
+
+
 @register_snippet
-class Pillar(models.Model):
+class Pillar(index.Indexed, ScoreFields):
     name = models.CharField(verbose_name="Nom", max_length=125)
     code = models.CharField(
         verbose_name="Code",
@@ -107,7 +192,7 @@ class Pillar(models.Model):
     panels = [
         FieldPanel("code"),
         FieldPanel("description"),
-    ]
+    ] + ScoreFields.panels
 
     def __str__(self):
         return f"{self.code}: {self.name}"
@@ -122,53 +207,8 @@ class Pillar(models.Model):
         ordering = ["order"]
 
 
-class ReferentielFields(models.Model):
-    description = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Description",
-        help_text="Description pour le référentiel",
-    )
-    score_1 = models.TextField(
-        blank=True,
-        verbose_name="Score = 1",
-        help_text="Description pour le référentiel",
-        default="",
-    )
-    score_2 = models.TextField(
-        blank=True,
-        verbose_name="Score = 2",
-        help_text="Description pour le référentiel",
-        default="",
-    )
-    score_3 = models.TextField(
-        blank=True,
-        verbose_name="Score = 3",
-        help_text="Description pour le référentiel",
-        default="",
-    )
-    score_4 = models.TextField(
-        blank=True,
-        verbose_name="Score = 4",
-        help_text="Description pour le référentiel",
-        default="",
-    )
-
-    panels = [
-        FieldPanel("description"),
-        FieldPanel("score_1"),
-        FieldPanel("score_2"),
-        FieldPanel("score_3"),
-        FieldPanel("score_4"),
-    ]
-
-    class Meta:
-        abstract = True
-
-
 @register_snippet
-class Marker(index.Indexed, ReferentielFields):
+class Marker(index.Indexed, ScoreFields):
     pillar = models.ForeignKey(
         Pillar, null=True, blank=True, on_delete=models.SET_NULL, related_name="markers"
     )
@@ -179,12 +219,20 @@ class Marker(index.Indexed, ReferentielFields):
         help_text="Correspond au numéro (ou lettre) de ce marqueur dans son pilier",
     )
     concatenated_code = models.CharField(max_length=5, default="")
+    description = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+        help_text="Description pour le référentiel",
+    )
 
     panels = [
         FieldPanel("pillar"),
         FieldPanel("name"),
         FieldPanel("code"),
-    ] + ReferentielFields.panels
+        FieldPanel("description"),
+    ] + ScoreFields.panels
 
     search_fields = [
         index.SearchField("name", partial_match=True),
@@ -224,7 +272,7 @@ class ThematicTag(TagBase):
 
 
 @register_snippet
-class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
+class Criteria(index.Indexed, ClusterableModel):
     marker = models.ForeignKey(
         Marker,
         null=True,
@@ -241,6 +289,13 @@ class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
     concatenated_code = models.CharField(max_length=8, default="")
     thematic_tags = models.ManyToManyField(
         ThematicTag, blank=True, verbose_name="Thématiques"
+    )
+    description = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+        help_text="Description pour le référentiel",
     )
 
     explanatory = StreamField(
@@ -264,22 +319,18 @@ class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
             )
         ],
         blank=True,
-        verbose_name="Explicatif du critère",
+        verbose_name="Explicatif du critère (sources, exemples, obligations légales ...)",
     )
 
-    panels = (
-        [
-            FieldPanel("marker"),
-            FieldPanel("name"),
-            FieldPanel("code"),
-            FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
-        ]
-        + ReferentielFields.panels
-        + [
-            InlinePanel("related_definition_ordered", label="Définitions"),
-            StreamFieldPanel("explanatory"),
-        ]
-    )
+    panels = [
+        FieldPanel("marker"),
+        FieldPanel("name"),
+        FieldPanel("code"),
+        FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
+        FieldPanel("description"),
+        InlinePanel("related_definition_ordered", label="Définitions"),
+        StreamFieldPanel("explanatory"),
+    ]
 
     search_fields = [index.SearchField("name", partial_match=True)]
 

@@ -32,11 +32,14 @@ QUESTION_FIELDS = [
     "population_upper_bound",
 ]
 REFERENTIAL_FIELDS = [
-    "description",
     "score_1",
     "score_2",
     "score_3",
     "score_4",
+    "weakness_1",
+    "weakness_2",
+    "strength_3",
+    "strength_4",
 ]
 
 
@@ -158,7 +161,8 @@ class CriteriaSerializer(serializers.ModelSerializer):
             "thematic_tags",
             "definition_ids",
             "explanatory",
-        ] + REFERENTIAL_FIELDS
+            "description",
+        ]
         read_only_fields = fields
 
 
@@ -181,6 +185,7 @@ class MarkerSerializer(serializers.ModelSerializer):
             "name",
             "concatenated_code",
             "criteria_ids",
+            "description",
         ] + REFERENTIAL_FIELDS
         read_only_fields = fields
 
@@ -200,7 +205,13 @@ class PillarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pillar
-        fields = ["id", "name", "code", "description", "marker_ids"]
+        fields = [
+            "id",
+            "name",
+            "code",
+            "description",
+            "marker_ids",
+        ] + REFERENTIAL_FIELDS
         read_only_fields = fields
 
 

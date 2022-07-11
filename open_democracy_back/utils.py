@@ -1,6 +1,8 @@
 from django.db import models
 
 
+EMAIL_REGEX = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+
 SIMPLE_RICH_TEXT_FIELD_FEATURE = [
     "bold",
     "italic",

@@ -12,7 +12,7 @@ class UpdateOrCreateModelMixin(CreateModelMixin):
 
     def create(self, request, *args, **kwargs):
         try:
-            instance = self.get_or_update_object(request)
+            instance = self.get_or_update_object(request, *args, **kwargs)
             serializer = self.get_serializer(instance, data=request.data)
             response_status = status.HTTP_200_OK
         except ObjectDoesNotExist:

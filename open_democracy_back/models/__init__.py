@@ -5,3 +5,4 @@ from .participation_models import *  # noqa: F403, F401
 from .representativity_models import *  # noqa: F403, F401
 from .contents_models import *  # noqa: F403, F401
 from .settings_models import *  # noqa: F403, F401
+from .animator_models import *  # noqa: F403, F401

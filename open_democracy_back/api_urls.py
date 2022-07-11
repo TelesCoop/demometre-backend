@@ -1,5 +1,12 @@
 from django.urls import path, include
 from rest_framework import routers
+from open_democracy_back.views.animator_views import (
+    CloseWorkshopView,
+    FullWorkshopView,
+    WorkshopParticipationResponseView,
+    WorkshopParticipationView,
+    WorkshopView,
+)
 from open_democracy_back.views.content_views import BlogPostView, ResourceView
 
 from open_democracy_back.views.page_views import (
@@ -24,6 +31,7 @@ from open_democracy_back.views.setting_views import (
 )
 
 from .views.assessment_views import (
+    AnimatorAssessmentsView,
     AssessmentResponseView,
     AssessmentView,
     AssessmentsView,
@@ -76,10 +84,13 @@ router.register(
     QuestionnaireQuestionView,
     basename="QuestionnaireQuestion",
 )
+router.register(r"workshops", WorkshopView, basename="Workshop")
+router.register(r"full-workshops", FullWorkshopView, basename="FullWorkshop")
 
 
 urlpatterns = [
     path("assessments/", AssessmentsView.as_view({"get": "list"})),
+    path("assessments/by-animator/", AnimatorAssessmentsView.as_view({"get": "list"})),
     path("assessments/by-locality/", AssessmentsView.as_view({"get": "get_or_create"})),
     path("assessments/<int:pk>/", AssessmentView.as_view({"get": "retrieve"})),
     path("assessments/<int:pk>/initialization/", initialize_assessment),
@@ -109,7 +120,19 @@ urlpatterns = [
         CompletedQuestionsInitializationView.as_view(),
     ),
     path(
-        "assessments/<int:assessment_pk>/scores",
+        "assessments/<int:assessment_pk>/scores/",
         QuestionnaireScoreView.as_view(),
+    ),
+    path(
+        "workshops/<int:workshop_pk>/participation/",
+        WorkshopParticipationView.as_view({"post": "create"}),
+    ),
+    path(
+        "workshops/<int:workshop_pk>/participation/<int:participation_pk>/response/",
+        WorkshopParticipationResponseView.as_view({"post": "create"}),
+    ),
+    path(
+        "workshops/<int:workshop_pk>/closed/",
+        CloseWorkshopView.as_view(),
     ),
 ]

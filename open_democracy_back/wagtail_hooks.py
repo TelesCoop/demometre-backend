@@ -100,6 +100,7 @@ def snippet_listing_buttons(snippet, user, next_url=None):
 def editor_js():
     js_files = [
         "js/questions.js",
+        "js/assessments.js",
     ]
     js_includes = format_html_join(
         "\n",

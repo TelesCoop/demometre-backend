@@ -253,6 +253,15 @@ class Assessment(TimeStampedModel, ClusterableModel):
     )
     end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
 
+    experts = models.ManyToManyField(
+        User,
+        verbose_name="Experts",
+        related_name="assessments",
+        limit_choices_to={"groups__name": "Experts"},
+        help_text="Pour ajouter un expert à la liste il faut créer / modifier l'utilisateur correspondant, aller dans l'onglet rôles et cocher la case Experts",
+    )
+    royalty_payed = models.BooleanField(default=False, verbose_name="Redevance payée")
+
     @property
     def population(self):
         if self.locality_type == LocalityType.MUNICIPALITY:
@@ -269,6 +278,8 @@ class Assessment(TimeStampedModel, ClusterableModel):
 
     panels = [
         FieldPanel("assessment_type"),
+        FieldPanel("experts"),
+        FieldPanel("royalty_payed"),
         FieldPanel("locality_type"),
         SnippetChooserPanel("municipality"),
         SnippetChooserPanel("epci"),

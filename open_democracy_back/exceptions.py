@@ -57,3 +57,4 @@ class ErrorCode(Enum):
     NEED_PARTICIPATION_RESPONSE = "need_participation_response"
     NEED_ASSESSMENT_RESPONSE = "need_assessment_response"
     USER_NOT_FOUND = "user_not_found"
+    INVALID_EMAIL_SHAPE = "invalid_email_shape"

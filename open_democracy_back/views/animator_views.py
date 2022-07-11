@@ -1,10 +1,13 @@
+import re
 from django.db.models import QuerySet
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import mixins, viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response as RestResponse
+from rest_framework.exceptions import APIException
 from my_auth.models import User
+from open_democracy_back.exceptions import ErrorCode
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
 from open_democracy_back.models.animator_models import Participant, Workshop
@@ -19,6 +22,7 @@ from open_democracy_back.serializers.animator_serializers import (
     WorkshopParticipationWithProfilingResponsesSerializer,
     WorkshopSerializer,
 )
+from open_democracy_back.utils import EMAIL_REGEX
 
 
 class WorkshopView(
@@ -152,22 +156,28 @@ class CloseWorkshopView(APIView):
     permission_classes = [IsWorkshopExpert]
 
     def patch(self, request, workshop_pk):
-        workshop = Workshop.objects.get(
-            animator_id=self.request.user.id, id=workshop_pk
-        )
-        workshop.closed = True
-        workshop.save()
+        with transaction.atomic():
+            workshop = Workshop.objects.get(
+                animator_id=self.request.user.id, id=workshop_pk
+            )
+            workshop.closed = True
+            workshop.save()
 
-        for participation in workshop.participations.all():
-            # if there is a email create user or retrieve existing user and attribut him the participation
-            if participation.participant.email:
-                user = User.objects.get_or_create(
-                    email=participation.participant.email,
-                    defaults={"username": participation.participant.email},
-                )
-                participation.user = user
-                participation.save()
-                # TODO : what append if there is a participation with this user and this assessment (like this it breaks)
+            for participation in workshop.participations.all():
+                # if there is a email create user or retrieve existing user and attribut him the participation
+                if participation.participant.email:
+                    if not re.fullmatch(EMAIL_REGEX, participation.participant.email):
+                        raise APIException(
+                            detail=f"The email is not valid shape : {participation.participant.email}",
+                            code=ErrorCode.INVALID_EMAIL_SHAPE.value,
+                        )
+                    user, _ = User.objects.get_or_create(
+                        email=participation.participant.email,
+                        defaults={"username": participation.participant.email},
+                    )
+                    participation.user = user
+                    participation.save()
+                    # TODO : what append if there is a participation with this user and this assessment (like this it breaks)
 
-        serializer = WorkshopSerializer(workshop)
-        return RestResponse(serializer.data, status=status.HTTP_200_OK)
+            serializer = WorkshopSerializer(workshop)
+            return RestResponse(serializer.data, status=status.HTTP_200_OK)

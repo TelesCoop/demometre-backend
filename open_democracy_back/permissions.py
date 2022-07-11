@@ -17,7 +17,7 @@ class IsAssessmentAdminOrReadOnly(BasePermission):
         )
         assessment = Assessment.objects.get(id=assessment_id)
         is_initator = bool(assessment.initiated_by_user == request.user)
-        is_expert = bool(request.user in assessment.experts)
+        is_expert = bool(request.user in assessment.experts.all())
         return bool(
             (is_authenticated and (is_initator or is_expert)) or request.method == "GET"
         )

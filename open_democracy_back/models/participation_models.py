@@ -1,6 +1,7 @@
 from django.db import models
 from my_auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
+from open_democracy_back.models.animator_models import Participant, Workshop
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Category,
@@ -13,10 +14,21 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
 
 
 class Participation(models.Model):
-    # TODO : on delete : remove participation or clean personnal data and keep responses ?
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="participations"
+    participant = models.ForeignKey(
+        Participant,
+        on_delete=models.CASCADE,
+        related_name="participations",
+        blank=True,
+        null=True,
     )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="participations",
+        blank=True,
+        null=True,
+    )
+
     assessment = models.ForeignKey(
         "open_democracy_back.Assessment",
         on_delete=models.CASCADE,
@@ -35,9 +47,20 @@ class Participation(models.Model):
     is_pillar_questions_completed = models.ManyToManyField(
         Pillar, through="ParticipationPillarCompleted"
     )
+    workshop = models.ForeignKey(
+        Workshop,
+        related_name="participations",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
-        return f"{self.user.username} - {str(self.assessment)}"
+        return (
+            f"{str(self.assessment)} - {self.user.username}"
+            if self.user
+            else f"{str(self.assessment)} - Atelier {self.workshop.name} - {self.participant.name}"
+        )
 
     def save(self, *args, **kwargs):
         is_new = not self.pk
@@ -47,7 +70,7 @@ class Participation(models.Model):
                 self.is_pillar_questions_completed.add(pillar)
 
     class Meta:
-        unique_together = ["user", "assessment"]
+        unique_together = ["user", "participant", "assessment"]
 
 
 class ParticipationPillarCompleted(models.Model):
@@ -114,4 +137,6 @@ class ClosedWithScaleCategoryResponse(models.Model):
         null=True,
         blank=True,
     )
-    response_choice = models.ForeignKey(ResponseChoice, on_delete=models.CASCADE)
+    response_choice = models.ForeignKey(
+        ResponseChoice, on_delete=models.SET_NULL, null=True, blank=True
+    )

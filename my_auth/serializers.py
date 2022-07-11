@@ -22,6 +22,7 @@ class AuthSerializer(serializers.ModelSerializer):
             "email",
             "password",
             "is_unknown_user",
+            "is_expert",
         )
 
     def validate_password(self, value):

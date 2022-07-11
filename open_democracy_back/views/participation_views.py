@@ -160,7 +160,7 @@ class ParticipationResponseView(
             query = query.filter(question__profiling_question=is_profiling_question)
 
         participation_id = self.request.query_params.get("participation_id")
-        if participation_id and type(participation_id) is int:
+        if participation_id and participation_id.isnumeric():
             query = query.filter(participation_id=participation_id)
         else:
             rollbar.report_message(

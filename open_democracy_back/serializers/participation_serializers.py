@@ -111,6 +111,7 @@ class ClosedWithScaleCategoryResponseSerializer(serializers.ModelSerializer):
         source="response_choice",
         queryset=ResponseChoice.objects.all(),
         required=True,
+        allow_null=True,
     )
 
     class Meta:
@@ -137,6 +138,7 @@ class ResponseSerializer(serializers.ModelSerializer):
         source="unique_choice_response",
         queryset=ResponseChoice.objects.all(),
         required=False,
+        allow_null=True,
     )
     multiple_choice_response_ids = serializers.PrimaryKeyRelatedField(
         many=True,

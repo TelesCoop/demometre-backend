@@ -775,6 +775,16 @@ class EvaluationQuestionnairePage(Page):
     max_count_per_parent = 1
     preview_modes = None
 
+    role_question_title = models.CharField(
+        max_length=128,
+        verbose_name="Titre",
+        default="",
+    )
+    role_question_description = models.TextField(
+        verbose_name="Description",
+        default="",
+    )
+
     start_title = models.CharField(
         max_length=128,
         verbose_name="Titre",
@@ -815,6 +825,13 @@ class EvaluationQuestionnairePage(Page):
     )
 
     content_panels = Page.content_panels + [
+        MultiFieldPanel(
+            [
+                FieldPanel("role_question_title"),
+                FieldPanel("role_question_description"),
+            ],
+            heading="Enoncé de la question concernant les rôles",
+        ),
         MultiFieldPanel(
             [
                 FieldPanel("start_title"),

@@ -312,6 +312,8 @@ class EvaluationQuestionnairePageSerializer(PageSerialiserWithLocale):
         fields = [
             "id",
             "locale_code",
+            "role_question_title",
+            "role_question_description",
             "start_title",
             "start_text",
             "intermediate_step_title",

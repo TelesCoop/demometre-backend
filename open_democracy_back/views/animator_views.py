@@ -1,4 +1,5 @@
 from django.db.models import QuerySet
+from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import mixins, viewsets, status
 from rest_framework.views import APIView
@@ -66,55 +67,58 @@ class WorkshopParticipationView(
         )
 
     def create(self, request, *args, **kwargs):
-        # Create or update a workshop participation with all its profiling responses
+        with transaction.atomic():
+            # Create or update a workshop participation with all its profiling responses
 
-        # 1 - Retrieve Participant if exists or create new one
-        email = request.data["participant_email"]
-        name = request.data["participant_name"]
-        try:
-            if "id" in request.data.keys():
-                participationId = request.data["id"]
-                participant = Participation.objects.get(id=participationId).participant
-            else:
-                participant = Participant.objects.get(name=name)
-            participant.name = name
-            participant.email = email
-            participant.save()
-        except ObjectDoesNotExist:
-            participant = Participant.objects.create(name=name, email=email)
-        # Add participant_id in data dict before create or update participation
-        request.data["participant_id"] = participant.id
-
-        # 2 - Pop responses from data before create or update participation (Otherwise serializer will reject it)
-        responses_data = []
-        if "responses" in request.data.keys():
-            responses_data = request.data.pop("responses")
-
-        # 3 - Create or update participation
-        response = super().create(request, *args, **kwargs)
-        participation = Participation.objects.get(id=response.data["id"])
-
-        # 4 - Create or update all profiling responses of participation
-        for item in responses_data:
-            if "participation_id" not in item:
-                item["participation_id"] = participation.id
+            # 1 - Retrieve Participant if exists or create new one
+            email = request.data["participant_email"]
+            name = request.data["participant_name"]
             try:
-                participationResponse = participation.responses.get(
-                    question_id=item["question_id"]
-                )
-                serializer = WorkshopParticipationResponseSerializer(
-                    participationResponse, data=item
-                )
+                if "id" in request.data.keys():
+                    participationId = request.data["id"]
+                    participant = Participation.objects.get(
+                        id=participationId
+                    ).participant
+                else:
+                    participant = Participant.objects.get(name=name)
+                participant.name = name
+                participant.email = email
+                participant.save()
             except ObjectDoesNotExist:
-                serializer = WorkshopParticipationResponseSerializer(data=item)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+                participant = Participant.objects.create(name=name, email=email)
+            # Add participant_id in data dict before create or update participation
+            request.data["participant_id"] = participant.id
 
-        # 5 - Update htmlResponse data to respond with all participation responses data
-        response.data = WorkshopParticipationWithProfilingResponsesSerializer(
-            participation
-        ).data
-        return response
+            # 2 - Pop responses from data before create or update participation (Otherwise serializer will reject it)
+            responses_data = []
+            if "responses" in request.data.keys():
+                responses_data = request.data.pop("responses")
+
+            # 3 - Create or update participation
+            response = super().create(request, *args, **kwargs)
+            participation = Participation.objects.get(id=response.data["id"])
+
+            # 4 - Create or update all profiling responses of participation
+            for item in responses_data:
+                if "participation_id" not in item:
+                    item["participation_id"] = participation.id
+                try:
+                    participationResponse = participation.responses.get(
+                        question_id=item["question_id"]
+                    )
+                    serializer = WorkshopParticipationResponseSerializer(
+                        participationResponse, data=item
+                    )
+                except ObjectDoesNotExist:
+                    serializer = WorkshopParticipationResponseSerializer(data=item)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+
+            # 5 - Update htmlResponse data to respond with all participation responses data
+            response.data = WorkshopParticipationWithProfilingResponsesSerializer(
+                participation
+            ).data
+            return response
 
     def get_or_update_object(self, request, workshop_pk):
         return self.get_queryset(workshop_pk).get(

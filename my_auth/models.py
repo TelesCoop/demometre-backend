@@ -7,6 +7,10 @@ from django.db import models
 class User(AbstractUser):
     is_unknown_user = models.BooleanField(default=False)
 
+    @property
+    def is_expert(self):
+        return self.groups.filter(name="Experts").exists()
+
 
 class UserResetKey(models.Model):
     user = models.OneToOneField(

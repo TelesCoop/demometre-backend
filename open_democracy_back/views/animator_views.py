@@ -95,7 +95,7 @@ class WorkshopParticipationView(
             responses_data = request.data.pop("responses")
 
         # 3 - Create or update participation
-        htmlResponse = super().create(request, *args, **kwargs)
+        response = super().create(request, *args, **kwargs)
         participation = self.get_or_update_object(request, *args, **kwargs)
 
         # 4 - Create or update all profiling responses of participation
@@ -115,10 +115,10 @@ class WorkshopParticipationView(
             serializer.save()
 
         # 5 - Update htmlResponse data to respond with all participation responses data
-        htmlResponse.data = WorkshopParticipationWithProfilingResponsesSerializer(
+        response.data = WorkshopParticipationWithProfilingResponsesSerializer(
             participation
         ).data
-        return htmlResponse
+        return response
 
     def get_or_update_object(self, request, workshop_pk):
         return self.get_queryset(workshop_pk).get(
@@ -135,9 +135,8 @@ class WorkshopParticipationResponseView(
     serializer_class = WorkshopParticipationResponseSerializer
 
     def get_queryset(self, workshop_pk, participation_pk) -> QuerySet:
-        user = User.objects.get(pk=self.request.user.id)
         return ParticipationResponse.objects.filter(
-            participation__workshop__animator_id=user.id,
+            participation__workshop__animator_id=self.request.user.id,
             participation__workshop_id=workshop_pk,
             participation_id=participation_pk,
         )
@@ -153,21 +152,19 @@ class CloseWorkshopView(APIView):
     permission_classes = [IsWorkshopExpert]
 
     def patch(self, request, workshop_pk):
-        user = User.objects.get(pk=self.request.user.id)
-        workshop = Workshop.objects.get(animator_id=user.id, id=workshop_pk)
+        workshop = Workshop.objects.get(
+            animator_id=self.request.user.id, id=workshop_pk
+        )
         workshop.closed = True
         workshop.save()
 
         for participation in workshop.participations.all():
             # if there is a email create user or retrieve existing user and attribut him the participation
             if participation.participant.email:
-                try:
-                    user = User.objects.get(email=participation.participant.email)
-                except ObjectDoesNotExist:
-                    user = User.objects.create(
-                        username=participation.participant.name,
-                        email=participation.participant.email,
-                    )
+                user = User.objects.get_or_create(
+                    email=participation.participant.email,
+                    defaults={"username": participation.participant.email},
+                )
                 participation.user = user
                 participation.save()
                 # TODO : what append if there is a participation with this user and this assessment (like this it breaks)

@@ -44,19 +44,13 @@ class WorkshopParticipationWithProfilingResponsesSerializer(
         source="workshop", queryset=Workshop.objects.all()
     )
 
-    participant_email = serializers.SerializerMethodField()
-    participant_name = serializers.SerializerMethodField()
+    participant_email = serializers.CharField(
+        read_only=True, source="participant.email"
+    )
+    participant_name = serializers.CharField(read_only=True, source="participant.name")
     responses = WorkshopParticipationResponseSerializer(
         many=True, required=False, read_only=True
     )
-
-    @staticmethod
-    def get_participant_email(obj: Participation):
-        return obj.participant.email
-
-    @staticmethod
-    def get_participant_name(obj: Participation):
-        return obj.participant.name
 
     class Meta:
         model = Participation

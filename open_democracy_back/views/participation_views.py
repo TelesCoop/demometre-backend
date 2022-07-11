@@ -185,13 +185,12 @@ class CurrentParticipationView(APIView):
         return RestResponse(serializer.data)
 
 
-class ParticipationResponseView(
-    mixins.ListModelMixin, UpdateOrCreateModelMixin, viewsets.GenericViewSet
-):
+class ParticipationResponseView(UpdateOrCreateModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ParticipationResponseSerializer
 
     def get_queryset(self):
+        # TODO check if it create error to save non-current participation response
         query = ParticipationResponse.objects.filter(
             participation__in=Participation.objects.filter_available(
                 self.request.user.id, timezone.now()

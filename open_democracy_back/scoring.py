@@ -7,7 +7,11 @@ import rollbar
 from django.db.models import Case, When, Value, IntegerField, Avg, FloatField, Max
 
 from open_democracy_back import settings
-from open_democracy_back.models import SCORE_MAP, ParticipationResponse
+from open_democracy_back.models import (
+    SCORE_MAP,
+    ParticipationResponse,
+    AssessmentResponse,
+)
 from open_democracy_back.utils import QuestionType
 
 
@@ -283,7 +287,10 @@ SCORES_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
 def get_criterias_score(df: pd.DataFrame) -> pd.Series:
     df_non_boolean = df[df.type != "boolean"]
     criteria_sum = df.groupby("criteria_id")["score"].sum()
-    criteria_count = df_non_boolean.groupby("criteria_id")["score"].count()
+    # replace 0 by 1 to avoid divide by 0
+    criteria_count = (
+        df_non_boolean.groupby("criteria_id")["score"].count().replace(0, 1)
+    )
     return criteria_sum / criteria_count
 
 
@@ -310,10 +317,15 @@ def get_pillars_score_by_markers_score(
 
 
 def get_scores_by_assessment_pk(assessment_pk: int) -> Dict[str, Dict[str, float]]:
-    assessment_responses = ParticipationResponse.objects.filter(
+    participation_responses = ParticipationResponse.objects.filter(
         participation__user__is_unknown_user=False,
         participation__assessment_id=assessment_pk,
         question__profiling_question=False,
+    ).exclude(has_passed=True)
+
+    assessment_responses = AssessmentResponse.objects.filter(
+        answered_by__is_unknown_user=False,
+        assessment_id=assessment_pk,
     ).exclude(has_passed=True)
 
     score_by_question_id: Dict[str, float] = {}
@@ -333,7 +345,13 @@ def get_scores_by_assessment_pk(assessment_pk: int) -> Dict[str, Dict[str, float
         QuestionType.CLOSED_WITH_SCALE,
     ]:
         question_type_scores = SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore
-            assessment_responses
+            participation_responses
+        )
+
+        question_type_scores.extend(
+            SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore
+                assessment_responses
+            )
         )
         for score in question_type_scores:
             score_by_question_id[score["question_id"]] = score["score"]

@@ -772,7 +772,7 @@ class Category(TimeStampedModel, Orderable):
     )
 
     category = models.CharField(
-        max_length=64,
+        max_length=128,
         default="",
         verbose_name="Categorie",
         help_text="Permet de répondre à la même question pour différentes catégories",

@@ -29,10 +29,8 @@ class WorkshopView(
     serializer_class = WorkshopSerializer
 
     def get_queryset(self) -> QuerySet:
-        user = User.objects.get(pk=self.request.user.id)
-
         return Workshop.objects.filter(
-            animator_id=user.id,
+            animator_id=self.request.user.id,
             assessment__royalty_payed=True,
         )
 
@@ -51,8 +49,7 @@ class FullWorkshopView(
     serializer_class = FullWorkshopSerializer
 
     def get_queryset(self) -> QuerySet:
-        user = User.objects.get(pk=self.request.user.id)
-        return Workshop.objects.filter(animator_id=user.id)
+        return Workshop.objects.filter(animator_id=self.request.user.id)
 
 
 class WorkshopParticipationView(
@@ -64,9 +61,8 @@ class WorkshopParticipationView(
     serializer_class = WorkshopParticipationWithProfilingResponsesSerializer
 
     def get_queryset(self, workshop_pk) -> QuerySet:
-        user = User.objects.get(pk=self.request.user.id)
         return Participation.objects.filter(
-            workshop__animator_id=user.id, workshop_id=workshop_pk
+            workshop__animator_id=self.request.user.id, workshop_id=workshop_pk
         )
 
     def create(self, request, *args, **kwargs):
@@ -96,7 +92,7 @@ class WorkshopParticipationView(
 
         # 3 - Create or update participation
         response = super().create(request, *args, **kwargs)
-        participation = self.get_or_update_object(request, *args, **kwargs)
+        participation = Participation.objects.get(id=response.data["id"])
 
         # 4 - Create or update all profiling responses of participation
         for item in responses_data:
@@ -122,7 +118,7 @@ class WorkshopParticipationView(
 
     def get_or_update_object(self, request, workshop_pk):
         return self.get_queryset(workshop_pk).get(
-            user_id=request.data.get("participation_id"),
+            id=request.data.get("id"),
         )
 
 

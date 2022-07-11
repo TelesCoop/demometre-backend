@@ -253,13 +253,10 @@ class Assessment(TimeStampedModel, ClusterableModel):
     )
     end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
 
-    expert = models.ForeignKey(
+    experts = models.ManyToManyField(
         User,
-        on_delete=models.SET_NULL,
-        verbose_name="Expert",
+        verbose_name="Experts",
         related_name="assessments",
-        blank=True,
-        null=True,
         limit_choices_to={"groups__name": "Experts"},
         help_text="Pour ajouter un expert à la liste il faut créer / modifier l'utilisateur correspondant, aller dans l'onglet rôles et cocher la case Experts",
     )
@@ -281,7 +278,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
 
     panels = [
         FieldPanel("assessment_type"),
-        FieldPanel("expert"),
+        FieldPanel("experts"),
         FieldPanel("royalty_payed"),
         FieldPanel("locality_type"),
         SnippetChooserPanel("municipality"),

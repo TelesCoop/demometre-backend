@@ -4,15 +4,15 @@ if (
     || (window.location.href).indexOf('assessment/edit') != -1
     || (window.location.href).indexOf('assessment/create') != -1) {
     const typeAssessmentOptions = document.getElementById("id_assessment_type");
-    var expertInputSelect = document.querySelector("#id_expert").closest(".object")
+    var expertsInputSelect = document.querySelector("#id_experts").closest(".object")
     var royaltyPayedBoolean = document.querySelector("#id_royalty_payed").closest(".object")
 
     function assessmentTypeDrawerQuestions(assessmentTypeText) {
         if (assessmentTypeText == "Evaluation avec experts") {
-            expertInputSelect.style.display = "block";
+            expertsInputSelect.style.display = "block";
             royaltyPayedBoolean.style.display = "block";
         } else {
-            expertInputSelect.style.display = "none";
+            expertsInputSelect.style.display = "none";
             royaltyPayedBoolean.style.display = "none";
         }
     }

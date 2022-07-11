@@ -161,7 +161,7 @@ class AnimatorAssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
     def get_queryset(self):
         return Assessment.objects.filter(
             initialization_date__lte=timezone.now(),
-            expert=self.request.user,
+            experts__in=[self.request.user],
             royalty_payed=True,
         ).exclude(end_date__lt=timezone.now())
 

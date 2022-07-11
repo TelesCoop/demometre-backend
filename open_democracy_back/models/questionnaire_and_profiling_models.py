@@ -82,97 +82,37 @@ class ProfileType(models.Model):
         verbose_name = "Type de profil"
 
 
-class StrengthsAndImprovementFields(models.Model):
-    improvement_1 = models.TextField(
-        blank=True,
-        verbose_name="Point d'amélioration 1",
-        help_text="Point d'amélioration relevé pour une évaluation si le calcul de son score est de 1",
-        default="",
-    )
-    improvement_2 = models.TextField(
-        blank=True,
-        verbose_name="Point d'amélioration 2",
-        help_text="Point d'amélioration relevé pour une évaluation si le calcul de son score est de 2",
-        default="",
-    )
-    strength_3 = models.TextField(
-        blank=True,
-        verbose_name="Point fort 3",
-        help_text="Point fort relevé pour une évaluation si le calcul de son score est de 3",
-        default="",
-    )
-    strength_4 = models.TextField(
-        blank=True,
-        verbose_name="Point fort 4",
-        help_text="Point fort relevé pour une évaluation si le calcul de son score est de 4",
-        default="",
-    )
-    panels = [
-        FieldPanel("improvement_1"),
-        FieldPanel("improvement_2"),
-        FieldPanel("strength_3"),
-        FieldPanel("strength_4"),
-    ]
-
-    class Meta:
-        abstract = True
-
-
-class ScoreFields(StrengthsAndImprovementFields):
+class ScoreFields(models.Model):
     score_1 = models.TextField(
         blank=True,
-        verbose_name="Signification",
-        help_text="Signification du résultat 1 dans le DémoMètre",
+        verbose_name="Score = 1 (Signification)",
+        help_text="Signification du résultat 1, affiché dans le DémoMètre",
         default="",
     )
     score_2 = models.TextField(
         blank=True,
-        verbose_name="Signification",
-        help_text="Signification du résultat 2 dans le DémoMètre",
+        verbose_name="Score = 2 (Signification)",
+        help_text="Signification du résultat 2, affiché dans le DémoMètre",
         default="",
     )
     score_3 = models.TextField(
         blank=True,
-        verbose_name="Signification",
-        help_text="Signification du résultat 3 dans le DémoMètre",
+        verbose_name="Score = 3 (Signification)",
+        help_text="Signification du résultat 3, affiché dans le DémoMètre",
         default="",
     )
     score_4 = models.TextField(
         blank=True,
-        verbose_name="Signification",
-        help_text="Signification du résultat 4 dans le DémoMètre",
+        verbose_name="Score = 4 (Signification)",
+        help_text="Signification du résultat 4, affiché dans le DémoMètre",
         default="",
     )
 
     panels = [
-        MultiFieldPanel(
-            [
-                FieldPanel("score_1"),
-                FieldPanel("weakness_1"),
-            ],
-            heading="Score = 1",
-        ),
-        MultiFieldPanel(
-            [
-                FieldPanel("score_2"),
-                FieldPanel("weakness_2"),
-            ],
-            heading="Score = 2",
-        ),
-        MultiFieldPanel(
-            [
-                FieldPanel("score_3"),
-                FieldPanel("strength_3"),
-            ],
-            heading="Score = 3",
-        ),
-        MultiFieldPanel(
-            [
-                FieldPanel("score_4"),
-                FieldPanel("strength_4"),
-            ],
-            heading="Score = 4",
-        ),
+        FieldPanel("score_1"),
+        FieldPanel("score_2"),
+        FieldPanel("score_3"),
+        FieldPanel("score_4"),
     ]
 
     class Meta:
@@ -284,7 +224,7 @@ class ThematicTag(TagBase):
 
 
 @register_snippet
-class Criteria(index.Indexed, ClusterableModel, StrengthsAndImprovementFields):
+class Criteria(index.Indexed, ClusterableModel):
     marker = models.ForeignKey(
         Marker,
         null=True,
@@ -342,7 +282,7 @@ class Criteria(index.Indexed, ClusterableModel, StrengthsAndImprovementFields):
         FieldPanel("description"),
         InlinePanel("related_definition_ordered", label="Définitions"),
         StreamFieldPanel("explanatory"),
-    ] + StrengthsAndImprovementFields.panels
+    ]
 
     search_fields = [index.SearchField("name", partial_match=True)]
 

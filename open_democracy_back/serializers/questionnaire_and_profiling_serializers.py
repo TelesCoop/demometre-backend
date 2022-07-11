@@ -31,12 +31,6 @@ QUESTION_FIELDS = [
     "population_lower_bound",
     "population_upper_bound",
 ]
-STRENGTHS_AND_IMPROVEMENT_FIELDS = [
-    "improvement_1",
-    "improvement_2",
-    "strength_3",
-    "strength_4",
-]
 SCORE_FIELDS = [
     "score_1",
     "score_2",
@@ -164,7 +158,7 @@ class CriteriaSerializer(serializers.ModelSerializer):
             "definition_ids",
             "explanatory",
             "description",
-        ] + STRENGTHS_AND_IMPROVEMENT_FIELDS
+        ]
         read_only_fields = fields
 
 
@@ -180,19 +174,15 @@ class MarkerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Marker
-        fields = (
-            [
-                "id",
-                "pillar_id",
-                "pillar_name",
-                "name",
-                "concatenated_code",
-                "criteria_ids",
-                "description",
-            ]
-            + SCORE_FIELDS
-            + STRENGTHS_AND_IMPROVEMENT_FIELDS
-        )
+        fields = [
+            "id",
+            "pillar_id",
+            "pillar_name",
+            "name",
+            "concatenated_code",
+            "criteria_ids",
+            "description",
+        ] + SCORE_FIELDS
         read_only_fields = fields
 
 

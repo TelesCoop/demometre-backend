@@ -29,6 +29,7 @@ class AuthSerializer(serializers.ModelSerializer):
             "is_unknown_user",
             "is_expert",
         )
+        read_only_fields = ("is_expert",)
 
     def validate_password(self, value):
         errors = None

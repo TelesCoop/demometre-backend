@@ -61,8 +61,7 @@ def frontend_signup(request):
     else:
         user = AuthSerializer(data=data)
         user.is_valid(raise_exception=True)
-
-    user.save()
+        user = user.save()
 
     login(request, user)
 

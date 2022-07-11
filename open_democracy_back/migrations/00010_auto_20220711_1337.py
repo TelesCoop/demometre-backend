@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('wagtailcore', '0066_collection_management_permissions'),
         ('wagtailimages', '0023_add_choose_permissions'),
-        ('open_democracy_back', '0008_auto_20220711_1300'),
+        ('open_democracy_back', '0009_participation_is_current'),
     ]
 
     operations = [

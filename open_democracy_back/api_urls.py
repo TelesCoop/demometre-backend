@@ -23,6 +23,8 @@ from open_democracy_back.views.participation_views import (
     ParticipationResponseView,
     ParticipationView,
     CompletedQuestionsParticipationView,
+    CurrentParticipationView,
+    CurrentParticipationResponseView,
 )
 from open_democracy_back.views.representativity_views import (
     RepresentativityCriteriaView,
@@ -39,6 +41,8 @@ from .views.assessment_views import (
     CompletedQuestionsInitializationView,
     initialize_assessment,
     QuestionnaireScoreView,
+    CurrentAssessmentView,
+    CurrentAssessmentResponseView,
 )
 from .views.profiling_views import (
     ProfilingQuestionView,
@@ -73,11 +77,26 @@ router.register(
 router.register(r"settings", RGPDSettingsView, basename="Settings")
 router.register(r"blog-posts", BlogPostView, basename="BlogPost")
 router.register(r"resources", ResourceView, basename="Resources")
+
 router.register(r"participations", ParticipationView, basename="Participation")
 router.register(
-    r"participation-responses", ParticipationResponseView, basename="Response"
+    r"participation-responses/current",
+    CurrentParticipationResponseView,
+    basename="CurrentParticipationResponse",
 )
-router.register(r"assessment-responses", AssessmentResponseView, basename="Response")
+router.register(
+    r"participation-responses",
+    ParticipationResponseView,
+    basename="ParticipationResponse",
+)
+router.register(
+    r"assessment-responses/current",
+    CurrentAssessmentResponseView,
+    basename="CurrentAssessmentResponse",
+)
+router.register(
+    r"assessment-responses", AssessmentResponseView, basename="AssessmentResponse"
+)
 router.register(
     r"profiling-questions", ProfilingQuestionView, basename="ProfilingQuestion"
 )
@@ -94,6 +113,7 @@ urlpatterns = [
     path("assessments/", AssessmentsView.as_view({"get": "list"})),
     path("assessments/by-animator/", AnimatorAssessmentsView.as_view({"get": "list"})),
     path("assessments/by-locality/", AssessmentsView.as_view({"get": "get_or_create"})),
+    path("assessments/current", CurrentAssessmentView.as_view()),
     path("assessments/<int:pk>/", AssessmentView.as_view({"get": "retrieve"})),
     path("assessments/<int:pk>/initialization/", initialize_assessment),
     path(
@@ -108,6 +128,10 @@ urlpatterns = [
     path("definitions/", DefinitionView.as_view({"get": "list"})),
     path("definitions/<int:pk>/", DefinitionView.as_view({"get": "retrieve"})),
     path("roles/", RoleView.as_view({"get": "list"})),
+    path(
+        "participations/current",
+        CurrentParticipationView.as_view(),
+    ),
     path("", include(router.urls)),
     path(
         "representativity-criterias/",

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import operator
-import rollbar
+
+from django.db import transaction
 from django.utils import timezone
 from django.db.models import QuerySet
 from rest_framework import mixins, viewsets, status
@@ -132,9 +133,9 @@ class ParticipationView(
     serializer_class = ParticipationSerializer
 
     def get_queryset(self) -> QuerySet:
-        return Participation.objects.filter(
-            user_id=self.request.user.id,
-            assessment__initialization_date__lte=timezone.now(),
+        return Participation.objects.filter_available(
+            self.request.user.id,
+            timezone.now(),
         )
 
     def get_or_update_object(self, request):
@@ -142,31 +143,64 @@ class ParticipationView(
             assessment_id=request.data.get("assessment_id"),
         )
 
+    def perform_create(self, serializer):
+        with transaction.atomic():
+            Participation.objects.filter_available(
+                self.request.user.id,
+                timezone.now(),
+            ).update(is_current=False)
+            serializer.save()
 
-class ParticipationResponseView(
-    mixins.ListModelMixin, UpdateOrCreateModelMixin, viewsets.GenericViewSet
-):
+
+class CurrentParticipationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self) -> QuerySet:
+        return Participation.objects.filter_available(
+            self.request.user.id,
+            timezone.now(),
+        )
+
+    def get(self, request):
+        queryset = self.get_queryset()
+        instance = queryset.filter_current().first()
+        if not instance:
+            instance = queryset.first()
+            instance.is_current = True
+            instance.save()
+        serializer = ParticipationSerializer(instance)
+        return RestResponse(serializer.data)
+
+    def post(self, request):
+        instance = self.get_queryset().get(id=request.data["id"])
+
+        Participation.objects.filter_available(
+            self.request.user.id,
+            timezone.now(),
+        ).update(is_current=False)
+        instance.is_current = True
+        instance.save()
+
+        serializer = ParticipationSerializer(instance)
+        return RestResponse(serializer.data)
+
+
+class ParticipationResponseView(UpdateOrCreateModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ParticipationResponseSerializer
 
     def get_queryset(self):
+        # TODO check if it create error to save non-current participation response
         query = ParticipationResponse.objects.filter(
-            participation__user_id=self.request.user.id
+            participation__in=Participation.objects.filter_available(
+                self.request.user.id, timezone.now()
+            ),
         )
 
         context = self.request.query_params.get("context")
         if context:
             is_profiling_question = context == "profiling"
             query = query.filter(question__profiling_question=is_profiling_question)
-
-        participation_id = self.request.query_params.get("participation_id")
-        if participation_id and participation_id.isnumeric():
-            query = query.filter(participation_id=participation_id)
-        else:
-            rollbar.report_message(
-                f"Need participation_id to retrieve participation responses of user {self.request.user.email} but got {participation_id} in {context} context",
-                "warning",
-            )
 
         return query
 
@@ -175,6 +209,24 @@ class ParticipationResponseView(
             participation_id=request.data.get("participation_id"),
             question_id=request.data.get("question_id"),
         )
+
+
+class CurrentParticipationResponseView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ParticipationResponseSerializer
+
+    def get_queryset(self):
+        query = ParticipationResponse.objects.filter(
+            participation__in=Participation.objects.filter_current_available(
+                self.request.user.id, timezone.now()
+            )
+        )
+        context = self.request.query_params.get("context")
+        if context:
+            is_profiling_question = context == "profiling"
+            query = query.filter(question__profiling_question=is_profiling_question)
+
+        return query
 
 
 class CompletedQuestionsParticipationView(APIView):

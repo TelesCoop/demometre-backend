@@ -82,34 +82,34 @@ class ProfileType(models.Model):
         verbose_name = "Type de profil"
 
 
-class StrengthsAndWeaknessesFields(models.Model):
-    weakness_1 = models.TextField(
+class StrengthsAndImprovementFields(models.Model):
+    improvement_1 = models.TextField(
         blank=True,
-        verbose_name="Point faible",
-        help_text="Point faible relevé pour une évaluation si le calcul de son score est de 1",
+        verbose_name="Point d'amélioration 1",
+        help_text="Point d'amélioration relevé pour une évaluation si le calcul de son score est de 1",
         default="",
     )
-    weakness_2 = models.TextField(
+    improvement_2 = models.TextField(
         blank=True,
-        verbose_name="Point faible",
-        help_text="Point faible relevé pour une évaluation si le calcul de son score est de 2",
+        verbose_name="Point d'amélioration 2",
+        help_text="Point d'amélioration relevé pour une évaluation si le calcul de son score est de 2",
         default="",
     )
     strength_3 = models.TextField(
         blank=True,
-        verbose_name="Point fort",
+        verbose_name="Point fort 3",
         help_text="Point fort relevé pour une évaluation si le calcul de son score est de 3",
         default="",
     )
     strength_4 = models.TextField(
         blank=True,
-        verbose_name="Point fort",
+        verbose_name="Point fort 4",
         help_text="Point fort relevé pour une évaluation si le calcul de son score est de 4",
         default="",
     )
     panels = [
-        FieldPanel("weakness_1"),
-        FieldPanel("weakness_2"),
+        FieldPanel("improvement_1"),
+        FieldPanel("improvement_2"),
         FieldPanel("strength_3"),
         FieldPanel("strength_4"),
     ]
@@ -118,7 +118,7 @@ class StrengthsAndWeaknessesFields(models.Model):
         abstract = True
 
 
-class ScoreFields(StrengthsAndWeaknessesFields):
+class ScoreFields(StrengthsAndImprovementFields):
     score_1 = models.TextField(
         blank=True,
         verbose_name="Signification",
@@ -284,7 +284,7 @@ class ThematicTag(TagBase):
 
 
 @register_snippet
-class Criteria(index.Indexed, ClusterableModel, StrengthsAndWeaknessesFields):
+class Criteria(index.Indexed, ClusterableModel, StrengthsAndImprovementFields):
     marker = models.ForeignKey(
         Marker,
         null=True,
@@ -342,7 +342,7 @@ class Criteria(index.Indexed, ClusterableModel, StrengthsAndWeaknessesFields):
         FieldPanel("description"),
         InlinePanel("related_definition_ordered", label="Définitions"),
         StreamFieldPanel("explanatory"),
-    ] + StrengthsAndWeaknessesFields.panels
+    ] + StrengthsAndImprovementFields.panels
 
     search_fields = [index.SearchField("name", partial_match=True)]
 

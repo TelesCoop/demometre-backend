@@ -82,6 +82,43 @@ class ProfileType(models.Model):
         verbose_name = "Type de profil"
 
 
+class ScoreFields(models.Model):
+    score_1 = models.TextField(
+        blank=True,
+        verbose_name="Score = 1 (Signification)",
+        help_text="Signification du résultat 1, affiché dans le DémoMètre",
+        default="",
+    )
+    score_2 = models.TextField(
+        blank=True,
+        verbose_name="Score = 2 (Signification)",
+        help_text="Signification du résultat 2, affiché dans le DémoMètre",
+        default="",
+    )
+    score_3 = models.TextField(
+        blank=True,
+        verbose_name="Score = 3 (Signification)",
+        help_text="Signification du résultat 3, affiché dans le DémoMètre",
+        default="",
+    )
+    score_4 = models.TextField(
+        blank=True,
+        verbose_name="Score = 4 (Signification)",
+        help_text="Signification du résultat 4, affiché dans le DémoMètre",
+        default="",
+    )
+
+    panels = [
+        FieldPanel("score_1"),
+        FieldPanel("score_2"),
+        FieldPanel("score_3"),
+        FieldPanel("score_4"),
+    ]
+
+    class Meta:
+        abstract = True
+
+
 @register_snippet
 class Pillar(models.Model):
     name = models.CharField(verbose_name="Nom", max_length=125)
@@ -122,53 +159,8 @@ class Pillar(models.Model):
         ordering = ["order"]
 
 
-class ReferentielFields(models.Model):
-    description = RichTextField(
-        null=True,
-        blank=True,
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Description",
-        help_text="Description pour le référentiel",
-    )
-    score_1 = models.TextField(
-        blank=True,
-        verbose_name="Score = 1",
-        help_text="Description pour le référentiel",
-        default="",
-    )
-    score_2 = models.TextField(
-        blank=True,
-        verbose_name="Score = 2",
-        help_text="Description pour le référentiel",
-        default="",
-    )
-    score_3 = models.TextField(
-        blank=True,
-        verbose_name="Score = 3",
-        help_text="Description pour le référentiel",
-        default="",
-    )
-    score_4 = models.TextField(
-        blank=True,
-        verbose_name="Score = 4",
-        help_text="Description pour le référentiel",
-        default="",
-    )
-
-    panels = [
-        FieldPanel("description"),
-        FieldPanel("score_1"),
-        FieldPanel("score_2"),
-        FieldPanel("score_3"),
-        FieldPanel("score_4"),
-    ]
-
-    class Meta:
-        abstract = True
-
-
 @register_snippet
-class Marker(index.Indexed, ReferentielFields):
+class Marker(index.Indexed, ScoreFields):
     pillar = models.ForeignKey(
         Pillar, null=True, blank=True, on_delete=models.SET_NULL, related_name="markers"
     )
@@ -179,12 +171,20 @@ class Marker(index.Indexed, ReferentielFields):
         help_text="Correspond au numéro (ou lettre) de ce marqueur dans son pilier",
     )
     concatenated_code = models.CharField(max_length=5, default="")
+    description = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+        help_text="Description pour le référentiel",
+    )
 
     panels = [
         FieldPanel("pillar"),
         FieldPanel("name"),
         FieldPanel("code"),
-    ] + ReferentielFields.panels
+        FieldPanel("description"),
+    ] + ScoreFields.panels
 
     search_fields = [
         index.SearchField("name", partial_match=True),
@@ -224,7 +224,7 @@ class ThematicTag(TagBase):
 
 
 @register_snippet
-class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
+class Criteria(index.Indexed, ClusterableModel):
     marker = models.ForeignKey(
         Marker,
         null=True,
@@ -241,6 +241,13 @@ class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
     concatenated_code = models.CharField(max_length=8, default="")
     thematic_tags = models.ManyToManyField(
         ThematicTag, blank=True, verbose_name="Thématiques"
+    )
+    description = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+        help_text="Description pour le référentiel",
     )
 
     explanatory = StreamField(
@@ -264,22 +271,18 @@ class Criteria(index.Indexed, ReferentielFields, ClusterableModel):
             )
         ],
         blank=True,
-        verbose_name="Explicatif du critère",
+        verbose_name="Explicatif du critère (sources, exemples, obligations légales ...)",
     )
 
-    panels = (
-        [
-            FieldPanel("marker"),
-            FieldPanel("name"),
-            FieldPanel("code"),
-            FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
-        ]
-        + ReferentielFields.panels
-        + [
-            InlinePanel("related_definition_ordered", label="Définitions"),
-            StreamFieldPanel("explanatory"),
-        ]
-    )
+    panels = [
+        FieldPanel("marker"),
+        FieldPanel("name"),
+        FieldPanel("code"),
+        FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
+        FieldPanel("description"),
+        InlinePanel("related_definition_ordered", label="Définitions"),
+        StreamFieldPanel("explanatory"),
+    ]
 
     search_fields = [index.SearchField("name", partial_match=True)]
 
@@ -709,7 +712,7 @@ class Category(TimeStampedModel, Orderable):
     )
 
     category = models.CharField(
-        max_length=64,
+        max_length=128,
         default="",
         verbose_name="Categorie",
         help_text="Permet de répondre à la même question pour différentes catégories",

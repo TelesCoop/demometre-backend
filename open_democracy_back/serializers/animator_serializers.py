@@ -43,7 +43,6 @@ class WorkshopParticipationWithProfilingResponsesSerializer(
     workshop_id = serializers.PrimaryKeyRelatedField(
         source="workshop", queryset=Workshop.objects.all()
     )
-
     participant_email = serializers.CharField(
         read_only=True, source="participant.email"
     )

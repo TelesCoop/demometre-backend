@@ -31,8 +31,7 @@ QUESTION_FIELDS = [
     "population_lower_bound",
     "population_upper_bound",
 ]
-REFERENTIAL_FIELDS = [
-    "description",
+SCORE_FIELDS = [
     "score_1",
     "score_2",
     "score_3",
@@ -158,7 +157,8 @@ class CriteriaSerializer(serializers.ModelSerializer):
             "thematic_tags",
             "definition_ids",
             "explanatory",
-        ] + REFERENTIAL_FIELDS
+            "description",
+        ]
         read_only_fields = fields
 
 
@@ -181,7 +181,8 @@ class MarkerSerializer(serializers.ModelSerializer):
             "name",
             "concatenated_code",
             "criteria_ids",
-        ] + REFERENTIAL_FIELDS
+            "description",
+        ] + SCORE_FIELDS
         read_only_fields = fields
 
 

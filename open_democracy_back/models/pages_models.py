@@ -404,6 +404,37 @@ class ReferentialPage(Page):
         verbose_name = "Référentiel"
 
 
+class ResultsPage(Page):
+    parent_page_types = ["HomePage"]
+    subpage_types: List[str] = []
+    max_count_per_parent = 1
+    preview_modes = None
+
+    tag_line = models.CharField(
+        max_length=510, default="", verbose_name="Phrase d'accroche"
+    )
+    introduction = RichTextField(
+        default="", features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Introduction"
+    )
+    intro_image = models.ForeignKey(
+        "wagtailimages.Image",
+        verbose_name="Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("tag_line"),
+        FieldPanel("introduction"),
+        ImageChooserPanel("intro_image"),
+    ]
+
+    class Meta:
+        verbose_name = "Page de résultats"
+
+
 class ProjectPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []

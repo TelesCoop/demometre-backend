@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 import operator
+
+from django.db import transaction
 from django.utils import timezone
 from django.db.models import QuerySet
 from rest_framework import mixins, viewsets, status
@@ -142,12 +144,12 @@ class ParticipationView(
         )
 
     def perform_create(self, serializer):
-        # TODO add rollback if save fail
-        Participation.objects.filter_available(
-            self.request.user.id,
-            timezone.now(),
-        ).update(is_current=False)
-        serializer.save()
+        with transaction.atomic():
+            Participation.objects.filter_available(
+                self.request.user.id,
+                timezone.now(),
+            ).update(is_current=False)
+            serializer.save()
 
 
 class CurrentParticipationView(APIView):

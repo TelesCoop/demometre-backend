@@ -18,7 +18,7 @@ from wagtail.snippets.blocks import SnippetChooserBlock
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.core.models import Page
 from wagtailsvg.blocks import SvgChooserBlock
-from open_democracy_back.models.contents_models import Partner, People
+from open_democracy_back.models.contents_models import Partner, Person
 from open_democracy_back.utils import (
     SIMPLE_RICH_TEXT_FIELD_FEATURE,
     ManagedAssessmentType,
@@ -557,17 +557,6 @@ class ProjectPage(Page):
         on_delete=models.SET_NULL,
         related_name="+",
     )
-    who_crew_sub_block_peoples = StreamField(
-        [
-            (
-                "crew_members",
-                blocks.ListBlock(SnippetChooserBlock(People), label="Membres"),
-            ),
-        ],
-        blank=True,
-        verbose_name="Membres de Démocratie Ouverte - contenu",
-    )
-    # models.ManyToManyField(People, related_name="crew", verbose_name="Membres de Démocratie Ouverte")
     who_committee_sub_block_title = models.CharField(
         max_length=68,
         verbose_name="Le Comité d’orientation - titre",
@@ -590,7 +579,7 @@ class ProjectPage(Page):
                         (
                             "committee_members",
                             blocks.ListBlock(
-                                SnippetChooserBlock(People), label="Membre"
+                                SnippetChooserBlock(Person), label="Membre"
                             ),
                         ),
                     ],
@@ -758,18 +747,18 @@ class ProjectPage(Page):
         verbose_name = "Page du projet"
 
 
-class ProjectPagePeople(models.Model):
+class ProjectPagePerson(models.Model):
     page = ParentalKey(
         ProjectPage, on_delete=models.CASCADE, related_name="who_crew_sub_block_members"
     )
-    people = models.ForeignKey(People, on_delete=models.CASCADE, verbose_name="Membre")
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, verbose_name="Membre")
 
     panels = [
-        SnippetChooserPanel("people"),
+        SnippetChooserPanel("person"),
     ]
 
     class Meta:
-        unique_together = ("page", "people")
+        unique_together = ("page", "person")
 
 
 class EvaluationIntroPage(Page):

@@ -22,7 +22,7 @@ from open_democracy_back.serializers.content_serializers import (
     BlogPostSerializer,
     FeedbackSerializer,
     PartnerSerializer,
-    PeopleSerializer,
+    PersonSerializer,
     ResourceSerializer,
 )
 
@@ -198,7 +198,7 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
     svgs_url = serializers.SerializerMethodField()
     who_crew_sub_block_image_url = serializers.SerializerMethodField()
     who_crew_sub_block_member_ids = serializers.SerializerMethodField()
-    committees = serializers.SerializerMethodField()
+    persons = serializers.SerializerMethodField()
     partners = serializers.SerializerMethodField()
 
     @staticmethod
@@ -260,7 +260,7 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
 
     @staticmethod
     def get_who_crew_sub_block_member_ids(obj: ProjectPage):
-        return obj.who_crew_sub_block_members.values_list("people_id", flat=True)
+        return obj.who_crew_sub_block_members.values_list("person_id", flat=True)
 
     @staticmethod
     def get_partners(obj: ProjectPage):
@@ -274,15 +274,19 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
         return partners
 
     @staticmethod
-    def get_committees(obj: ProjectPage):
-        committees = []
+    def get_persons(obj: ProjectPage):
+        persons = []
         ids = []
         for group in obj.who_committee_sub_block_data:
-            for committee in group.value["committee_members"]:
-                if committee.id not in ids:
-                    committees.append(PeopleSerializer(committee, read_only=True).data)
-                    ids.append(committee.id)
-        return committees
+            for person in group.value["committee_members"]:
+                if person.id not in ids:
+                    persons.append(PersonSerializer(person, read_only=True).data)
+                    ids.append(person.id)
+        for member in obj.who_crew_sub_block_members.all():
+            if member.person_id not in ids:
+                persons.append(PersonSerializer(member.person, read_only=True).data)
+                ids.append(member.person_id)
+        return persons
 
     class Meta:
         model = ProjectPage
@@ -308,7 +312,7 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
             "how_block_data",
             "images_url",
             "svgs_url",
-            "committees",
+            "persons",
             "partners",
         ]
         read_only_fields = fields

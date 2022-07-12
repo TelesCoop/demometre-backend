@@ -157,7 +157,7 @@ class Partner(index.Indexed, models.Model):
 
 
 @register_snippet
-class People(index.Indexed, models.Model):
+class Person(index.Indexed, models.Model):
     name = models.CharField(max_length=64, verbose_name="Nom")
     image = models.ForeignKey(
         "wagtailimages.Image",

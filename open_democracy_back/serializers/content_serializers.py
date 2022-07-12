@@ -4,7 +4,7 @@ from open_democracy_back.models.contents_models import (
     BlogPost,
     Feedback,
     Partner,
-    People,
+    Person,
     Resource,
 )
 
@@ -80,15 +80,15 @@ class PartnerSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "logo_image_url", "height", "show_in_home_page"]
 
 
-class PeopleSerializer(serializers.ModelSerializer):
+class PersonSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
 
     @staticmethod
-    def get_image_url(obj: People):
+    def get_image_url(obj: Person):
         if obj.image:
             return obj.image.file.url
         return None
 
     class Meta:
-        model = People
+        model = Person
         fields = ["id", "name", "image_url", "job_title"]

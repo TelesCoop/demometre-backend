@@ -263,6 +263,15 @@ class Assessment(TimeStampedModel, ClusterableModel):
     royalty_payed = models.BooleanField(default=False, verbose_name="Redevance payée")
 
     @property
+    def published_results(self):
+        return all(
+            [
+                representativity.respected
+                for representativity in self.representativities.all()
+            ]
+        )
+
+    @property
     def population(self):
         if self.locality_type == LocalityType.MUNICIPALITY:
             return self.municipality.population
@@ -288,6 +297,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         FieldPanel("initialized_to_the_name_of"),
         FieldPanel("initialization_date"),
         FieldPanel("end_date"),
+        FieldPanel("published_results"),
     ]
 
     def __str__(self):

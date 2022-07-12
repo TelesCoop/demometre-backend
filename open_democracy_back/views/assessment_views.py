@@ -1,9 +1,7 @@
 import logging
 from datetime import date
 from typing import Dict
-
 from django.utils import timezone
-
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import mixins, viewsets, status
@@ -231,7 +229,17 @@ class CompletedQuestionsInitializationView(APIView):
         return RestResponse(serializer.data, status=status.HTTP_200_OK)
 
 
-class QuestionnaireScoreView(APIView):
+class PublishedAssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = AssessmentSerializer
+
+    def get_queryset(self):
+        assessments = Assessment.objects.filter(initialization_date__lte=timezone.now())
+        return [
+            assessment for assessment in assessments if assessment.published_results
+        ]
+
+
+class AssessmentScoreView(APIView):
     # Cache page everyday
     @method_decorator(cache_page(60 * 60 * 24))
     def get(self, request, assessment_pk):

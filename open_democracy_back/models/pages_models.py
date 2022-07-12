@@ -714,7 +714,8 @@ class ProjectPage(Page):
                         FieldPanel("who_crew_sub_block_title"),
                         ImageChooserPanel("who_crew_sub_block_image"),
                         InlinePanel(
-                            "project_page", label="Membres de Démocratie Ouverte"
+                            "who_crew_sub_block_members",
+                            label="Membres de Démocratie Ouverte",
                         ),
                     ],
                     heading="Sous bloc : Equipe Démocratie Ouverte",
@@ -759,18 +760,16 @@ class ProjectPage(Page):
 
 class ProjectPagePeople(models.Model):
     page = ParentalKey(
-        ProjectPage, on_delete=models.CASCADE, related_name="project_page"
+        ProjectPage, on_delete=models.CASCADE, related_name="who_crew_sub_block_members"
     )
-    peoples = models.ForeignKey(
-        People, on_delete=models.CASCADE, related_name="peoples", verbose_name="Membre"
-    )
+    people = models.ForeignKey(People, on_delete=models.CASCADE, verbose_name="Membre")
 
     panels = [
-        SnippetChooserPanel("peoples"),
+        SnippetChooserPanel("people"),
     ]
 
     class Meta:
-        unique_together = ("page", "peoples")
+        unique_together = ("page", "people")
 
 
 class EvaluationIntroPage(Page):

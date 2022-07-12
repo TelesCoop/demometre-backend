@@ -22,6 +22,7 @@ from open_democracy_back.serializers.content_serializers import (
     BlogPostSerializer,
     FeedbackSerializer,
     PartnerSerializer,
+    PeopleSerializer,
     ResourceSerializer,
 )
 
@@ -195,6 +196,9 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
     intro_image_url = serializers.SerializerMethodField()
     images_url = serializers.SerializerMethodField()
     svgs_url = serializers.SerializerMethodField()
+    who_crew_sub_block_image_url = serializers.SerializerMethodField()
+    who_crew_sub_block_member_ids = serializers.SerializerMethodField()
+    committees = serializers.SerializerMethodField()
     partners = serializers.SerializerMethodField()
 
     @staticmethod
@@ -249,6 +253,16 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
         return svgs
 
     @staticmethod
+    def get_who_crew_sub_block_image_url(obj: ProjectPage):
+        if obj.intro_image:
+            return obj.intro_image.file.url
+        return None
+
+    @staticmethod
+    def get_who_crew_sub_block_member_ids(obj: ProjectPage):
+        return obj.who_crew_sub_block_members.values_list("people_id", flat=True)
+
+    @staticmethod
     def get_partners(obj: ProjectPage):
         partners = []
         ids = []
@@ -258,6 +272,17 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
                     partners.append(PartnerSerializer(partner, read_only=True).data)
                     ids.append(partner.id)
         return partners
+
+    @staticmethod
+    def get_committees(obj: ProjectPage):
+        committees = []
+        ids = []
+        for group in obj.who_committee_sub_block_data:
+            for committee in group.value["committee_members"]:
+                if committee.id not in ids:
+                    committees.append(PeopleSerializer(committee, read_only=True).data)
+                    ids.append(committee.id)
+        return committees
 
     class Meta:
         model = ProjectPage
@@ -271,12 +296,19 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
             "impact_block_title",
             "impact_block_data",
             "who_block_title",
+            "who_crew_sub_block_title",
+            "who_crew_sub_block_image_url",
+            "who_crew_sub_block_member_ids",
+            "who_committee_sub_block_title",
+            "who_committee_sub_block_description",
+            "who_committee_sub_block_data",
             "who_partner_sub_block_title",
             "who_partner_sub_block_data",
             "how_block_title",
             "how_block_data",
             "images_url",
             "svgs_url",
+            "committees",
             "partners",
         ]
         read_only_fields = fields

@@ -2,7 +2,11 @@ import json
 from collections import defaultdict
 from django.shortcuts import render
 from django.urls import reverse
-from open_democracy_back.forms import ProfileDefinitionForm, QuestionRuleForm
+from open_democracy_back.forms import (
+    ProfileDefinitionForm,
+    QuestionRuleForm,
+    RepresentativityCriteriaRefiningForm,
+)
 from django.db.models import Q
 from django.views.generic.edit import BaseDeleteView
 
@@ -17,6 +21,10 @@ from open_democracy_back.models import (
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     ProfileDefinition,
     QuestionRule,
+)
+from open_democracy_back.models.representativity_models import (
+    RepresentativityCriteria,
+    RepresentativityCriteriaRule,
 )
 
 
@@ -188,6 +196,43 @@ def profile_definition_view(request, pk):
         {
             "data": data,
             "rule_form": rule_form,
+        },
+    )
+
+
+def representativity_criteria_refining_view(request, pk):
+    representativity_criteria = RepresentativityCriteria.objects.get(id=pk)
+    data = {
+        "representativity_criteria": representativity_criteria,
+        "name": representativity_criteria.name,
+    }
+    rule_forms = []
+
+    if request.method == "POST":
+        rule = RepresentativityCriteriaRule.objects.get(
+            response_choice_id=request.POST["response_choice"],
+            representativity_criteria_id=request.POST["representativity_criteria"],
+        )
+        rule_form = RepresentativityCriteriaRefiningForm(request.POST, instance=rule)
+        if rule_form.is_valid():
+            rule_form.save()
+
+    for (
+        response_choice
+    ) in representativity_criteria.profiling_question.response_choices.all():
+        rule, _ = RepresentativityCriteriaRule.objects.get_or_create(
+            response_choice=response_choice,
+            representativity_criteria=representativity_criteria,
+        )
+
+        rule_forms.append(RepresentativityCriteriaRefiningForm(instance=rule))
+
+    return render(
+        request,
+        "admin/representativity_criteria_refining.html",
+        {
+            "data": data,
+            "rule_forms": rule_forms,
         },
     )
 

@@ -1,9 +1,6 @@
 from rest_framework import serializers
 from open_democracy_back.exceptions import ErrorCode
 from open_democracy_back.models.questionnaire_and_profiling_models import Question
-from open_democracy_back.models.representativity_models import (
-    RepresentativityCriteria,
-)
 
 from open_democracy_back.models.assessment_models import (
     EPCI,
@@ -94,20 +91,9 @@ class AssessmentSerializer(serializers.ModelSerializer):
     municipality = MunicipalitySerializer(many=False, read_only=True)
     participation_nb = serializers.SerializerMethodField()
     initiated_by_user = UserSerializer()
-    representativities = serializers.SerializerMethodField()
-
-    @staticmethod
-    def get_representativities(obj: Assessment):
-        representativities = []
-        for representativity_criteria in RepresentativityCriteria.objects.all():
-            representativities.append(
-                AssessmentRepresentativityCriteriaSerializer(
-                    representativity_criteria,
-                    read_only=True,
-                    context={"assessment_id": obj.id},
-                ).data
-            )
-        return representativities
+    representativities = AssessmentRepresentativityCriteriaSerializer(
+        many=True, read_only=True
+    )
 
     @staticmethod
     def get_participation_nb(obj: Assessment):
@@ -130,6 +116,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "epci",
             "participation_nb",
             "representativities",
+            "published_results",
         ]
         read_only_fields = fields
 

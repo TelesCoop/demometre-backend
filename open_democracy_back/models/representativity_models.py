@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Count, F
+from django.db.models import Count, F, Q
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from wagtail.search import index
@@ -9,6 +9,7 @@ from open_democracy_back.models.assessment_models import Assessment
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     ProfilingQuestion,
     QuestionType,
+    ResponseChoice,
 )
 
 
@@ -52,6 +53,37 @@ class RepresentativityCriteria(index.Indexed, models.Model):
         verbose_name_plural = "Critères de représentativité"
 
 
+class RepresentativityCriteriaRule(models.Model):
+    representativity_criteria = models.ForeignKey(
+        RepresentativityCriteria,
+        on_delete=models.CASCADE,
+        related_name="rules",
+    )
+
+    response_choice = models.ForeignKey(
+        ResponseChoice,
+        on_delete=models.CASCADE,
+        verbose_name="Réponse",
+        related_name="%(class)s_that_depend_on_me",
+    )
+
+    ignore_for_acceptability_threshold = models.BooleanField(
+        default=False,
+        verbose_name="Ne pas compter pour le seuil d'acceptabilité minimal",
+        help_text="Ex: binaire pour la parité",
+    )
+    hide_in_assessment_representativity = models.BooleanField(
+        default=False,
+        verbose_name="Ne pas afficher dans le tableau de représentativité",
+    )
+
+    def __str__(self):
+        return f"{self.representativity_criteria} - {self.response_choice}"
+
+    class Meta:
+        unique_together = ["representativity_criteria", "response_choice"]
+
+
 class AssessmentRepresentativity(models.Model):
     assessment = models.ForeignKey(
         Assessment, on_delete=models.CASCADE, related_name="representativities"
@@ -69,30 +101,33 @@ class AssessmentRepresentativity(models.Model):
     )
 
     @property
-    def all_responses(self):
-        return self.representativity_criteria.profiling_question.participationresponses.filter(
-            participation__assessment_id=self.assessment_id
-        ).exclude(
-            unique_choice_response=None
-        )
-
-    @property
     def count_by_response_choice(self):
-        # annotate() : rename field
-        # values() : specifies which columns are going to be used to "group by"
-        # annotate() : specifies an operation over the grouped values
         return (
-            self.all_responses.annotate(
-                response_choice_name=F("unique_choice_response__response_choice"),
-                response_choice_id=F("unique_choice_response"),
+            self.representativity_criteria.profiling_question.response_choices.all()
+            .annotate(
+                response_choice_name=F("response_choice"),
+                response_choice_id=F("id"),
             )
             .values("response_choice_id", "response_choice_name")
-            .annotate(total=Count("response_choice_id"))
+            .annotate(
+                total=Count(
+                    "unique_choice_participationresponses",
+                    filter=Q(
+                        unique_choice_participationresponses__participation__assessment_id=self.assessment_id
+                    ),
+                )
+            )
         )
 
     @property
     def total_responses(self):
-        return self.all_responses.count()
+        return (
+            self.representativity_criteria.profiling_question.participationresponses.filter(
+                participation__assessment_id=self.assessment_id
+            )
+            .exclude(unique_choice_response=None)
+            .count()
+        )
 
     @property
     def acceptability_threshold_considered(self):

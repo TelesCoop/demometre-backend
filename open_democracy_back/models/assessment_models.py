@@ -297,7 +297,6 @@ class Assessment(TimeStampedModel, ClusterableModel):
         FieldPanel("initialized_to_the_name_of"),
         FieldPanel("initialization_date"),
         FieldPanel("end_date"),
-        FieldPanel("published_results"),
     ]
 
     def __str__(self):

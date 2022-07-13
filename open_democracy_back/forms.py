@@ -2,6 +2,9 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from open_democracy_back.models import QuestionRule, ProfileDefinition, ResponseChoice
+from open_democracy_back.models.representativity_models import (
+    RepresentativityCriteriaRule,
+)
 
 
 GENERIC_RULE_FIELD = [
@@ -59,3 +62,41 @@ class ProfileDefinitionForm(GenericRuleForm):
         super().__init__(*args, **kwargs)
         self.fields["profile_type"].initial = profile_type
         self.fields["conditional_question"].queryset = questions_list
+
+
+REPRESENTATIVITY_FIELDS = [
+    "id",
+    "representativity_criteria",
+    "response_choice",
+    "ignore_for_acceptability_threshold",
+    "hide_in_assessment_representativity",
+]
+
+
+class RepresentativityCriteriaRefiningForm(forms.ModelForm):
+    class Meta:
+        model = RepresentativityCriteriaRule
+        fields = REPRESENTATIVITY_FIELDS
+
+    # initial_fields = REPRESENTATIVITY_FIELDS
+
+    def __init__(self, *args, **kwargs):
+        # breakpoint()
+        # initial = {}
+        # for key in self.initial_fields:
+        #     if key in kwargs:
+        #         initial[key] = kwargs[key]
+        # kwargs["initial"] = initial
+        # representativity_criteria = (
+        #     kwargs.pop("representativity_criteria")
+        #     if "representativity_criteria" in kwargs
+        #     else None
+        # )
+        # response_choice = (
+        #     kwargs.pop("response_choice") if "response_choice" in kwargs else None
+        # )
+        super().__init__(*args, **kwargs)
+        # if representativity_criteria:
+        #     self.fields["representativity_criteria"].initial = representativity_criteria
+        # if response_choice:
+        #     self.fields["response_choice"].initial = response_choice

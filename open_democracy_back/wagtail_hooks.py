@@ -58,6 +58,9 @@ class RulesButtonHelper(ButtonHelper):
         if isinstance(obj, ProfileType):
             text = "Définir ce profil"
             url = "/admin/profile-type/" + str(obj.id) + "/rules/"
+        if isinstance(obj, RepresentativityCriteria):
+            text = "Affiner le critère de représentativité"
+            url = "/admin/representativity-criteria/" + str(obj.id) + "/rules/"
         return {
             "url": url,
             "label": text,
@@ -92,6 +95,12 @@ def snippet_listing_buttons(snippet, user, next_url=None):
         yield wagtailsnippets_widgets.SnippetListingButton(
             "Définir ce profil",
             "/admin/profile-type/" + str(snippet.id) + "/rules/",
+            priority=10,
+        )
+    if isinstance(snippet, RepresentativityCriteria):
+        yield wagtailsnippets_widgets.SnippetListingButton(
+            "Affiner le critère de représentativité",
+            "/admin/representativity-criteria/" + str(snippet.id) + "/rules/",
             priority=10,
         )
 
@@ -279,6 +288,7 @@ class ProfilingAdminGroup(ModelAdminGroup):
 
 class RepresentativityModelAdmin(ModelAdmin):
     model = RepresentativityCriteria
+    button_helper_class = RulesButtonHelper
     menu_label = "Représentativité"
     menu_icon = "password"
     menu_order = 210

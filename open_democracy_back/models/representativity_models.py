@@ -102,6 +102,9 @@ class AssessmentRepresentativity(models.Model):
 
     @property
     def count_by_response_choice(self):
+        # annotate() : rename fields
+        # values() : specifies which columns are going to be used to "group by"
+        # annotate() : specifies an operation over the grouped values
         return (
             self.representativity_criteria.profiling_question.response_choices.all()
             .exclude(representativity_criteria_rule__totally_ignore=True)
@@ -116,6 +119,7 @@ class AssessmentRepresentativity(models.Model):
                 "response_choice_id",
                 "response_choice_name",
                 "ignore_for_acceptability_threshold",
+                "sort_order",
             )
             .annotate(
                 total=Count(
@@ -125,6 +129,7 @@ class AssessmentRepresentativity(models.Model):
                     ),
                 )
             )
+            .order_by("sort_order")
         )
 
     @property

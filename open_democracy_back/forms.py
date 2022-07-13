@@ -2,6 +2,9 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from open_democracy_back.models import QuestionRule, ProfileDefinition, ResponseChoice
+from open_democracy_back.models.representativity_models import (
+    RepresentativityCriteriaRule,
+)
 
 
 GENERIC_RULE_FIELD = [
@@ -59,3 +62,14 @@ class ProfileDefinitionForm(GenericRuleForm):
         super().__init__(*args, **kwargs)
         self.fields["profile_type"].initial = profile_type
         self.fields["conditional_question"].queryset = questions_list
+
+
+class RepresentativityCriteriaRefiningForm(forms.ModelForm):
+    class Meta:
+        model = RepresentativityCriteriaRule
+        fields = [
+            "representativity_criteria",
+            "response_choice",
+            "ignore_for_acceptability_threshold",
+            "totally_ignore",
+        ]

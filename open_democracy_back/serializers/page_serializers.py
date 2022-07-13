@@ -254,8 +254,8 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
 
     @staticmethod
     def get_who_crew_sub_block_image_url(obj: ProjectPage):
-        if obj.intro_image:
-            return obj.intro_image.file.url
+        if obj.who_crew_sub_block_image:
+            return obj.who_crew_sub_block_image.file.url
         return None
 
     @staticmethod

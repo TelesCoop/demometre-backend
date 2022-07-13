@@ -100,6 +100,8 @@ class AssessmentRepresentativity(models.Model):
         verbose_name="Seuil d'acceptabilité",
     )
 
+    # TODO : try https://medium.com/@fdemmer/django-cached-property-on-models-f4673de33990 for @cached_property (first attempt not conclusive)
+
     @property
     def count_by_response_choice(self):
         # annotate() : rename fields

@@ -60,11 +60,11 @@ class RepresentativityCriteriaRule(models.Model):
         related_name="rules",
     )
 
-    response_choice = models.ForeignKey(
+    response_choice = models.OneToOneField(
         ResponseChoice,
         on_delete=models.CASCADE,
         verbose_name="Réponse",
-        related_name="%(class)s_that_depend_on_me",
+        related_name="representativity_criteria_rule",
     )
 
     ignore_for_acceptability_threshold = models.BooleanField(
@@ -72,9 +72,9 @@ class RepresentativityCriteriaRule(models.Model):
         verbose_name="Ne pas compter pour le seuil d'acceptabilité minimal",
         help_text="Ex: binaire pour la parité",
     )
-    hide_in_assessment_representativity = models.BooleanField(
+    totally_ignore = models.BooleanField(
         default=False,
-        verbose_name="Ne pas afficher dans le tableau de représentativité",
+        verbose_name="Ignorer totalement",
     )
 
     def __str__(self):
@@ -104,11 +104,19 @@ class AssessmentRepresentativity(models.Model):
     def count_by_response_choice(self):
         return (
             self.representativity_criteria.profiling_question.response_choices.all()
+            .exclude(representativity_criteria_rule__totally_ignore=True)
             .annotate(
                 response_choice_name=F("response_choice"),
                 response_choice_id=F("id"),
+                ignore_for_acceptability_threshold=F(
+                    "representativity_criteria_rule__ignore_for_acceptability_threshold"
+                ),
             )
-            .values("response_choice_id", "response_choice_name")
+            .values(
+                "response_choice_id",
+                "response_choice_name",
+                "ignore_for_acceptability_threshold",
+            )
             .annotate(
                 total=Count(
                     "unique_choice_participationresponses",
@@ -146,8 +154,12 @@ class AssessmentRepresentativity(models.Model):
             return False
         return all(
             [
-                (response_choice_count["total"] / total_response) * 100
-                > self.acceptability_threshold_considered
+                (
+                    (response_choice_count["total"] / total_response) * 100
+                    > self.acceptability_threshold_considered
+                )
+                if not response_choice_count["ignore_for_acceptability_threshold"]
+                else True
                 for response_choice_count in self.count_by_response_choice
             ]
         )

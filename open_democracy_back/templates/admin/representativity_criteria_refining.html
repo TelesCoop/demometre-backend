@@ -11,16 +11,16 @@
                 {{ rule_form.representativity_criteria.as_hidden }}
                 {{ rule_form.response_choice.as_hidden }}
                 <div>
-                    <h2>{{ rule_form.response_choice.initial.response_choice }}</h2>
+                    <h2>{{ rule_form.instance.response_choice.response_choice }}</h2>
                     <div class="label-container">
                         {{ rule_form.ignore_for_acceptability_threshold.error }}
                         {{ rule_form.ignore_for_acceptability_threshold.label_tag }}
                         {{ rule_form.ignore_for_acceptability_threshold }}
                     </div>
                     <div class="label-container">
-                        {{ rule_form.hide_in_assessment_representativity.error }}
-                        {{ rule_form.hide_in_assessment_representativity.label_tag }}
-                        {{ rule_form.hide_in_assessment_representativity }}
+                        {{ rule_form.totally_ignore.error }}
+                        {{ rule_form.totally_ignore.label_tag }}
+                        {{ rule_form.totally_ignore }}
                     </div>
                     <br/>
                     <div class="actions">

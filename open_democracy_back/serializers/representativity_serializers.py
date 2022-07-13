@@ -39,8 +39,8 @@ class RepresentativityCriteriaSerializer(serializers.ModelSerializer):
     response_choice_statements = serializers.SerializerMethodField()
 
     def get_response_choice_statements(self, obj: RepresentativityCriteria):
-        return obj.profiling_question.response_choices.all().values(
-            "id", "response_choice"
+        return obj.profiling_question.response_choices.all().values_list(
+            "response_choice", flat=True
         )
 
     class Meta:

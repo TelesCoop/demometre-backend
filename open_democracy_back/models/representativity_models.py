@@ -38,11 +38,11 @@ class RepresentativityCriteria(index.Indexed, models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        to_create_assessment_representativity = False
+        must_create_assessment_representativity = False
         if not self.id:
-            to_create_assessment_representativity = True
+            must_create_assessment_representativity = True
         super().save(*args, **kwargs)
-        if to_create_assessment_representativity:
+        if must_create_assessment_representativity:
             for assessment in Assessment.objects.all():
                 AssessmentRepresentativity.objects.create(
                     assessment=assessment, representativity_criteria_id=self.id

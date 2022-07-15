@@ -626,6 +626,8 @@ class Score(models.Model):
         instance = kwargs.get("instance")
         if instance.associated_score is not None:
             instance.linearized_score = SCORE_MAP[instance.associated_score]
+        else:
+            instance.linearized_score = None
 
     class Meta:
         abstract = True

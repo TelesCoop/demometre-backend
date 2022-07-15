@@ -1,5 +1,7 @@
+from django.urls import path, reverse
 from django.utils.html import format_html_join
 from django.templatetags.static import static
+from wagtail.admin.menu import MenuItem
 from wagtail.contrib.modeladmin.options import (
     ModelAdmin,
     modeladmin_register,
@@ -43,6 +45,7 @@ from open_democracy_back.models.participation_models import Participation
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
 )
+from open_democracy_back.views.custom_admin_views import anomaly
 
 
 class RulesButtonHelper(ButtonHelper):
@@ -409,3 +412,15 @@ modeladmin_register(RepresentativityModelAdmin)
 modeladmin_register(LocalityAdminGroup)
 modeladmin_register(AssessmentAdminGroup)
 modeladmin_register(UserAdmin)
+
+
+@hooks.register("register_admin_urls")
+def register_custom_admin_views():
+    return [
+        path("anomaly/", anomaly, name="anomaly"),
+    ]
+
+
+@hooks.register("register_admin_menu_item")
+def register_missing_score_item():
+    return MenuItem("Anomalies", reverse("anomaly"), icon_name="warning")

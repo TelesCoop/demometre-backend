@@ -44,6 +44,7 @@ from .views.assessment_views import (
     AssessmentScoreView,
     CurrentAssessmentView,
     CurrentAssessmentResponseView,
+    get_chart_data,
 )
 from .views.profiling_views import (
     ProfilingQuestionView,
@@ -150,6 +151,10 @@ urlpatterns = [
     path(
         "assessments/<int:assessment_pk>/scores/",
         AssessmentScoreView.as_view(),
+    ),
+    path(
+        "assessments/<int:assessment_pk>/questions/<int:question_pk>/",
+        get_chart_data,
     ),
     path(
         "workshops/<int:workshop_pk>/participation/",

@@ -1,6 +1,8 @@
 import logging
 from datetime import date
 from typing import Dict
+
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -18,6 +20,9 @@ from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateMode
 from open_democracy_back.models import (
     Assessment,
     Participation,
+    Question,
+    ParticipationResponse,
+    ResponseChoice,
 )
 from open_democracy_back.models.assessment_models import (
     EPCI,
@@ -40,6 +45,8 @@ from open_democracy_back.serializers.assessment_serializers import (
 )
 
 # Get an instance of a logger
+from open_democracy_back.utils import QuestionType
+
 logger = logging.getLogger(__name__)
 
 
@@ -245,3 +252,108 @@ class AssessmentScoreView(APIView):
     def get(self, request, assessment_pk):
         scores: Dict[str, Dict[str, float]] = get_scores_by_assessment_pk(assessment_pk)
         return RestResponse(scores, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def get_chart_data(request, assessment_pk, question_pk):
+    queryset = Question.objects.filter(id=question_pk)
+    question = queryset.get()
+
+    if question.objectivity == "objective":
+        base_count = "assessmentresponses"
+        base_queryset = {
+            f"f{base_count}__answered_by__is_unknown_user": False,
+            f"f{base_count}__assessment_id": assessment_pk,
+            f"f{base_count}__has_passed": False,
+        }
+    else:
+        base_count = "participationresponses"
+        base_queryset = {
+            f"{base_count}__participation__user__is_unknown_user": False,
+            f"{base_count}__participation__assessment_id": assessment_pk,
+            f"{base_count}__has_passed": False,
+        }
+
+    data = {}
+
+    if question.type == QuestionType.BOOLEAN:
+        result = queryset.annotate(
+            count=Count(base_count),
+            true=Count(
+                base_count,
+                filter=Q(
+                    **base_queryset, participationresponses__boolean_response=True
+                ),
+            ),
+            false=Count(
+                base_count,
+                filter=Q(
+                    **base_queryset, participationresponses__boolean_response=False
+                ),
+            ),
+        ).get()
+
+        data["true"] = {"label": "Oui", "value": result.true}
+        data["false"] = {"label": "Non", "value": result.false}
+        data["count"] = result.count
+    elif question.type == QuestionType.UNIQUE_CHOICE:
+        current_queryset = {
+            "unique_choice_participationresponses__participation__user__is_unknown_user": False,
+            "unique_choice_participationresponses__participation__assessment_id": 6,
+            "unique_choice_participationresponses__has_passed": False,
+        }
+        current_queryset2 = {
+            "participation__user__is_unknown_user": False,
+            "participation__assessment_id": 6,
+            "has_passed": False,
+        }
+        response_choices = ResponseChoice.objects.filter(
+            question_id=question_pk
+        ).annotate(
+            count=Count(
+                "unique_choice_participationresponses", filter=Q(**current_queryset)
+            )
+        )
+        for response_choice in response_choices:
+            data[response_choice.id] = {
+                "label": response_choice.response_choice,
+                "value": response_choice.count,
+            }
+
+        data["count"] = ParticipationResponse.objects.filter(
+            **current_queryset2, question_id=question_pk
+        ).count()
+
+    elif question.type == QuestionType.MULTIPLE_CHOICE:
+        base = "multiple_choice_participationresponses"
+        current_queryset = {
+            f"{base}__participation__user__is_unknown_user": False,
+            f"{base}__participation__assessment_id": 6,
+            f"{base}__has_passed": False,
+        }
+        current_queryset2 = {
+            "participation__user__is_unknown_user": False,
+            "participation__assessment_id": 6,
+            "has_passed": False,
+        }
+        response_choices = ResponseChoice.objects.filter(
+            question_id=question_pk
+        ).annotate(count=Count(base, filter=Q(**current_queryset)))
+        for response_choice in response_choices:
+            data[response_choice.id] = {
+                "label": response_choice.response_choice,
+                "value": response_choice.count,
+            }
+
+        data["count"] = ParticipationResponse.objects.filter(
+            **current_queryset2, question_id=question_pk
+        ).count()
+
+    return RestResponse(
+        {
+            "id": question.id,
+            "assessment_pk": assessment_pk,
+            "type": question.type,
+            "data": data,
+        },
+    )

@@ -253,6 +253,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
 
     experts = models.ManyToManyField(
         User,
+        blank=True,
         verbose_name="Experts",
         related_name="assessments",
         limit_choices_to={"groups__name": "Experts"},

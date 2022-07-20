@@ -11,18 +11,21 @@ from wagtail.admin.edit_handlers import (
     FieldRowPanel,
     ObjectList,
     TabbedInterface,
+    InlinePanel,
 )
 
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.snippets.blocks import SnippetChooserBlock
+from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.core.models import Page
 from wagtailsvg.blocks import SvgChooserBlock
-from open_democracy_back.models.contents_models import Partner
+from open_democracy_back.models.contents_models import Partner, Person
 from open_democracy_back.utils import (
     SIMPLE_RICH_TEXT_FIELD_FEATURE,
     ManagedAssessmentType,
 )
+from modelcluster.fields import ParentalKey
 
 
 class HomePage(Page):
@@ -547,6 +550,55 @@ class ProjectPage(Page):
         blank=True,
         help_text="Si ce champ est vide le bloc ne s'affichera pas",
     )
+    who_crew_sub_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Equipe Démocratie Ouverte - titre",
+        blank=True,
+        help_text="Si ce champ est vide le bloc ne s'affichera pas",
+    )
+    who_crew_sub_block_image = models.ForeignKey(
+        "wagtailimages.Image",
+        verbose_name="Logo Démocratie Ouverte",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    who_committee_sub_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Le Comité d’orientation - titre",
+        blank=True,
+        help_text="Si ce champ est vide le bloc ne s'affichera pas",
+    )
+    who_committee_sub_block_description = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Le Comité d’orientation - description",
+        blank=True,
+    )
+    who_committee_sub_block_data = StreamField(
+        [
+            (
+                "group_committees",
+                blocks.StructBlock(
+                    [
+                        ("committee", blocks.CharBlock(label="Nom")),
+                        (
+                            "committee_members",
+                            blocks.ListBlock(
+                                SnippetChooserBlock(Person), label="Membre"
+                            ),
+                        ),
+                    ],
+                    label_format="{title}",
+                    label="Groupe du Comité d’orientation",
+                ),
+            )
+        ],
+        blank=True,
+        verbose_name="Membres du Comité - contenu",
+    )
+
     who_partner_sub_block_title = models.CharField(
         max_length=68,
         verbose_name="Partenaires - titre",
@@ -655,6 +707,27 @@ class ProjectPage(Page):
                 FieldPanel("who_block_title"),
                 MultiFieldPanel(
                     [
+                        FieldPanel("who_crew_sub_block_title"),
+                        ImageChooserPanel("who_crew_sub_block_image"),
+                        InlinePanel(
+                            "who_crew_sub_block_members",
+                            label="Membres de Démocratie Ouverte",
+                        ),
+                    ],
+                    heading="Sous bloc : Equipe Démocratie Ouverte",
+                ),
+                MultiFieldPanel(
+                    [
+                        FieldPanel("who_committee_sub_block_title"),
+                        FieldPanel("who_committee_sub_block_description"),
+                        StreamFieldPanel(
+                            "who_committee_sub_block_data", classname="full"
+                        ),
+                    ],
+                    heading="Sous bloc : Equipe Comité d’orientation",
+                ),
+                MultiFieldPanel(
+                    [
                         FieldPanel("who_partner_sub_block_title"),
                         StreamFieldPanel(
                             "who_partner_sub_block_data", classname="full"
@@ -679,6 +752,20 @@ class ProjectPage(Page):
 
     class Meta:
         verbose_name = "Page du projet"
+
+
+class ProjectPagePerson(models.Model):
+    page = ParentalKey(
+        ProjectPage, on_delete=models.CASCADE, related_name="who_crew_sub_block_members"
+    )
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, verbose_name="Membre")
+
+    panels = [
+        SnippetChooserPanel("person"),
+    ]
+
+    class Meta:
+        unique_together = ("page", "person")
 
 
 class EvaluationInitiationPage(Page):

@@ -3,12 +3,14 @@ from open_democracy_back.models.contents_models import (
     BlogPost,
     Feedback,
     Partner,
+    Person,
     Resource,
 )
 from open_democracy_back.serializers.content_serializers import (
     BlogPostSerializer,
     FeedbackSerializer,
     PartnerSerializer,
+    PersonSerializer,
     ResourceSerializer,
 )
 
@@ -47,3 +49,12 @@ class PartnerView(
 ):
     serializer_class = PartnerSerializer
     queryset = Partner.objects.all()
+
+
+class PersonView(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = PersonSerializer
+    queryset = Person.objects.all()

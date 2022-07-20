@@ -413,11 +413,15 @@ class ResultsPage(Page):
     max_count_per_parent = 1
     preview_modes = None
 
-    tag_line = models.CharField(
-        max_length=510, default="", verbose_name="Phrase d'accroche"
+    tag_line = models.CharField(max_length=510, default="", verbose_name="Consigne")
+    tag_line_no_results = models.CharField(
+        max_length=510, default="", verbose_name="Consigne si aucun résultat publié"
     )
     introduction = RichTextField(
-        default="", features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Introduction"
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Introduction",
+        blank=True,
     )
     intro_image = models.ForeignKey(
         "wagtailimages.Image",
@@ -430,6 +434,7 @@ class ResultsPage(Page):
 
     content_panels = Page.content_panels + [
         FieldPanel("tag_line"),
+        FieldPanel("tag_line_no_results"),
         FieldPanel("introduction"),
         ImageChooserPanel("intro_image"),
     ]

@@ -39,8 +39,9 @@ from .views.assessment_views import (
     AssessmentView,
     AssessmentsView,
     CompletedQuestionsInitializationView,
+    PublishedAssessmentsView,
     initialize_assessment,
-    QuestionnaireScoreView,
+    AssessmentScoreView,
     CurrentAssessmentView,
     CurrentAssessmentResponseView,
 )
@@ -116,6 +117,7 @@ urlpatterns = [
     path("assessments/current", CurrentAssessmentView.as_view()),
     path("assessments/<int:pk>/", AssessmentView.as_view({"get": "retrieve"})),
     path("assessments/<int:pk>/initialization/", initialize_assessment),
+    path("assessments/published/", PublishedAssessmentsView.as_view({"get": "list"})),
     path(
         "questionnaire-structure/", QuestionnaireStructureView.as_view({"get": "list"})
     ),
@@ -147,7 +149,7 @@ urlpatterns = [
     ),
     path(
         "assessments/<int:assessment_pk>/scores/",
-        QuestionnaireScoreView.as_view(),
+        AssessmentScoreView.as_view(),
     ),
     path(
         "workshops/<int:workshop_pk>/participation/",

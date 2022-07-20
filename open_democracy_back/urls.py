@@ -13,6 +13,7 @@ from .views.wagtail_rule_views import (
     profile_intersection_operator_view,
     question_intersection_operator_view,
     question_rules_view,
+    representativity_criteria_refining_view,
 )
 
 urlpatterns = [
@@ -45,6 +46,11 @@ urlpatterns = [
         "admin/profile-type/<int:pk>/rule/<int:rule_pk>/delete",
         ProfileDefinitionView.as_view(),
         name="delete-profile-type-definition",
+    ),
+    path(
+        "admin/representativity-criteria/<int:pk>/rules/",
+        representativity_criteria_refining_view,
+        name="representativity-criteria-refining",
     ),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),

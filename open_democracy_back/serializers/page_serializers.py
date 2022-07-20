@@ -143,7 +143,7 @@ class ResultsPageSerializer(PageSerialiserWithLocale):
 
     class Meta:
         model = ResultsPage
-        fields = PAGE_FIELDS + ["tag_line", "intro_image_url"]
+        fields = PAGE_FIELDS + ["tag_line", "tag_line_no_results", "intro_image_url"]
         read_only_fields = fields
 
 

@@ -166,6 +166,7 @@ class CurrentParticipationView(APIView):
         instance = queryset.filter_current().first()
         if not instance:
             instance = queryset.first()
+        if instance:
             instance.is_current = True
             instance.save()
         serializer = ParticipationSerializer(instance)

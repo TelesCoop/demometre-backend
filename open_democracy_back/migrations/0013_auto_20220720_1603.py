@@ -5,20 +5,7 @@ import django.db.models.deletion
 import wagtail.core.fields
 
 
-def delete_pages(apps, _):
-    EvaluationInitPage = apps.get_model("open_democracy_back", "EvaluationInitPage")
-    EvaluationIntroPage = apps.get_model("open_democracy_back", "EvaluationIntroPage")
-    EvaluationInitPage.objects.all().delete()
-    EvaluationIntroPage.objects.all().delete()
-
-
-def reverse_action(apps, _):
-    pass
-
-
 class Migration(migrations.Migration):
-
-    
 
     dependencies = [
         ('wagtailcore', '0066_collection_management_permissions'),
@@ -28,7 +15,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(delete_pages, reverse_action),
         migrations.CreateModel(
             name='EvaluationInitiationPage',
             fields=[

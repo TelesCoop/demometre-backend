@@ -30,6 +30,8 @@ class LocalityType(models.TextChoices):
 class InitiatorType(models.TextChoices):
     COLLECTIVITY = "collectivity", "La collectivité"
     ASSOCIATION = "association", "Une association"
+    INDIVIDUAL = "individual", "Un particulier"
+    OTHER = "other", "Autre"
 
 
 class ManagedAssessmentType(models.TextChoices):

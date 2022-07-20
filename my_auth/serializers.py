@@ -36,3 +36,15 @@ class AuthSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         return make_password(value)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "email",
+            "is_expert",
+        )
+        read_only_fields = fields

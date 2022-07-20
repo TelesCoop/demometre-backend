@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from open_democracy_back.models.assessment_models import AssessmentType
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Criteria,
@@ -93,9 +94,14 @@ class QuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
     rules = QuestionRuleSerializer(many=True, read_only=True)
-    role_ids = serializers.PrimaryKeyRelatedField(
-        read_only=True, source="roles", many=True
-    )
+    role_ids = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_role_ids(obj):
+        roles = obj.roles.all()
+        if roles.count() == 0:
+            roles = Role.objects.all()
+        return roles.values_list("id", flat=True)
 
     class Meta:
         abstract = True
@@ -107,6 +113,7 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
     )
     pillar_id = serializers.SerializerMethodField()
     pillar_name = serializers.SerializerMethodField()
+    assessment_types = serializers.SerializerMethodField()
 
     @staticmethod
     def get_pillar_name(obj):
@@ -115,6 +122,13 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
     @staticmethod
     def get_pillar_id(obj):
         return obj.criteria.marker.pillar_id
+
+    @staticmethod
+    def get_assessment_types(obj):
+        assessment_types = obj.assessment_types.all()
+        if assessment_types.count() == 0:
+            assessment_types = AssessmentType.objects.all()
+        return assessment_types.values_list("assessment_type", flat=True)
 
     class Meta:
         model = QuestionnaireQuestion
@@ -125,6 +139,7 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
             "objectivity",
             "method",
             "profile_ids",
+            "assessment_types",
         ] + QUESTION_FIELDS
         read_only_fields = fields
 

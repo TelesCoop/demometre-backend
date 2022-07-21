@@ -133,9 +133,13 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
     if question.objectivity == "objective":
         base_count = "assessment_response"
         base_queryset = get_chart_data_objective_queryset(assessment_id, base_count)
+        root_queryset = get_chart_data_objective_queryset(assessment_id)
+        model = AssessmentResponse
     else:
         base_count = "participation_response"
         base_queryset = get_chart_data_subjective_queryset(assessment_id, base_count)
+        root_queryset = get_chart_data_subjective_queryset(assessment_id)
+        model = ParticipationResponse
 
     base_queryset[f"{base_count}__question_id"] = question.pk
 
@@ -150,7 +154,9 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
             "count"
         ]
 
-    data = {}
+    data = {
+        "count": model.objects.filter(**root_queryset, question_id=question.id).count()
+    }
     response_choices = ResponseChoice.objects.filter(question_id=question.id)
     for category in Category.objects.filter(question_id=question.id):
         data[category.id] = {"label": category.category, "value": {}}

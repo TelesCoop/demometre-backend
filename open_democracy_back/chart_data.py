@@ -44,7 +44,7 @@ def get_chart_data_of_boolean_question(question, assessment_id):
         base_queryset = get_chart_data_subjective_queryset(assessment_id, base_count)
 
     result = (
-        Question.filter(id=question.id)
+        Question.objects.filter(id=question.id)
         .annotate(
             count=Count(base_count),
             true=Count(

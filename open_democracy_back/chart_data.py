@@ -80,7 +80,7 @@ def get_chart_data_of_choice_question(question, assessment_id, choice_type):
     response_choices = ResponseChoice.objects.filter(question_id=question.id).annotate(
         count=Count(base_count, filter=Q(**base_queryset))
     )
-    data = {}
+    data = {"value": {}}
     for response_choice in response_choices:
         data["value"][response_choice.id] = {
             "label": response_choice.response_choice,

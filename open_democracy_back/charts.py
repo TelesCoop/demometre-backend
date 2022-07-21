@@ -12,6 +12,6 @@
 # def get_data_of_boolean_question(queryset):
 #     base_queryset = {
 #         "participationresponses__participation__user__is_unknown_user": False,
-#         "participationresponses__participation__assessment_id": assessment_pk,
+#         "participationresponses__participation__assessment_id": assessment_id,
 #         "participationresponses__question__profiling_question": False,
 #     }

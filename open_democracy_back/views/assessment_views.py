@@ -1,9 +1,7 @@
 import logging
-from collections import defaultdict
 from datetime import date
 from typing import Dict
 
-from django.db.models import Count, Q, Avg
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -14,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
 from my_auth.models import User
+from open_democracy_back.chart_data import CHART_DATA_FN_BY_QUESTION_TYPE
 
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
@@ -22,11 +21,6 @@ from open_democracy_back.models import (
     Assessment,
     Participation,
     Question,
-    ParticipationResponse,
-    ResponseChoice,
-    PercentageRange,
-    ClosedWithScaleCategoryResponse,
-    Category,
 )
 from open_democracy_back.models.assessment_models import (
     EPCI,
@@ -47,9 +41,6 @@ from open_democracy_back.serializers.assessment_serializers import (
     AssessmentResponseSerializer,
     AssessmentSerializer,
 )
-
-# Get an instance of a logger
-from open_democracy_back.utils import QuestionType
 
 logger = logging.getLogger(__name__)
 
@@ -258,214 +249,20 @@ class AssessmentScoreView(APIView):
         return RestResponse(scores, status=status.HTTP_200_OK)
 
 
-def get_chart_data_subjective_queryset(assessment_pk, prefix_queryset=""):
-    prefix = f"{prefix_queryset}__" if prefix_queryset else ""
-
-    return {
-        f"{prefix}answered_by__is_unknown_user": False,
-        f"{prefix}assessment_id": assessment_pk,
-        f"{prefix}has_passed": False,
-    }
-
-
-def get_chart_data_objective_queryset(assessment_pk, prefix_queryset=""):
-    prefix = f"{prefix_queryset}__" if prefix_queryset else ""
-
-    return {
-        f"{prefix}answered_by__is_unknown_user": False,
-        f"{prefix}assessment_id": assessment_pk,
-        f"{prefix}has_passed": False,
-    }
-
-
-def get_chart_data_of_boolean_question(question, assessment_pk):
-    if question.objectivity == "objective":
-        base_count = "assessmentresponses"
-        base_queryset = get_chart_data_objective_queryset(assessment_pk, base_count)
-    else:
-        base_count = "participationresponses"
-        base_queryset = get_chart_data_subjective_queryset(assessment_pk, base_count)
-
-    result = (
-        Question.filter(id=question.id)
-        .annotate(
-            count=Count(base_count),
-            true=Count(
-                base_count,
-                filter=Q(
-                    **base_queryset, participationresponses__boolean_response=True
-                ),
-            ),
-            false=Count(
-                base_count,
-                filter=Q(
-                    **base_queryset, participationresponses__boolean_response=False
-                ),
-            ),
-        )
-        .get()
-    )
-    return {
-        "true": {"label": "Oui", "value": result.true},
-        "false": {"label": "Non", "value": result.false},
-        "count": result.count,
-    }
-
-
-def get_chart_data_of_choice_question(question, assessment_pk, choice_type):
-    if question.objectivity == "objective":
-        base_count = f"{choice_type}_assessmentresponses"
-        base_queryset = get_chart_data_objective_queryset(assessment_pk, base_count)
-        root_queryset = get_chart_data_objective_queryset(assessment_pk)
-        model = AssessmentResponse
-    else:
-        base_count = f"{choice_type}_participationresponses"
-        base_queryset = get_chart_data_subjective_queryset(assessment_pk, base_count)
-        root_queryset = get_chart_data_subjective_queryset(assessment_pk)
-        model = ParticipationResponse
-
-    response_choices = ResponseChoice.objects.filter(question_id=question.id).annotate(
-        count=Count(base_count, filter=Q(**base_queryset))
-    )
-    data = {}
-    for response_choice in response_choices:
-        data["value"][response_choice.id] = {
-            "label": response_choice.response_choice,
-            "value": response_choice.count,
-        }
-
-    data["count"] = model.objects.filter(
-        **root_queryset, question_id=question.id
-    ).count()
-
-
-def get_chart_data_of_unique_choice_question(question, assessment_pk):
-    return get_chart_data_of_choice_question(question, assessment_pk, "unique_choice")
-
-
-def get_chart_data_of_multiple_choice_question(question, assessment_pk):
-    return get_chart_data_of_choice_question(question, assessment_pk, "multiple_choice")
-
-
 @api_view(["GET"])
-def get_chart_data(request, assessment_pk, question_pk):
-    question = Question.objects.get(id=question_pk)
+def get_chart_data(request, assessment_id, question_id):
+    question = Question.objects.get(id=question_id)
 
-    if question.type == QuestionType.BOOLEAN:
-        data = get_chart_data_of_boolean_question(question, assessment_pk)
-    elif question.type == QuestionType.UNIQUE_CHOICE:
-        current_queryset = {
-            "unique_choice_participationresponses__participation__user__is_unknown_user": False,
-            "unique_choice_participationresponses__participation__assessment_id": 6,
-            "unique_choice_participationresponses__has_passed": False,
-        }
-        current_queryset2 = {
-            "participation__user__is_unknown_user": False,
-            "participation__assessment_id": 6,
-            "has_passed": False,
-        }
-        response_choices = ResponseChoice.objects.filter(
-            question_id=question_pk
-        ).annotate(
-            count=Count(
-                "unique_choice_participationresponses", filter=Q(**current_queryset)
-            )
-        )
-        for response_choice in response_choices:
-            data["value"][response_choice.id] = {
-                "label": response_choice.response_choice,
-                "value": response_choice.count,
-            }
+    data = (
+        CHART_DATA_FN_BY_QUESTION_TYPE[question.type](question, assessment_id)
+        if CHART_DATA_FN_BY_QUESTION_TYPE.get(question.type)
+        else None
+    )
 
-        data["count"] = ParticipationResponse.objects.filter(
-            **current_queryset2, question_id=question_pk
-        ).count()
-
-    elif question.type == QuestionType.MULTIPLE_CHOICE:
-        base = "multiple_choice_participationresponses"
-        current_queryset = {
-            f"{base}__participation__user__is_unknown_user": False,
-            f"{base}__participation__assessment_id": 6,
-            f"{base}__has_passed": False,
-        }
-        current_queryset2 = {
-            "participation__user__is_unknown_user": False,
-            "participation__assessment_id": 6,
-            "has_passed": False,
-        }
-        response_choices = ResponseChoice.objects.filter(
-            question_id=question_pk
-        ).annotate(count=Count(base, filter=Q(**current_queryset)))
-        for response_choice in response_choices:
-            data["value"][response_choice.id] = {
-                "label": response_choice.response_choice,
-                "value": response_choice.count,
-            }
-
-        data["count"] = ParticipationResponse.objects.filter(
-            **current_queryset2, question_id=question_pk
-        ).count()
-    elif question.type == QuestionType.PERCENTAGE:
-        # base_queryset = {
-        #     f"participation__user__is_unknown_user": False,
-        #     f"participation__assessment_id": assessment_pk,
-        #     f"has_passed": False,
-        # }
-        base_queryset = {
-            f"answered_by__is_unknown_user": False,
-            f"assessment_id": assessment_pk,
-            f"has_passed": False,
-        }
-        result = AssessmentResponse.objects.filter(
-            **base_queryset, question_id=question_pk
-        ).aggregate(count=Count("id"), value=Avg("percentage_response"))
-
-        data["value"] = {"label": "Pourcentage moyen", "value": result["value"]}
-        data["count"] = result["count"]
-        data["ranges"] = [
-            {
-                "id": percentage_range.id,
-                "score": percentage_range.associated_score,
-                "lower_bound": percentage_range.lower_bound,
-                "upper_bound": percentage_range.upper_bound,
-            }
-            for percentage_range in PercentageRange.objects.filter(
-                question_id=question_pk
-            )
-        ]
-    elif question.type == QuestionType.CLOSED_WITH_SCALE:
-        current_queryset = {
-            "participation_response__participation__user__is_unknown_user": False,
-            "participation_response__participation__assessment_id": assessment_pk,
-            "participation_response__has_passed": False,
-        }
-        result = (
-            ClosedWithScaleCategoryResponse.objects.filter(
-                participation_response__question_id=question_pk, **current_queryset
-            )
-            .values("category_id", "response_choice_id")
-            .annotate(count=Count("id"))
-        )
-        result_by_category_id = defaultdict(lambda: {})
-        for item in result:
-            result_by_category_id[item["category_id"]][
-                item["response_choice_id"]
-            ] = item["count"]
-
-        response_choices = ResponseChoice.objects.filter(question_id=question_pk)
-        for category in Category.objects.filter(question_id=question_pk):
-            data[category.id] = {"label": category.category, "value": {}}
-            for response_choice in response_choices:
-                data[category.id]["value"][response_choice.id] = {
-                    "label": response_choice.response_choice,
-                    "value": result_by_category_id[category.id].get(
-                        response_choice.id, 0
-                    ),
-                }
     return RestResponse(
         {
             "id": question.id,
-            "assessment_pk": assessment_pk,
+            "assessment_id": assessment_id,
             "type": question.type,
             "data": data,
         },

@@ -115,7 +115,7 @@ class Response(models.Model):
     )
     boolean_response = models.BooleanField(blank=True, null=True)
     percentage_response = models.IntegerField(
-        blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(100)]
+        blank=True, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
 
     class Meta:

@@ -244,8 +244,8 @@ class PublishedAssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
 class AssessmentScoreView(APIView):
     # Cache page everyday
     @method_decorator(cache_page(60 * 60 * 24))
-    def get(self, request, assessment_pk):
-        scores: Dict[str, Dict[str, float]] = get_scores_by_assessment_pk(assessment_pk)
+    def get(self, request, assessment_id):
+        scores: Dict[str, Dict[str, float]] = get_scores_by_assessment_pk(assessment_id)
         return RestResponse(scores, status=status.HTTP_200_OK)
 
 

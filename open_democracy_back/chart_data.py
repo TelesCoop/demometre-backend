@@ -46,7 +46,10 @@ def get_chart_data_of_boolean_question(question, assessment_id):
     result = (
         Question.objects.filter(id=question.id)
         .annotate(
-            count=Count(base_count),
+            count=Count(
+                base_count,
+                filter=Q(**base_queryset),
+            ),
             true=Count(
                 base_count,
                 filter=Q(**base_queryset, **{f"{base_count}__boolean_response": True}),

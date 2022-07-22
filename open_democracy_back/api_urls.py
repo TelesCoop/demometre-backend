@@ -153,7 +153,7 @@ urlpatterns = [
         AssessmentScoreView.as_view(),
     ),
     path(
-        "assessments/<int:assessment_id>/questions/<int:question_id>/",
+        "assessments/<int:assessment_id>/questions/<int:question_id>/chart-data/",
         get_chart_data,
     ),
     path(

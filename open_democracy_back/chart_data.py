@@ -158,13 +158,14 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
         ]
 
     data = {
-        "count": model.objects.filter(**root_queryset, question_id=question.id).count()
+        "value": {},
+        "count": model.objects.filter(**root_queryset, question_id=question.id).count(),
     }
     response_choices = ResponseChoice.objects.filter(question_id=question.id)
     for category in Category.objects.filter(question_id=question.id):
-        data[category.id] = {"label": category.category, "value": {}}
+        data["value"][category.id] = {"label": category.category, "value": {}}
         for response_choice in response_choices:
-            data[category.id]["value"][response_choice.id] = {
+            data["value"][category.id]["value"][response_choice.id] = {
                 "label": response_choice.response_choice,
                 "value": result_by_category_id[category.id].get(response_choice.id, 0),
             }

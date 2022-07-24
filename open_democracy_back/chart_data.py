@@ -169,6 +169,12 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
                 "label": response_choice.response_choice,
                 "value": result_by_category_id[category.id].get(response_choice.id, 0),
             }
+
+    data["choices"] = {
+        response_choice.id: {"label": response_choice.response_choice}
+        for response_choice in ResponseChoice.objects.filter(question_id=question.id)
+    }
+
     return data
 
 

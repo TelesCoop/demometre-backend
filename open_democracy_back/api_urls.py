@@ -158,7 +158,7 @@ urlpatterns = [
         get_chart_data,
     ),
     path(
-        "assessments/<int:assessment_pk>/add-expert/",
+        "assessments/<int:assessment_id>/add-expert/",
         AssessmentAddExpertView.as_view(),
     ),
     path(

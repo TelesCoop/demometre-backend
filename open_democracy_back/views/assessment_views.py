@@ -246,8 +246,8 @@ class ExpertView(mixins.ListModelMixin, viewsets.GenericViewSet):
 class AssessmentAddExpertView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def patch(self, request, assessment_pk):
-        assessment = Assessment.objects.get(id=assessment_pk)
+    def patch(self, request, assessment_id):
+        assessment = Assessment.objects.get(id=assessment_id)
         expert = User.objects.get(id=request.data.get("expert_id"))
         if not expert.is_expert:
             return RestResponse(status=status.HTTP_400_BAD_REQUEST)
@@ -264,8 +264,8 @@ class AssessmentAddExpertView(APIView):
 class CompletedQuestionsInitializationView(APIView):
     permission_classes = [IsAssessmentAdminOrReadOnly]
 
-    def patch(self, _, assessment_pk):
-        assessment = Assessment.objects.get(id=assessment_pk)
+    def patch(self, _, assessment_id):
+        assessment = Assessment.objects.get(id=assessment_id)
         assessment.is_initialization_questions_completed = True
         assessment.save()
 

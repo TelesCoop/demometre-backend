@@ -94,6 +94,10 @@ class AssessmentSerializer(serializers.ModelSerializer):
     representativities = AssessmentRepresentativityCriteriaSerializer(
         many=True, read_only=True
     )
+    experts = UserSerializer(many=True, read_only=True)
+    assessment_type = serializers.CharField(
+        read_only=True, source="assessment_type.assessment_type"
+    )
 
     @staticmethod
     def get_participation_nb(obj: Assessment):
@@ -108,7 +112,6 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "initiated_by_user",
             "initiator_type",
             "initialized_to_the_name_of",
-            "public_initiator",
             "initialization_date",
             "is_initialization_questions_completed",
             "end_date",
@@ -117,6 +120,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "participation_nb",
             "representativities",
             "published_results",
+            "experts",
         ]
         read_only_fields = fields
 

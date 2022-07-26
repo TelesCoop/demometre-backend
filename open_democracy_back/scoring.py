@@ -143,9 +143,11 @@ def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
 
 
 def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
-    percentage_responses = queryset.filter(
-        question__type=QuestionType.PERCENTAGE
-    ).prefetch_related("question__percentage_ranges", "question__criteria__marker")
+    percentage_responses = (
+        queryset.filter(question__type=QuestionType.PERCENTAGE)
+        .exclude(percentage_response__isnull=True)
+        .prefetch_related("question__percentage_ranges", "question__criteria__marker")
+    )
 
     percentage_scores_dict: DefaultDict[str, QuestionScoreAverage] = defaultdict(
         lambda: QuestionScoreAverage(

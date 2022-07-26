@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from open_democracy_back.models import HomePage, EvaluationIntroPage, ReferentialPage
 from open_democracy_back.models.assessment_models import AssessmentType
 from open_democracy_back.models.contents_models import (
     BlogPost,
@@ -9,11 +8,13 @@ from open_democracy_back.models.contents_models import (
     Resource,
 )
 from open_democracy_back.models.pages_models import (
-    EvaluationInitPage,
+    EvaluationInitiationPage,
     EvaluationQuestionnairePage,
     ProjectPage,
     ResultsPage,
     UsagePage,
+    HomePage,
+    ReferentialPage,
 )
 from open_democracy_back.serializers.assessment_serializers import (
     AssessmentTypeSerializer,
@@ -22,6 +23,7 @@ from open_democracy_back.serializers.content_serializers import (
     BlogPostSerializer,
     FeedbackSerializer,
     PartnerSerializer,
+    PersonSerializer,
     ResourceSerializer,
 )
 
@@ -195,6 +197,9 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
     intro_image_url = serializers.SerializerMethodField()
     images_url = serializers.SerializerMethodField()
     svgs_url = serializers.SerializerMethodField()
+    who_crew_sub_block_image_url = serializers.SerializerMethodField()
+    who_crew_sub_block_member_ids = serializers.SerializerMethodField()
+    persons = serializers.SerializerMethodField()
     partners = serializers.SerializerMethodField()
 
     @staticmethod
@@ -249,6 +254,16 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
         return svgs
 
     @staticmethod
+    def get_who_crew_sub_block_image_url(obj: ProjectPage):
+        if obj.who_crew_sub_block_image:
+            return obj.who_crew_sub_block_image.file.url
+        return None
+
+    @staticmethod
+    def get_who_crew_sub_block_member_ids(obj: ProjectPage):
+        return obj.who_crew_sub_block_members.values_list("person_id", flat=True)
+
+    @staticmethod
     def get_partners(obj: ProjectPage):
         partners = []
         ids = []
@@ -258,6 +273,21 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
                     partners.append(PartnerSerializer(partner, read_only=True).data)
                     ids.append(partner.id)
         return partners
+
+    @staticmethod
+    def get_persons(obj: ProjectPage):
+        persons = []
+        ids = []
+        for group in obj.who_committee_sub_block_data:
+            for person in group.value["committee_members"]:
+                if person.id not in ids:
+                    persons.append(PersonSerializer(person, read_only=True).data)
+                    ids.append(person.id)
+        for member in obj.who_crew_sub_block_members.all():
+            if member.person_id not in ids:
+                persons.append(PersonSerializer(member.person, read_only=True).data)
+                ids.append(member.person_id)
+        return persons
 
     class Meta:
         model = ProjectPage
@@ -271,37 +301,64 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
             "impact_block_title",
             "impact_block_data",
             "who_block_title",
+            "who_crew_sub_block_title",
+            "who_crew_sub_block_image_url",
+            "who_crew_sub_block_member_ids",
+            "who_committee_sub_block_title",
+            "who_committee_sub_block_description",
+            "who_committee_sub_block_data",
             "who_partner_sub_block_title",
             "who_partner_sub_block_data",
             "how_block_title",
             "how_block_data",
             "images_url",
             "svgs_url",
+            "persons",
             "partners",
         ]
         read_only_fields = fields
 
 
-class EvaluationIntroPageSerializer(PageSerialiserWithLocale):
+class EvaluationInitiationPageSerializer(PageSerialiserWithLocale):
     class Meta:
-        model = EvaluationIntroPage
-        fields = PAGE_FIELDS + [
-            "data_consent",
-            "account_incentive",
-            "account_incentive_title",
-        ]
-        read_only_fields = fields
-
-
-class EvaluationInitPageSerializer(PageSerialiserWithLocale):
-    class Meta:
-        model = EvaluationInitPage
-        fields = PAGE_FIELDS + [
-            "public_name_question",
-            "public_name_question_description",
+        model = EvaluationInitiationPage
+        fields = [
+            "id",
+            "locale_code",
+            "search_assessment_title",
+            "search_assessment_description",
+            "consent_title",
+            "consent_description",
+            "no_assessment_title",
+            "no_assessment_description",
+            "one_quick_assessment_title",
+            "one_quick_assessment_description",
+            "one_assessment_with_expert_title",
+            "one_assessment_with_expert_description",
+            "one_participation_assessment_title",
+            "one_participation_assessment_description",
+            "add_expert_title",
+            "add_expert_description",
+            "add_expert_button_yes",
+            "add_expert_button_no",
+            "must_be_connected_to_create_title",
+            "must_be_connected_to_create_description",
+            "create_quick_assessment_title",
+            "create_quick_assessment_description",
+            "create_participation_assessment_title",
+            "create_participation_assessment_description",
+            "create_assessment_with_expert_title",
+            "create_assessment_with_expert_description",
+            "choose_expert_text",
+            "if_no_expert_text",
+            "init_title",
+            "init_description",
+            "initiator_name_question",
+            "initiator_name_description",
             "representativity_title",
             "representativity_description",
-            "initialization_validation",
+            "initialization_validation_title",
+            "initialization_validation_description",
         ]
         read_only_fields = fields
 

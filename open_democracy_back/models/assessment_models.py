@@ -238,9 +238,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         blank=True,
         null=True,
         verbose_name="Initialisé au nom de",
-        help_text="Utile quand l'évaluation n'est pas initialisé par la collectivité",
     )
-    public_initiator = models.BooleanField(default=False)
     initialization_date = models.DateField(
         null=True,
         blank=True,
@@ -255,6 +253,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
 
     experts = models.ManyToManyField(
         User,
+        blank=True,
         verbose_name="Experts",
         related_name="assessments",
         limit_choices_to={"groups__name": "Experts"},

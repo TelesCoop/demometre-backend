@@ -154,3 +154,35 @@ class Partner(index.Indexed, models.Model):
     class Meta:
         verbose_name = "Partenaire"
         verbose_name_plural = "Partenaires"
+
+
+@register_snippet
+class Person(index.Indexed, models.Model):
+    name = models.CharField(max_length=64, verbose_name="Nom")
+    image = models.ForeignKey(
+        "wagtailimages.Image",
+        verbose_name="Image",
+        on_delete=models.CASCADE,
+        related_name="+",
+    )
+    job_title = models.CharField(
+        max_length=136,
+        verbose_name="Intitulé du poste",
+    )
+
+    panels = [
+        ImageChooserPanel("image"),
+        FieldPanel("name"),
+        FieldPanel("job_title"),
+    ]
+
+    search_fields = [
+        index.SearchField("name", partial_match=True),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Personne"
+        verbose_name_plural = "Personnes"

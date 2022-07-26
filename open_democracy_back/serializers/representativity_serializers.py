@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db.models import Q
 
 from open_democracy_back.models.representativity_models import (
     AssessmentRepresentativity,
@@ -39,9 +40,15 @@ class RepresentativityCriteriaSerializer(serializers.ModelSerializer):
     response_choice_statements = serializers.SerializerMethodField()
 
     def get_response_choice_statements(self, obj: RepresentativityCriteria):
-        return obj.profiling_question.response_choices.all().values_list(
-            "response_choice", flat=True
-        )
+        return obj.profiling_question.response_choices.filter(
+            Q(representativity_criteria_rule__isnull=True)
+            | (
+                Q(
+                    representativity_criteria_rule__ignore_for_acceptability_threshold=False
+                )
+                & Q(representativity_criteria_rule__totally_ignore=False)
+            )
+        ).values_list("response_choice", flat=True)
 
     class Meta:
         model = RepresentativityCriteria

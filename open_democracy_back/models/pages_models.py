@@ -1,6 +1,7 @@
 from typing import List
 from django import forms
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from wagtail.core import blocks
 from wagtail.core.fields import RichTextField, StreamField
 from wagtail.admin.edit_handlers import (
@@ -10,17 +11,21 @@ from wagtail.admin.edit_handlers import (
     FieldRowPanel,
     ObjectList,
     TabbedInterface,
+    InlinePanel,
 )
+
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.snippets.blocks import SnippetChooserBlock
+from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.core.models import Page
 from wagtailsvg.blocks import SvgChooserBlock
-from open_democracy_back.models.contents_models import Partner
+from open_democracy_back.models.contents_models import Partner, Person
 from open_democracy_back.utils import (
     SIMPLE_RICH_TEXT_FIELD_FEATURE,
     ManagedAssessmentType,
 )
+from modelcluster.fields import ParentalKey
 
 
 class HomePage(Page):
@@ -545,6 +550,55 @@ class ProjectPage(Page):
         blank=True,
         help_text="Si ce champ est vide le bloc ne s'affichera pas",
     )
+    who_crew_sub_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Equipe Démocratie Ouverte - titre",
+        blank=True,
+        help_text="Si ce champ est vide le bloc ne s'affichera pas",
+    )
+    who_crew_sub_block_image = models.ForeignKey(
+        "wagtailimages.Image",
+        verbose_name="Logo Démocratie Ouverte",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    who_committee_sub_block_title = models.CharField(
+        max_length=68,
+        verbose_name="Le Comité d’orientation - titre",
+        blank=True,
+        help_text="Si ce champ est vide le bloc ne s'affichera pas",
+    )
+    who_committee_sub_block_description = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Le Comité d’orientation - description",
+        blank=True,
+    )
+    who_committee_sub_block_data = StreamField(
+        [
+            (
+                "group_committees",
+                blocks.StructBlock(
+                    [
+                        ("committee", blocks.CharBlock(label="Nom")),
+                        (
+                            "committee_members",
+                            blocks.ListBlock(
+                                SnippetChooserBlock(Person), label="Membre"
+                            ),
+                        ),
+                    ],
+                    label_format="{title}",
+                    label="Groupe du Comité d’orientation",
+                ),
+            )
+        ],
+        blank=True,
+        verbose_name="Membres du Comité - contenu",
+    )
+
     who_partner_sub_block_title = models.CharField(
         max_length=68,
         verbose_name="Partenaires - titre",
@@ -653,6 +707,27 @@ class ProjectPage(Page):
                 FieldPanel("who_block_title"),
                 MultiFieldPanel(
                     [
+                        FieldPanel("who_crew_sub_block_title"),
+                        ImageChooserPanel("who_crew_sub_block_image"),
+                        InlinePanel(
+                            "who_crew_sub_block_members",
+                            label="Membres de Démocratie Ouverte",
+                        ),
+                    ],
+                    heading="Sous bloc : Equipe Démocratie Ouverte",
+                ),
+                MultiFieldPanel(
+                    [
+                        FieldPanel("who_committee_sub_block_title"),
+                        FieldPanel("who_committee_sub_block_description"),
+                        StreamFieldPanel(
+                            "who_committee_sub_block_data", classname="full"
+                        ),
+                    ],
+                    heading="Sous bloc : Equipe Comité d’orientation",
+                ),
+                MultiFieldPanel(
+                    [
                         FieldPanel("who_partner_sub_block_title"),
                         StreamFieldPanel(
                             "who_partner_sub_block_data", classname="full"
@@ -679,99 +754,253 @@ class ProjectPage(Page):
         verbose_name = "Page du projet"
 
 
-class EvaluationIntroPage(Page):
-    parent_page_types = ["HomePage"]
-    subpage_types: List[str] = []
-    max_count_per_parent = 1
-    preview_modes = None
+class ProjectPagePerson(models.Model):
+    page = ParentalKey(
+        ProjectPage, on_delete=models.CASCADE, related_name="who_crew_sub_block_members"
+    )
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, verbose_name="Membre")
 
-    account_incentive_title = models.CharField(
-        max_length=68, default="", verbose_name="Titre pour l'incitation à la connexion"
-    )
-    account_incentive = models.CharField(
-        max_length=255, default="", verbose_name="Incitation à la connexion"
-    )
-    introduction = models.TextField(default="")
-    data_consent = RichTextField(
-        default="",
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Consentement sur les données personnelles",
-        help_text="Demande de consentement à conserver les données personnelles demandées, RGPD",
-    )
-
-    content_panels = Page.content_panels + [
-        FieldPanel("account_incentive_title"),
-        FieldPanel("account_incentive"),
-        FieldPanel("introduction"),
-        FieldPanel("data_consent"),
+    panels = [
+        SnippetChooserPanel("person"),
     ]
 
-    # Admin tabs list (Remove promotion and settings tabs)
-    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
-
     class Meta:
-        verbose_name = "Intro à l'évaluation"
+        unique_together = ("page", "person")
 
 
-class EvaluationInitPage(Page):
+class EvaluationInitiationPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
     max_count_per_parent = 1
     preview_modes = None
 
-    introduction = RichTextField(
-        default="",
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Explication de l'initialisation",
-        help_text="Expliquer qu'aucune évaluation n'existe dans cette localité là, que des questions sur la vie politique de la ville précise seront posées, qu'il faut être connecté pour pouvoir initer une évaluation etc",
+    search_assessment_title = models.CharField(
+        verbose_name=_("title"),
+        max_length=255,
+    )
+    search_assessment_description = models.TextField(
+        default="", verbose_name="Description", blank=True
     )
 
-    public_name_question = models.TextField(
-        verbose_name="Enoncé de la question sur la publication ou non du nom de l'initateur",
-        default="",
-        help_text="Question RGPD - La réponse est oui / non - Si l'évaluation est faite au nom d'une association alors c'est le nom de cette association qui sera affichée",
+    consent_title = models.CharField(max_length=255, default="", verbose_name="Titre")
+    consent_description = models.CharField(
+        max_length=255, default="", verbose_name="Description", blank=True
     )
 
-    public_name_question_description = models.TextField(
-        verbose_name="Description de la question sur la publication ou non du nom de l'initateur",
+    no_assessment_title = models.CharField(
+        max_length=255, default="", verbose_name="Titre"
+    )
+    no_assessment_description = models.TextField(
+        default="", verbose_name="Description", blank=True
+    )
+
+    one_quick_assessment_title = models.CharField(
+        max_length=255, default="", verbose_name="Titre"
+    )
+    one_quick_assessment_description = models.TextField(
+        default="", verbose_name="Description", blank=True
+    )
+
+    one_assessment_with_expert_title = models.CharField(
+        max_length=255, default="", verbose_name="Titre"
+    )
+    one_assessment_with_expert_description = models.TextField(
+        default="", verbose_name="Description", blank=True
+    )
+
+    one_participation_assessment_title = models.CharField(
+        max_length=255, default="", verbose_name="Titre"
+    )
+    one_participation_assessment_description = models.TextField(
+        default="", verbose_name="Description", blank=True
+    )
+    add_expert_title = models.CharField(
+        max_length=255, default="", verbose_name="Ajout d'un expert - Titre"
+    )
+    add_expert_description = models.TextField(
+        default="", verbose_name="Ajout d'un expert - Description", blank=True
+    )
+    add_expert_button_yes = models.CharField(
+        max_length=68, default="", verbose_name="Ajout d'un expert - Bouton OUI"
+    )
+    add_expert_button_no = models.CharField(
+        max_length=68, default="", verbose_name="Ajout d'un expert - Bouton NON"
+    )
+
+    must_be_connected_to_create_title = models.CharField(
+        max_length=255, default="", verbose_name="Titre"
+    )
+    must_be_connected_to_create_description = models.TextField(
+        default="", verbose_name="Description", blank=True
+    )
+
+    create_quick_assessment_title = models.CharField(
+        max_length=255, default="", verbose_name="Titre"
+    )
+    create_quick_assessment_description = models.TextField(
+        default="", verbose_name="Description", blank=True
+    )
+
+    create_participation_assessment_title = models.CharField(
+        max_length=255, default="", verbose_name="Titre"
+    )
+    create_participation_assessment_description = models.TextField(
+        default="", verbose_name="Description", blank=True
+    )
+
+    create_assessment_with_expert_title = models.CharField(
+        max_length=255, default="", verbose_name="Titre"
+    )
+    create_assessment_with_expert_description = models.TextField(
+        default="", verbose_name="Description", blank=True
+    )
+    choose_expert_text = models.CharField(
+        max_length=255, default="", verbose_name="Choisir un expert dans la liste"
+    )
+    if_no_expert_text = models.CharField(
+        max_length=255,
         default="",
-        help_text="Expliciter à l'utilisateur ce qu'implique ou non d'autoriser à publier son nom",
+        verbose_name="Si il n'y a pas mon expert, contactez-nous",
+    )
+
+    init_title = models.CharField(max_length=255, default="", verbose_name="Titre")
+    init_description = models.TextField(
+        default="", verbose_name="Description", blank=True
+    )
+    initiator_name_question = models.CharField(
+        max_length=255,
+        verbose_name="Enoncé de la question sur le nom de l'initateur qui sera affiché publiquement",
+        default="",
+    )
+    initiator_name_description = models.TextField(
+        verbose_name="Description de la question sur le nom de l'initateur qui sera affiché publiquement",
+        default="",
+        blank=True,
     )
 
     representativity_title = models.TextField(
-        verbose_name="Titre pour les questions sur les seuils d'acceptabilité de la représentativité",
+        verbose_name="Titre - page des seuils d'acceptabilité de la représentativité",
         default="",
         help_text="Correspond à la partie où seront posées les questions sur les seuils d'acceptabilité de la représentativité",
     )
-
     representativity_description = RichTextField(
-        verbose_name="Description de la question sur la limite de représentativité",
+        verbose_name="Description - page des seuils d'acceptabilité de la représentativité",
         default="",
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
         help_text="Permet à la personne de mieux comprendre les questions sur les représentativités, et lui donne des éléments de réponse",
+        blank=True,
     )
 
-    initialization_validation = RichTextField(
-        verbose_name="Texte de validation de l'initialisation d'une évaluation",
+    initialization_validation_title = models.CharField(
+        max_length=255,
+        default="",
+        verbose_name="Titre - page de validation",
+        help_text="S'affichera une fois l'initialisation de l'évaluation terminée",
+    )
+    initialization_validation_description = RichTextField(
+        verbose_name="Description - page de validation",
         default="",
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        help_text="S'affichera une fois l'initialisation de l'évaluation terminée",
+        blank=True,
     )
 
     content_panels = Page.content_panels + [
-        FieldPanel("introduction"),
-        FieldPanel("public_name_question"),
-        FieldPanel("public_name_question_description"),
-        FieldPanel("representativity_title"),
-        FieldPanel("representativity_description"),
-        FieldPanel("initialization_validation"),
+        MultiFieldPanel(
+            [
+                FieldPanel("search_assessment_title"),
+                FieldPanel("search_assessment_description"),
+            ],
+            heading="Recherche d'une évaluation",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("consent_title"),
+                FieldPanel("consent_description"),
+            ],
+            heading="Enoncé du consentement",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("no_assessment_title"),
+                FieldPanel("no_assessment_description"),
+            ],
+            heading="Aucune évaluation ne correspond",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("one_quick_assessment_title"),
+                FieldPanel("one_quick_assessment_description"),
+            ],
+            heading="Un diagnostic rapide correspond",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("one_participation_assessment_title"),
+                FieldPanel("one_participation_assessment_description"),
+                FieldPanel("add_expert_title"),
+                FieldPanel("add_expert_description"),
+                FieldPanel("add_expert_button_yes"),
+                FieldPanel("add_expert_button_no"),
+            ],
+            heading="Une évaluation participative correspond",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("must_be_connected_to_create_title"),
+                FieldPanel("must_be_connected_to_create_description"),
+            ],
+            heading="Un utilisateur non connecté ne peut pas initaliser une évaluation",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("one_assessment_with_expert_title"),
+                FieldPanel("one_assessment_with_expert_description"),
+            ],
+            heading="Une évaluation avec expert correspond",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("create_quick_assessment_title"),
+                FieldPanel("create_quick_assessment_description"),
+            ],
+            heading="Créer un diagnostic rapide",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("create_participation_assessment_title"),
+                FieldPanel("create_participation_assessment_description"),
+            ],
+            heading="Créer une évaluation participative",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("create_assessment_with_expert_title"),
+                FieldPanel("create_assessment_with_expert_description"),
+                FieldPanel("choose_expert_text"),
+                FieldPanel("if_no_expert_text"),
+            ],
+            heading="Créer une évaluation avec un expert",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("init_title"),
+                FieldPanel("init_description"),
+                FieldPanel("initiator_name_question"),
+                FieldPanel("initiator_name_description"),
+                FieldPanel("representativity_title"),
+                FieldPanel("representativity_description"),
+                FieldPanel("initialization_validation_title"),
+                FieldPanel("initialization_validation_description"),
+            ],
+            heading="Initialisation de l'évaluation",
+        ),
     ]
 
     # Admin tabs list (Remove promotion and settings tabs)
     edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
 
     class Meta:
-        verbose_name = "Initialisation d'une évaluation"
+        verbose_name = "Lancement d'une évaluation"
 
 
 class EvaluationQuestionnairePage(Page):

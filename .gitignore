@@ -38,3 +38,6 @@ wheels/
 .installed.cfg
 *.egg
 db.sqlite3-journal
+
+*.ipynb
+.ipynb_checkpoints/

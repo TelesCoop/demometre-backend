@@ -10,8 +10,7 @@ from open_democracy_back.views.animator_views import (
 from open_democracy_back.views.content_views import BlogPostView, ResourceView
 
 from open_democracy_back.views.page_views import (
-    EvaluationInitPageView,
-    EvaluationIntroPageView,
+    EvaluationInitiationPageSerializerView,
     EvaluationQuestionnairePageView,
     HomePageView,
     ProjectPageView,
@@ -35,15 +34,18 @@ from open_democracy_back.views.setting_views import (
 
 from .views.assessment_views import (
     AnimatorAssessmentsView,
+    AssessmentAddExpertView,
     AssessmentResponseView,
     AssessmentView,
     AssessmentsView,
     CompletedQuestionsInitializationView,
+    ExpertView,
     PublishedAssessmentsView,
     initialize_assessment,
     AssessmentScoreView,
     CurrentAssessmentView,
     CurrentAssessmentResponseView,
+    get_chart_data,
 )
 from .views.profiling_views import (
     ProfilingQuestionView,
@@ -65,15 +67,14 @@ router.register(r"results-pages", ResultsPageView, basename="ResultsPage")
 router.register(r"usage-pages", UsagePageView, basename="UsagePage")
 router.register(r"project-pages", ProjectPageView, basename="UsagePage")
 router.register(
-    r"evaluation-intro-pages", EvaluationIntroPageView, basename="EvaluationIntroPage"
-)
-router.register(
-    r"evaluation-init-pages", EvaluationInitPageView, basename="EvaluationInitPage"
+    r"evaluation-initiation-pages",
+    EvaluationInitiationPageSerializerView,
+    basename="EvaluationInitiationPage",
 )
 router.register(
     r"evaluation-questionnaire-pages",
     EvaluationQuestionnairePageView,
-    basename="EvaluationInitPage",
+    basename="EvaluationQuestionnairePage",
 )
 router.register(r"settings", RGPDSettingsView, basename="Settings")
 router.register(r"blog-posts", BlogPostView, basename="BlogPost")
@@ -108,6 +109,7 @@ router.register(
 )
 router.register(r"workshops", WorkshopView, basename="Workshop")
 router.register(r"full-workshops", FullWorkshopView, basename="FullWorkshop")
+router.register(r"experts", ExpertView, basename="Workshop")
 
 
 urlpatterns = [
@@ -144,12 +146,20 @@ urlpatterns = [
         CompletedQuestionsParticipationView.as_view(),
     ),
     path(
-        "assessments/<int:assessment_pk>/questions/completed/",
+        "assessments/<int:assessment_id>/questions/completed/",
         CompletedQuestionsInitializationView.as_view(),
     ),
     path(
-        "assessments/<int:assessment_pk>/scores/",
+        "assessments/<int:assessment_id>/scores/",
         AssessmentScoreView.as_view(),
+    ),
+    path(
+        "assessments/<int:assessment_id>/questions/<int:question_id>/chart-data/",
+        get_chart_data,
+    ),
+    path(
+        "assessments/<int:assessment_id>/add-expert/",
+        AssessmentAddExpertView.as_view(),
     ),
     path(
         "workshops/<int:workshop_pk>/participation/",

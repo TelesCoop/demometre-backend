@@ -1,6 +1,7 @@
 import logging
 from datetime import date
 from typing import Dict
+
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -15,12 +16,14 @@ from rest_framework.views import APIView
 from my_auth.models import User
 from my_auth.serializers import UserSerializer
 
+from open_democracy_back.chart_data import CHART_DATA_FN_BY_QUESTION_TYPE
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
 
 from open_democracy_back.models import (
     Assessment,
     Participation,
+    Question,
 )
 from open_democracy_back.models.assessment_models import (
     EPCI,
@@ -44,7 +47,6 @@ from open_democracy_back.serializers.assessment_serializers import (
 )
 from open_democracy_back.utils import ManagedAssessmentType
 
-# Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 
@@ -241,11 +243,29 @@ class ExpertView(mixins.ListModelMixin, viewsets.GenericViewSet):
         return User.objects.filter(groups__name__in=["Experts"])
 
 
+class AssessmentAddExpertView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, assessment_id):
+        assessment = Assessment.objects.get(id=assessment_id)
+        expert = User.objects.get(id=request.data.get("expert_id"))
+        if not expert.is_expert:
+            return RestResponse(status=status.HTTP_400_BAD_REQUEST)
+        assessment.experts.add(expert)
+        assessment.assessment_type = AssessmentType.objects.get(
+            assessment_type=ManagedAssessmentType.WITH_EXPERT.value
+        )
+        assessment.save()
+
+        serializer = AssessmentSerializer(assessment)
+        return RestResponse(serializer.data, status=status.HTTP_200_OK)
+
+
 class CompletedQuestionsInitializationView(APIView):
     permission_classes = [IsAssessmentAdminOrReadOnly]
 
-    def patch(self, _, assessment_pk):
-        assessment = Assessment.objects.get(id=assessment_pk)
+    def patch(self, _, assessment_id):
+        assessment = Assessment.objects.get(id=assessment_id)
         assessment.is_initialization_questions_completed = True
         assessment.save()
 
@@ -266,24 +286,26 @@ class PublishedAssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
 class AssessmentScoreView(APIView):
     # Cache page everyday
     @method_decorator(cache_page(60 * 60 * 24))
-    def get(self, request, assessment_pk):
-        scores: Dict[str, Dict[str, float]] = get_scores_by_assessment_pk(assessment_pk)
+    def get(self, request, assessment_id):
+        scores: Dict[str, Dict[str, float]] = get_scores_by_assessment_pk(assessment_id)
         return RestResponse(scores, status=status.HTTP_200_OK)
 
 
-class AssessmentAddExpertView(APIView):
-    permission_classes = [IsAuthenticated]
+@api_view(["GET"])
+def get_chart_data(request, assessment_id, question_id):
+    question = Question.objects.get(id=question_id)
 
-    def patch(self, request, assessment_pk):
-        assessment = Assessment.objects.get(id=assessment_pk)
-        expert = User.objects.get(id=request.data.get("expert_id"))
-        if not expert.is_expert:
-            return RestResponse(status=status.HTTP_400_BAD_REQUEST)
-        assessment.experts.add(expert)
-        assessment.assessment_type = AssessmentType.objects.get(
-            assessment_type=ManagedAssessmentType.WITH_EXPERT.value
-        )
-        assessment.save()
+    data = (
+        CHART_DATA_FN_BY_QUESTION_TYPE[question.type](question, assessment_id)
+        if CHART_DATA_FN_BY_QUESTION_TYPE.get(question.type)
+        else None
+    )
 
-        serializer = AssessmentSerializer(assessment)
-        return RestResponse(serializer.data, status=status.HTTP_200_OK)
+    return RestResponse(
+        {
+            "id": question.id,
+            "assessment_id": assessment_id,
+            "type": question.type,
+            "data": data,
+        },
+    )

@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from open_democracy_back.models.settings_models import RGPDSettings
+from open_democracy_back.models.settings_models import RGPDSettings, StructureSettings
+
+
+class StructureSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StructureSettings
+        fields = ["email"]
+        read_only_fields = fields
 
 
 class RGPDSettingsSerializer(serializers.ModelSerializer):

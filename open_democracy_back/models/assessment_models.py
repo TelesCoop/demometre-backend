@@ -233,6 +233,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         blank=True,
         null=True,
     )
+    initiator_usage_consent = models.BooleanField(default=False)
     initialized_to_the_name_of = models.CharField(
         max_length=255,
         blank=True,
@@ -245,6 +246,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         verbose_name="Date d'initialisation",
         help_text="Si il n'y a pas de date d'initialisation, c'est que le début de l'évaluation n'a pas été confirmée",
     )
+    conditions_of_sale_consent = models.BooleanField(default=False)
     is_initialization_questions_completed = models.BooleanField(default=False)
     last_participation_date = models.DateTimeField(
         default=timezone.now, verbose_name="Date de dernière participation"

@@ -90,7 +90,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
     epci = EpciSerializer(many=False, read_only=True)
     municipality = MunicipalitySerializer(many=False, read_only=True)
     participation_nb = serializers.SerializerMethodField()
-    initiated_by_user = UserSerializer()
+    initiated_by_user = UserSerializer(read_only=True)
     representativities = AssessmentRepresentativityCriteriaSerializer(
         many=True, read_only=True
     )
@@ -108,9 +108,11 @@ class AssessmentSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "assessment_type",
+            "conditions_of_sale_consent",
             "locality_type",
             "initiated_by_user",
             "initiator_type",
+            "initiator_usage_consent",
             "initialized_to_the_name_of",
             "initialization_date",
             "is_initialization_questions_completed",

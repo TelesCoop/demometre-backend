@@ -50,6 +50,17 @@ from open_democracy_back.utils import ManagedAssessmentType
 logger = logging.getLogger(__name__)
 
 
+def consent_condition_of_sales(assessment, conditions_of_sale_consent):
+    if conditions_of_sale_consent is True:
+        assessment.conditions_of_sale_consent = True
+    else:
+        raise ValidationFieldError(
+            "conditions_of_sale_consent",
+            detail="To initialize an expert assessment, the conditions of sale must be consented",
+            code=ErrorCode.CGV_MUST_BE_CONSENTED.value,
+        )
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def initialize_assessment(request, pk):
@@ -95,6 +106,19 @@ def initialize_assessment(request, pk):
             assessment_type=initialize_data["assessment_type"]
         )
         assessment.assessment_type = assessment_type
+        if initialize_data["assessment_type"] == ManagedAssessmentType.WITH_EXPERT:
+            consent_condition_of_sales(
+                assessment, request.data.get("conditions_of_sale_consent")
+            )
+        if request.data.get("initiator_usage_consent") is True:
+            assessment.initiator_usage_consent = True
+        else:
+            raise ValidationFieldError(
+                "initiator_usage_consent",
+                detail="To initialize an assessment, the initator must consent the conditions of use",
+                code=ErrorCode.CGU_MUST_BE_CONSENTED.value,
+            )
+        assessment.initiator_usage_consent = request.data.get("initiator_usage_consent")
         assessment.save()
         representativity_criterias = RepresentativityCriteria.objects.all()
         for representativity_criteria in representativity_criterias:
@@ -254,6 +278,9 @@ class AssessmentAddExpertView(APIView):
         assessment.experts.add(expert)
         assessment.assessment_type = AssessmentType.objects.get(
             assessment_type=ManagedAssessmentType.WITH_EXPERT.value
+        )
+        consent_condition_of_sales(
+            assessment, request.data.get("conditions_of_sale_consent")
         )
         assessment.save()
 

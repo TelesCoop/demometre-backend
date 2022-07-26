@@ -58,3 +58,5 @@ class ErrorCode(Enum):
     NEED_ASSESSMENT_RESPONSE = "need_assessment_response"
     USER_NOT_FOUND = "user_not_found"
     INVALID_EMAIL_SHAPE = "invalid_email_shape"
+    CGV_MUST_BE_CONSENTED = "cgv_not_consented"
+    CGU_MUST_BE_CONSENTED = "cgu_not_consented"

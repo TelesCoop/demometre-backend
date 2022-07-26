@@ -782,37 +782,73 @@ class EvaluationInitiationPage(Page):
         default="", verbose_name="Description", blank=True
     )
 
-    consent_title = models.CharField(max_length=255, default="", verbose_name="Titre")
-    consent_description = models.CharField(
-        max_length=255, default="", verbose_name="Description", blank=True
+    cgu_consent_title = models.CharField(
+        max_length=255, default="", verbose_name="Titre"
+    )
+    cgu_consent_description_loggedin = models.CharField(
+        max_length=255,
+        default="",
+        verbose_name="Description pour un utilisateur connecté",
+        blank=True,
+    )
+    cgu_consent_description_loggedout = models.CharField(
+        max_length=255,
+        default="",
+        verbose_name="Description pour un utilisateur NON connecté",
+        blank=True,
+    )
+
+    cgv_consent_title = models.CharField(
+        max_length=255, default="", verbose_name="Titre"
+    )
+    cgv_consent_description = models.CharField(
+        max_length=255,
+        default="",
+        verbose_name="Description",
+        blank=True,
+    )
+    royalty_description = models.TextField(
+        default="", verbose_name="Texte sur redevance d'utilisation", blank=True
     )
 
     no_assessment_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
     )
-    no_assessment_description = models.TextField(
-        default="", verbose_name="Description", blank=True
+    no_assessment_description = RichTextField(
+        verbose_name="Description",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        blank=True,
     )
 
     one_quick_assessment_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
     )
-    one_quick_assessment_description = models.TextField(
-        default="", verbose_name="Description", blank=True
+    one_quick_assessment_description = RichTextField(
+        verbose_name="Description",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        blank=True,
     )
 
     one_assessment_with_expert_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
     )
-    one_assessment_with_expert_description = models.TextField(
-        default="", verbose_name="Description", blank=True
+    one_assessment_with_expert_description = RichTextField(
+        verbose_name="Description",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        blank=True,
     )
 
     one_participation_assessment_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
     )
-    one_participation_assessment_description = models.TextField(
-        default="", verbose_name="Description", blank=True
+    one_participation_assessment_description = RichTextField(
+        verbose_name="Description",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        blank=True,
     )
     add_expert_title = models.CharField(
         max_length=255, default="", verbose_name="Ajout d'un expert - Titre"
@@ -837,22 +873,31 @@ class EvaluationInitiationPage(Page):
     create_quick_assessment_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
     )
-    create_quick_assessment_description = models.TextField(
-        default="", verbose_name="Description", blank=True
+    create_quick_assessment_description = RichTextField(
+        verbose_name="Description",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        blank=True,
     )
 
     create_participation_assessment_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
     )
-    create_participation_assessment_description = models.TextField(
-        default="", verbose_name="Description", blank=True
+    create_participation_assessment_description = RichTextField(
+        verbose_name="Description",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        blank=True,
     )
 
     create_assessment_with_expert_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
     )
-    create_assessment_with_expert_description = models.TextField(
-        default="", verbose_name="Description", blank=True
+    create_assessment_with_expert_description = RichTextField(
+        verbose_name="Description",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        blank=True,
     )
     choose_expert_text = models.CharField(
         max_length=255, default="", verbose_name="Choisir un expert dans la liste"
@@ -864,8 +909,11 @@ class EvaluationInitiationPage(Page):
     )
 
     init_title = models.CharField(max_length=255, default="", verbose_name="Titre")
-    init_description = models.TextField(
-        default="", verbose_name="Description", blank=True
+    init_description = RichTextField(
+        verbose_name="Description",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        blank=True,
     )
     initiator_name_question = models.CharField(
         max_length=255,
@@ -914,17 +962,26 @@ class EvaluationInitiationPage(Page):
         ),
         MultiFieldPanel(
             [
-                FieldPanel("consent_title"),
-                FieldPanel("consent_description"),
-            ],
-            heading="Enoncé du consentement",
-        ),
-        MultiFieldPanel(
-            [
                 FieldPanel("no_assessment_title"),
                 FieldPanel("no_assessment_description"),
             ],
             heading="Aucune évaluation ne correspond",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("cgu_consent_title"),
+                FieldPanel("cgu_consent_description_loggedin"),
+                FieldPanel("cgu_consent_description_loggedout"),
+            ],
+            heading="Consentement aux CGU",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("cgv_consent_title"),
+                FieldPanel("cgv_consent_description"),
+                FieldPanel("royalty_description"),
+            ],
+            heading="Consentement aux CGV",
         ),
         MultiFieldPanel(
             [

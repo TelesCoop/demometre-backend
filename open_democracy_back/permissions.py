@@ -16,7 +16,7 @@ class IsAssessmentAdminOrReadOnly(BasePermission):
         assessment_id = (
             request.data.get("assessment_id")
             or request.query_params.get("assessment_id")
-            or view.kwargs.get("assessment_pk", None)
+            or view.kwargs.get("assessment_id", None)
         )
         initiator_assessment_queryset = Assessment.objects.filter(
             initiated_by_user_id=request.user.id

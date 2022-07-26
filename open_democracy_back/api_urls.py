@@ -45,6 +45,7 @@ from .views.assessment_views import (
     AssessmentScoreView,
     CurrentAssessmentView,
     CurrentAssessmentResponseView,
+    get_chart_data,
 )
 from .views.profiling_views import (
     ProfilingQuestionView,
@@ -145,15 +146,19 @@ urlpatterns = [
         CompletedQuestionsParticipationView.as_view(),
     ),
     path(
-        "assessments/<int:assessment_pk>/questions/completed/",
+        "assessments/<int:assessment_id>/questions/completed/",
         CompletedQuestionsInitializationView.as_view(),
     ),
     path(
-        "assessments/<int:assessment_pk>/scores/",
+        "assessments/<int:assessment_id>/scores/",
         AssessmentScoreView.as_view(),
     ),
     path(
-        "assessments/<int:assessment_pk>/add-expert/",
+        "assessments/<int:assessment_id>/questions/<int:question_id>/chart-data/",
+        get_chart_data,
+    ),
+    path(
+        "assessments/<int:assessment_id>/add-expert/",
         AssessmentAddExpertView.as_view(),
     ),
     path(

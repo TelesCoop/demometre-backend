@@ -108,9 +108,11 @@ class AssessmentSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "assessment_type",
+            "conditions_of_sale_consent",
             "locality_type",
             "initiated_by_user",
             "initiator_type",
+            "initiator_usage_consent",
             "initialized_to_the_name_of",
             "initialization_date",
             "is_initialization_questions_completed",

@@ -5,6 +5,14 @@ from wagtail.documents.edit_handlers import DocumentChooserPanel
 
 
 @register_setting
+class StructureSettings(BaseSetting):
+    email = models.EmailField(verbose_name="Adresse mail de contact", blank=True)
+
+    class Meta:
+        verbose_name = "Paramètre de la structure"
+
+
+@register_setting
 class RGPDSettings(BaseSetting):
     legal_mention = models.ForeignKey(
         Document,

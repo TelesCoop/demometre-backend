@@ -90,7 +90,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
     epci = EpciSerializer(many=False, read_only=True)
     municipality = MunicipalitySerializer(many=False, read_only=True)
     participation_nb = serializers.SerializerMethodField()
-    initiated_by_user = UserSerializer()
+    initiated_by_user = UserSerializer(read_only=True)
     representativities = AssessmentRepresentativityCriteriaSerializer(
         many=True, read_only=True
     )

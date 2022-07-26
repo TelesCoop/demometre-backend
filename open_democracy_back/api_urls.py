@@ -30,6 +30,7 @@ from open_democracy_back.views.representativity_views import (
 )
 from open_democracy_back.views.setting_views import (
     RGPDSettingsView,
+    StructureSettingsView,
 )
 
 from .views.assessment_views import (
@@ -76,7 +77,10 @@ router.register(
     EvaluationQuestionnairePageView,
     basename="EvaluationQuestionnairePage",
 )
-router.register(r"settings", RGPDSettingsView, basename="Settings")
+router.register(r"rgpd-settings", RGPDSettingsView, basename="RGPDSettings")
+router.register(
+    r"structure-settings", StructureSettingsView, basename="StructureSettings"
+)
 router.register(r"blog-posts", BlogPostView, basename="BlogPost")
 router.register(r"resources", ResourceView, basename="Resources")
 
@@ -116,7 +120,7 @@ urlpatterns = [
     path("assessments/", AssessmentsView.as_view({"get": "list"})),
     path("assessments/by-animator/", AnimatorAssessmentsView.as_view({"get": "list"})),
     path("assessments/by-locality/", AssessmentsView.as_view({"get": "get_or_create"})),
-    path("assessments/current", CurrentAssessmentView.as_view()),
+    path("assessments/current/", CurrentAssessmentView.as_view()),
     path("assessments/<int:pk>/", AssessmentView.as_view({"get": "retrieve"})),
     path("assessments/<int:pk>/initialization/", initialize_assessment),
     path("assessments/published/", PublishedAssessmentsView.as_view({"get": "list"})),
@@ -133,7 +137,7 @@ urlpatterns = [
     path("definitions/<int:pk>/", DefinitionView.as_view({"get": "retrieve"})),
     path("roles/", RoleView.as_view({"get": "list"})),
     path(
-        "participations/current",
+        "participations/current/",
         CurrentParticipationView.as_view(),
     ),
     path("", include(router.urls)),

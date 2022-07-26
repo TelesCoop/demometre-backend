@@ -1,5 +1,7 @@
+from django.urls import path, reverse
 from django.utils.html import format_html_join
 from django.templatetags.static import static
+from wagtail.admin.menu import MenuItem
 from wagtail.contrib.modeladmin.options import (
     ModelAdmin,
     modeladmin_register,
@@ -42,6 +44,16 @@ from open_democracy_back.models.participation_models import Participation
 
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
+)
+from open_democracy_back.views.custom_admin_views import anomaly
+from open_democracy_back.views.wagtail_rule_views import (
+    question_intersection_operator_view,
+    question_rules_view,
+    QuestionRuleView,
+    profile_intersection_operator_view,
+    profile_definition_view,
+    ProfileDefinitionView,
+    representativity_criteria_refining_view,
 )
 
 
@@ -409,3 +421,52 @@ modeladmin_register(RepresentativityModelAdmin)
 modeladmin_register(LocalityAdminGroup)
 modeladmin_register(AssessmentAdminGroup)
 modeladmin_register(UserAdmin)
+
+
+@hooks.register("register_admin_urls")
+def register_custom_admin_views():
+    return [
+        # Rules
+        path(
+            "question/<int:pk>/edit-intersection-operator/",
+            question_intersection_operator_view,
+            name="question-intersection-operator",
+        ),
+        path(
+            "question/<int:pk>/rules/",
+            question_rules_view,
+            name="question-filter",
+        ),
+        path(
+            "question/<int:pk>/rule/<int:rule_pk>/delete",
+            QuestionRuleView.as_view(),
+            name="delete-question-filter",
+        ),
+        path(
+            "profile-type/<int:pk>/edit-intersection-operator/",
+            profile_intersection_operator_view,
+            name="profile-type-intersection-operator",
+        ),
+        path(
+            "profile-type/<int:pk>/rules/",
+            profile_definition_view,
+            name="profile-type-definition",
+        ),
+        path(
+            "profile-type/<int:pk>/rule/<int:rule_pk>/delete",
+            ProfileDefinitionView.as_view(),
+            name="delete-profile-type-definition",
+        ),
+        path(
+            "representativity-criteria/<int:pk>/rules/",
+            representativity_criteria_refining_view,
+            name="representativity-criteria-refining",
+        ),
+        # Anomaly
+        path("anomaly/", anomaly, name="anomaly"),
+    ]
+
+
+@hooks.register("register_admin_menu_item")
+def register_missing_score_item():
+    return MenuItem("Anomalies", reverse("anomaly"), icon_name="warning")

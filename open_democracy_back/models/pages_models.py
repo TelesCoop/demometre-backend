@@ -939,6 +939,18 @@ class EvaluationInitiationPage(Page):
         blank=True,
     )
 
+    objective_questions_title = models.CharField(
+        max_length=255,
+        default="",
+        verbose_name="Titre - Répondre aux questions objectives",
+    )
+    objective_questions_description = RichTextField(
+        verbose_name="Description - Répondre aux questions objectives",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        blank=True,
+    )
+
     initialization_validation_title = models.CharField(
         max_length=255,
         default="",
@@ -1046,6 +1058,8 @@ class EvaluationInitiationPage(Page):
                 FieldPanel("initiator_name_description"),
                 FieldPanel("representativity_title"),
                 FieldPanel("representativity_description"),
+                FieldPanel("objective_questions_title"),
+                FieldPanel("objective_questions_description"),
                 FieldPanel("initialization_validation_title"),
                 FieldPanel("initialization_validation_description"),
             ],
@@ -1071,9 +1085,23 @@ class EvaluationQuestionnairePage(Page):
         verbose_name="Titre",
         default="",
     )
-    role_question_description = models.TextField(
+    role_question_description = RichTextField(
+        null=True,
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
         verbose_name="Description",
+    )
+
+    end_of_profiling_title = models.CharField(
+        max_length=128,
+        verbose_name="Titre",
         default="",
+    )
+    end_of_profiling_description = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+        help_text="Expliquer qu'il ne sera pas possible de revenir en arrière, puisque les questions du questionnaire dépendent du profilage",
     )
 
     start_title = models.CharField(
@@ -1122,6 +1150,13 @@ class EvaluationQuestionnairePage(Page):
                 FieldPanel("role_question_description"),
             ],
             heading="Enoncé de la question concernant les rôles",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("end_of_profiling_title"),
+                FieldPanel("end_of_profiling_description"),
+            ],
+            heading="Page de confirmation du profilage",
         ),
         MultiFieldPanel(
             [

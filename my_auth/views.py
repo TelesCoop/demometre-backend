@@ -32,8 +32,6 @@ def frontend_signup(request):
         request:
             The request body should contain a JSON object such as::
                 {
-                    "first_name": "John",
-                    "last_name": "Doe",
                     "email": "email@ex.com",
                     "password": "secret_pa$$w0rD",
                 }
@@ -51,8 +49,6 @@ def frontend_signup(request):
 
     if request.user.is_authenticated and request.user.is_unknown_user:
         user = request.user
-        user.first_name = data["first_name"]
-        user.last_name = data["last_name"]
         user.email = data["email"]
         user.username = data["username"]
         user.set_password(data["password"])

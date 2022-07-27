@@ -7,8 +7,8 @@ from rest_framework import serializers
 
 class AuthSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=True, max_length=150)
-    first_name = serializers.CharField(required=True, max_length=150)
-    last_name = serializers.CharField(required=True, max_length=150)
+    first_name = serializers.CharField(required=False, max_length=150)
+    last_name = serializers.CharField(required=False, max_length=150)
     email = serializers.EmailField(required=True, max_length=100)
     password = serializers.CharField(write_only=True, required=True, max_length=100)
 

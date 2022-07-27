@@ -4,6 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
+from wagtail.core.fields import RichTextField
 from open_democracy_back.models.assessment_models import Assessment
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
@@ -11,6 +12,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     QuestionType,
     ResponseChoice,
 )
+from open_democracy_back.utils import SIMPLE_RICH_TEXT_FIELD_FEATURE
 
 
 @register_snippet
@@ -28,6 +30,13 @@ class RepresentativityCriteria(index.Indexed, models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(100)],
         verbose_name="Taux (en %) minimum acceptable pour la publication des résultats",
         help_text="En dessous de ce taux (%) la publication des résultats est interdite",
+    )
+    explanation = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Explication",
+        blank=True,
+        help_text="L'explication doit aider l'utilisateur à savoir quel pourcentage indiquer et expliciter le pourcentage renseigné par défault",
     )
 
     search_fields = [

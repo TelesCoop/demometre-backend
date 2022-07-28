@@ -128,8 +128,8 @@ def front_end_reset_password_link(request):
         user = User.objects.get(email=request.data.get("email"), is_unknown_user=False)
     except User.DoesNotExist:
         raise ValidationFieldError("email", code=ErrorCode.NO_EMAIL.value)
-    if UserResetKey.objects.get(user=user):
-        UserResetKey.objects.get(user=user).delete()
+    if UserResetKey.objects.filter(user=user).exists():
+        UserResetKey.objects.filter(user=user).delete()
     UserResetKey.objects.create(
         user=user, reset_key=uuid.uuid4(), reset_key_datetime=datetime.now()
     )

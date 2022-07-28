@@ -114,6 +114,9 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
     pillar_id = serializers.SerializerMethodField()
     pillar_name = serializers.SerializerMethodField()
     assessment_types = serializers.SerializerMethodField()
+    explains_by_question_ids = serializers.PrimaryKeyRelatedField(
+        read_only=True, source="explained_by", many=True
+    )
 
     @staticmethod
     def get_pillar_name(obj):
@@ -140,6 +143,8 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
             "method",
             "profile_ids",
             "assessment_types",
+            "allows_to_explain",
+            "explains_by_question_ids",
         ] + QUESTION_FIELDS
         read_only_fields = fields
 

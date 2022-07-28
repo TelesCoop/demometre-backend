@@ -10,6 +10,7 @@ from open_democracy_back.views.animator_views import (
 from open_democracy_back.views.content_views import BlogPostView, ResourceView
 
 from open_democracy_back.views.page_views import (
+    AnimatorPageView,
     EvaluationInitiationPageSerializerView,
     EvaluationQuestionnairePageView,
     HomePageView,
@@ -76,6 +77,11 @@ router.register(
     r"evaluation-questionnaire-pages",
     EvaluationQuestionnairePageView,
     basename="EvaluationQuestionnairePage",
+)
+router.register(
+    r"animator-pages",
+    AnimatorPageView,
+    basename="AnimatorPage",
 )
 router.register(r"rgpd-settings", RGPDSettingsView, basename="RGPDSettings")
 router.register(

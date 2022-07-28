@@ -8,6 +8,7 @@ from open_democracy_back.models.contents_models import (
     Resource,
 )
 from open_democracy_back.models.pages_models import (
+    AnimatorPage,
     EvaluationInitiationPage,
     EvaluationQuestionnairePage,
     ProjectPage,
@@ -388,5 +389,22 @@ class EvaluationQuestionnairePageSerializer(PageSerialiserWithLocale):
             "finished_title",
             "finished_text_logged_in",
             "finished_text_logged_out",
+        ]
+        read_only_fields = fields
+
+
+class AnimatorPageSerializer(PageSerialiserWithLocale):
+    class Meta:
+        model = AnimatorPage
+        fields = [
+            "id",
+            "locale_code",
+            "list_workshops_title",
+            "list_workshop_intro",
+            "close_workshop_validation",
+            "add_participants_title",
+            "add_participants_intro",
+            "responses_title",
+            "responses_intro",
         ]
         read_only_fields = fields

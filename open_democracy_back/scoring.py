@@ -234,12 +234,13 @@ def get_score_of_closed_with_scale_question(queryset) -> List[QuestionScore]:
             closed_with_scale_response_categorie
         ) in closed_with_scale_response.closed_with_scale_response_categories.all():
             response_choice = closed_with_scale_response_categorie.response_choice
-            category_score += (
-                response_choice.linearized_score
-                if isinstance(response_choice.linearized_score, float)
-                else 0
-            )
-            category_count += 1
+            if response_choice:
+                category_score += (
+                    response_choice.linearized_score
+                    if isinstance(response_choice.linearized_score, float)
+                    else 0
+                )
+                category_count += 1
 
         score_by_question_id[closed_with_scale_response.question_id]["score"] += (
             category_score / category_count

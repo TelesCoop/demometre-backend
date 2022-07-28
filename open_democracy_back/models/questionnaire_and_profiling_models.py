@@ -393,7 +393,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         help_text="Si aucune valeur n'est renseignée, aucune borne suppérieur ne sera prise en compte",
     )
 
-    allows_to_explain = models.OneToOneField(
+    allows_to_explain = models.ForeignKey(
         "self",
         null=True,
         blank=True,

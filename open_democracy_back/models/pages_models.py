@@ -1189,3 +1189,75 @@ class EvaluationQuestionnairePage(Page):
 
     class Meta:
         verbose_name = "Déroulement de l'évaluation"
+
+
+class AnimatorPage(Page):
+    parent_page_types = ["HomePage"]
+    subpage_types: List[str] = []
+    max_count_per_parent = 1
+    preview_modes = None
+
+    list_workshops_title = models.CharField(
+        max_length=128,
+        verbose_name="Titre",
+    )
+    list_workshop_intro = models.TextField(
+        verbose_name="Introduction",
+        default="",
+    )
+
+    close_workshop_validation = RichTextField(
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Explication du la clôture d'un workshop",
+        help_text="Après clôture l'expert ne pourra plus accéder aux réponses des participants et donc ne pourra plus les modifier, leurs réponses seront alors pris en compte pour le calcul des résultats",
+    )
+
+    add_participants_title = models.CharField(
+        max_length=128,
+        verbose_name="Titre",
+    )
+    add_participants_intro = models.TextField(
+        verbose_name="Introduction",
+        default="",
+    )
+
+    responses_title = models.CharField(
+        max_length=128,
+        verbose_name="Titre",
+    )
+    responses_intro = models.TextField(
+        verbose_name="Introduction",
+        default="",
+    )
+
+    content_panels = Page.content_panels + [
+        MultiFieldPanel(
+            [
+                FieldPanel("list_workshops_title"),
+                FieldPanel("list_workshop_intro"),
+                FieldPanel("close_workshop_validation"),
+            ],
+            heading="Page ateliers",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("add_participants_title"),
+                FieldPanel("add_participants_intro"),
+            ],
+            heading="Page participants",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("responses_title"),
+                FieldPanel("responses_intro"),
+            ],
+            heading="Page réponses",
+        ),
+    ]
+
+    # Admin tabs list (Remove promotion and settings tabs)
+    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
+
+    class Meta:
+        verbose_name = "Espace Expert"

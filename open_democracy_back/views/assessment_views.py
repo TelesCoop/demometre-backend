@@ -137,6 +137,12 @@ def initialize_assessment(request, pk):
         return RestResponse(status=200, data=AssessmentSerializer(assessment).data)
 
 
+# TODO : update existing assessment
+# @api_view(["PATCH"])
+# @permission_classes([IsAuthenticated])
+# def update_assessment(request, pk):
+
+
 class AssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = AssessmentSerializer
     queryset = Assessment.objects.all()

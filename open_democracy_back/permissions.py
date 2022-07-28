@@ -13,6 +13,8 @@ class IsAssessmentAdminOrReadOnly(BasePermission):
 
     def has_permission(self, request, view):
         is_authenticated = bool(request.user and request.user.is_authenticated)
+        if not is_authenticated:
+            return request.method == "GET"
         assessment_id = (
             request.data.get("assessment_id")
             or request.query_params.get("assessment_id")
@@ -40,9 +42,7 @@ class IsAssessmentAdminOrReadOnly(BasePermission):
                 participations__in=current_participation
             ).exists()
 
-        return bool(
-            (is_authenticated and (is_initator or is_expert)) or request.method == "GET"
-        )
+        return bool((is_initator or is_expert) or request.method == "GET")
 
 
 class IsWorkshopExpert(BasePermission):

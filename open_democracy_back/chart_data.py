@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Dict, Callable
 
-from django.db.models import Count, Avg, Q
+from django.db.models import Count, Avg, Q, F
 
 from open_democracy_back.models import (
     ResponseChoice,
@@ -71,23 +71,34 @@ def get_chart_data_of_boolean_question(question, assessment_id):
 def get_chart_data_of_choice_question(question, assessment_id, choice_type):
     if question.objectivity == "objective":
         base_count = f"{choice_type}_assessmentresponses"
+        role_count = base_count
         base_queryset = get_chart_data_objective_queryset(assessment_id, base_count)
         root_queryset = get_chart_data_objective_queryset(assessment_id)
         model = AssessmentResponse
     else:
         base_count = f"{choice_type}_participationresponses"
+        role_count = f"{base_count}__participation__role__name"
         base_queryset = get_chart_data_subjective_queryset(assessment_id, base_count)
         root_queryset = get_chart_data_subjective_queryset(assessment_id)
         model = ParticipationResponse
 
     response_choices = ResponseChoice.objects.filter(question_id=question.id).annotate(
-        count=Count(base_count, filter=Q(**base_queryset))
+        count=Count(base_count, filter=Q(**base_queryset)),
     )
-    data = {"value": {}}
+    response_choices_role_count = response_choices.annotate(
+        role_name=F(role_count)
+    ).annotate(
+        count_by_role=Count("role_name", filter=Q(**base_queryset)),
+    )
+    data = {"value": {}, "role": {}}
     for response_choice in response_choices:
         data["value"][response_choice.id] = {
             "label": response_choice.response_choice,
             "value": response_choice.count,
+        }
+    for response_choice in response_choices_role_count:
+        data["value"][response_choice.id][response_choice.role_name] = {
+            "value": response_choice.count_by_role,
         }
 
     data["count"] = model.objects.filter(

@@ -254,7 +254,7 @@ class AssessmentResponseView(
 
 
 class CurrentAssessmentResponseView(mixins.ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [IsAssessmentAdminOrReadOnly]
+    permission_classes = [IsAuthenticated, IsAssessmentAdminOrReadOnly]
     serializer_class = AssessmentResponseSerializer
 
     def get_queryset(self):
@@ -295,7 +295,7 @@ class AssessmentAddExpertView(APIView):
 
 
 class CompletedQuestionsInitializationView(APIView):
-    permission_classes = [IsAssessmentAdminOrReadOnly]
+    permission_classes = [IsAuthenticated, IsAssessmentAdminOrReadOnly]
 
     def patch(self, _, assessment_id):
         assessment = Assessment.objects.get(id=assessment_id)

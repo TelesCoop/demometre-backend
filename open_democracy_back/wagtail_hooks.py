@@ -38,6 +38,7 @@ from open_democracy_back.models.contents_models import (
     BlogPost,
     Feedback,
     Partner,
+    Person,
     Resource,
 )
 from open_democracy_back.models.participation_models import Participation
@@ -169,6 +170,14 @@ class PartnerModelAdmin(ModelAdmin):
     search_fields = "name"
 
 
+class PersonModelAdmin(ModelAdmin):
+    model = Person
+    menu_label = "Membres"
+    menu_icon = "group"
+    add_to_settings_menu = False
+    search_fields = "name"
+
+
 class ContentAdminGroup(ModelAdminGroup):
     menu_label = "Contenus"
     menu_order = 200
@@ -178,6 +187,7 @@ class ContentAdminGroup(ModelAdminGroup):
         BlogPostModelAdmin,
         ResourcesModelAdmin,
         PartnerModelAdmin,
+        PersonModelAdmin,
     )
 
 
@@ -238,7 +248,7 @@ class QuestionnaireQuestionModelAdmin(ModelAdmin):
     menu_label = "Question"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_filter = ["criteria__marker__pillar__name", "objectivity", "type"]
+    list_filter = ["criteria__marker__pillar__name", "objectivity", "roles", "type"]
     search_fields = (
         "name",
         "question_statement",

@@ -146,27 +146,36 @@ def get_chart_data_of_percentage_question(question, assessment_id):
 def get_chart_data_of_closed_with_scale_question(question, assessment_id):
     if question.objectivity == "objective":
         base_count = "assessment_response"
+        role_count = base_count
         base_queryset = get_chart_data_objective_queryset(assessment_id, base_count)
         root_queryset = get_chart_data_objective_queryset(assessment_id)
         model = AssessmentResponse
     else:
         base_count = "participation_response"
+        role_count = f"{base_count}__participation__role__name"
         base_queryset = get_chart_data_subjective_queryset(assessment_id, base_count)
         root_queryset = get_chart_data_subjective_queryset(assessment_id)
         model = ParticipationResponse
 
     base_queryset[f"{base_count}__question_id"] = question.pk
 
-    result = (
-        ClosedWithScaleCategoryResponse.objects.filter(**base_queryset)
-        .values("category_id", "response_choice_id")
-        .annotate(count=Count("id"))
+    closed_with_scale_responses = ClosedWithScaleCategoryResponse.objects.filter(
+        **base_queryset
     )
+    result = closed_with_scale_responses.values(
+        "category_id", "response_choice_id"
+    ).annotate(count=Count("id"))
     result_by_category_id = defaultdict(lambda: {})
     for item in result:
         result_by_category_id[item["category_id"]][item["response_choice_id"]] = item[
             "count"
         ]
+
+    counts_by_category_response_choice_role = (
+        closed_with_scale_responses.annotate(role_name=F(role_count))
+        .values("category_id", "response_choice_id", "role_name")
+        .annotate(count=Count("id"))
+    )
 
     data = {
         "value": {},
@@ -180,6 +189,12 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
                 "label": response_choice.response_choice,
                 "value": result_by_category_id[category.id].get(response_choice.id, 0),
             }
+    for count_by_role in counts_by_category_response_choice_role:
+        data["value"][count_by_role["category_id"]]["value"][
+            count_by_role["response_choice_id"]
+        ][count_by_role["role_name"]] = {
+            "value": count_by_role["count"],
+        }
 
     data["choices"] = {
         response_choice.id: {"label": response_choice.response_choice}

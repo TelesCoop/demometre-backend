@@ -181,10 +181,11 @@ class ResponseSerializer(serializers.ModelSerializer):
             )
         response = super().update(instance, validated_data)
         for item in closed_with_scale_response_categories_data:
-            closedWithScaleCategoryResponse = (
-                response.closed_with_scale_response_categories.get(
-                    category=item["category"]
-                )
+            (
+                closedWithScaleCategoryResponse,
+                _,
+            ) = response.closed_with_scale_response_categories.get_or_create(
+                category=item["category"]
             )
             closedWithScaleCategoryResponse.response_choice = item["response_choice"]
             closedWithScaleCategoryResponse.save()

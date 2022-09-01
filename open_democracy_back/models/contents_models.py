@@ -31,12 +31,16 @@ class Feedback(index.Indexed, models.Model):
     publish = models.BooleanField(
         default=False, verbose_name="Publier dans la page d'accueil"
     )
+    external_link = models.CharField(
+        verbose_name="Lien externe", blank=True, null=True, max_length=300
+    )
 
     panels = [
         FieldPanel("person_name"),
         ImageChooserPanel("picture"),
         FieldPanel("person_context"),
         FieldPanel("quote", widget=forms.Textarea),
+        FieldPanel("external_link"),
         FieldPanel("publish"),
     ]
 
@@ -71,7 +75,7 @@ class Article(index.Indexed, models.Model):
         max_length=1024, blank=True, null=True, verbose_name="Description courte"
     )
     external_link = models.CharField(
-        verbose_name="lien externe", blank=True, null=True, max_length=300
+        verbose_name="Lien externe", blank=True, null=True, max_length=300
     )
     pillars = models.ManyToManyField(
         Pillar, related_name="%(class)ss", blank=True, verbose_name="Piliers concernés"

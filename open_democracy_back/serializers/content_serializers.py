@@ -26,6 +26,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "picture_url",
             "person_context",
             "quote",
+            "external_link",
             "publish",
         ]
 

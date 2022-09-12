@@ -950,6 +950,11 @@ class EvaluationInitiationPage(Page):
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
         blank=True,
     )
+    objective_questions_call_to_action = models.CharField(
+        max_length=32,
+        verbose_name="Call to action - Répondre aux questions objectives",
+        default="Commencer",
+    )
 
     initialization_validation_title = models.CharField(
         max_length=255,
@@ -962,6 +967,11 @@ class EvaluationInitiationPage(Page):
         default="",
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
         blank=True,
+    )
+    initialization_validation_call_to_action = models.CharField(
+        max_length=32,
+        verbose_name="Call to action - page de validation",
+        default="Commencer l'évaluation",
     )
 
     content_panels = Page.content_panels + [
@@ -1060,8 +1070,10 @@ class EvaluationInitiationPage(Page):
                 FieldPanel("representativity_description"),
                 FieldPanel("objective_questions_title"),
                 FieldPanel("objective_questions_description"),
+                FieldPanel("objective_questions_call_to_action"),
                 FieldPanel("initialization_validation_title"),
                 FieldPanel("initialization_validation_description"),
+                FieldPanel("initialization_validation_call_to_action"),
             ],
             heading="Initialisation de l'évaluation",
         ),
@@ -1102,6 +1114,11 @@ class EvaluationQuestionnairePage(Page):
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
         verbose_name="Description",
         help_text="Expliquer qu'il ne sera pas possible de revenir en arrière, puisque les questions du questionnaire dépendent du profilage",
+    )
+    end_of_profiling_call_to_action = models.CharField(
+        max_length=32,
+        verbose_name="Call to action",
+        default="Valider",
     )
 
     start_title = models.CharField(
@@ -1155,6 +1172,7 @@ class EvaluationQuestionnairePage(Page):
             [
                 FieldPanel("end_of_profiling_title"),
                 FieldPanel("end_of_profiling_description"),
+                FieldPanel("end_of_profiling_call_to_action"),
             ],
             heading="Page de confirmation du profilage",
         ),

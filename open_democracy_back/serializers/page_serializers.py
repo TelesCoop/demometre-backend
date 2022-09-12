@@ -364,8 +364,10 @@ class EvaluationInitiationPageSerializer(PageSerialiserWithLocale):
             "representativity_description",
             "objective_questions_title",
             "objective_questions_description",
+            "objective_questions_call_to_action",
             "initialization_validation_title",
             "initialization_validation_description",
+            "initialization_validation_call_to_action",
         ]
         read_only_fields = fields
 
@@ -380,6 +382,7 @@ class EvaluationQuestionnairePageSerializer(PageSerialiserWithLocale):
             "role_question_description",
             "end_of_profiling_title",
             "end_of_profiling_description",
+            "end_of_profiling_call_to_action",
             "start_title",
             "start_text",
             "intermediate_step_title",

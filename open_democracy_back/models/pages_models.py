@@ -61,8 +61,8 @@ class HomePage(Page):
         blank=True,
         help_text="Si ce champ est vide les retours d'expérience ne s'afficheront pas sur l'accueil",
     )
-    feedback_block_intro = models.CharField(
-        max_length=255, verbose_name="Intro du bloc retours d'expérience", blank=True
+    feedback_block_intro = models.TextField(
+        verbose_name="Intro du bloc retours d'expérience", blank=True
     )
     blog_block_title = models.CharField(
         max_length=68,
@@ -70,17 +70,15 @@ class HomePage(Page):
         blank=True,
         help_text="Si ce champ est vide les articles de blog ne s'afficheront pas sur l'accueil",
     )
-    blog_block_intro = models.CharField(
-        max_length=255, verbose_name="Intro du bloc Blog", blank=True
-    )
+    blog_block_intro = models.TextField(verbose_name="Intro du bloc Blog", blank=True)
     resources_block_title = models.CharField(
         max_length=68,
         verbose_name="Titre du bloc Ressources",
         blank=True,
         help_text="Si ce champ est vide bloc Ressources ne s'afficheront pas sur l'accueil",
     )
-    resources_block_intro = models.CharField(
-        max_length=255, verbose_name="Intro du bloc Ressources", blank=True
+    resources_block_intro = models.TextField(
+        verbose_name="Intro du bloc Ressources", blank=True
     )
     partner_block_title = models.CharField(
         max_length=68,
@@ -88,8 +86,8 @@ class HomePage(Page):
         blank=True,
         help_text="Si ce champ est vide le bloc Partenaires ne s'afficheront pas sur l'accueil",
     )
-    partner_block_intro = models.CharField(
-        max_length=255, verbose_name="Intro du bloc Partenaires", blank=True
+    partner_block_intro = models.TextField(
+        verbose_name="Intro du bloc Partenaires", blank=True
     )
 
     content_panels = Page.content_panels + [
@@ -145,9 +143,7 @@ class UsagePage(Page):
     max_count_per_parent = 1
     preview_modes = None
 
-    tag_line = models.CharField(
-        max_length=510, default="", verbose_name="Phrase d'accroche"
-    )
+    tag_line = models.TextField(default="", verbose_name="Phrase d'accroche")
     introduction = RichTextField(
         default="", features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="Introduction"
     )
@@ -296,7 +292,7 @@ class ReferentialPage(Page):
     max_count_per_parent = 1
     preview_modes = None
 
-    introduction = models.CharField(max_length=255, default="")
+    introduction = models.TextField(default="")
 
     description = RichTextField(
         default="",
@@ -785,14 +781,12 @@ class EvaluationInitiationPage(Page):
     cgu_consent_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
     )
-    cgu_consent_description_loggedin = models.CharField(
-        max_length=255,
+    cgu_consent_description_loggedin = models.TextField(
         default="",
         verbose_name="Description pour un utilisateur connecté",
         blank=True,
     )
-    cgu_consent_description_loggedout = models.CharField(
-        max_length=255,
+    cgu_consent_description_loggedout = models.TextField(
         default="",
         verbose_name="Description pour un utilisateur NON connecté",
         blank=True,
@@ -801,8 +795,7 @@ class EvaluationInitiationPage(Page):
     cgv_consent_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
     )
-    cgv_consent_description = models.CharField(
-        max_length=255,
+    cgv_consent_description = models.TextField(
         default="",
         verbose_name="Description",
         blank=True,

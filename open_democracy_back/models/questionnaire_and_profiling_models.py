@@ -233,10 +233,10 @@ class Criteria(index.Indexed, ClusterableModel):
         related_name="criterias",
     )
     name = models.CharField(verbose_name="Nom", max_length=125)
-    code = models.CharField(
+    code = models.IntegerField(
         verbose_name="Code",
-        max_length=2,
-        help_text="Correspond au numéro (ou lettre) de ce critère dans son marqueur",
+        help_text="Correspond au numéro de ce critère dans son marqueur",
+        validators=[MaxValueValidator(100), MinValueValidator(1)],
     )
     concatenated_code = models.CharField(max_length=8, default="")
     thematic_tags = models.ManyToManyField(
@@ -292,7 +292,7 @@ class Criteria(index.Indexed, ClusterableModel):
     def save(self, *args, **kwargs):
         self.concatenated_code = (
             self.marker.concatenated_code + "." if self.marker else ""
-        ) + self.code
+        ) + str(self.code)
         super().save(*args, **kwargs)
         # Use proxy QuestionnaireQuestion
         child_questions = QuestionnaireQuestion.objects.filter(criteria_id=self.id)

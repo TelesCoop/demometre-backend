@@ -225,6 +225,7 @@ class MarkerModelAdmin(ModelAdmin):
     add_to_settings_menu = False
     list_filter = ["pillar__name"]
     search_fields = ("name", "concatenated_code", "pillar__name")
+    ordering = ("concatenated_code",)
 
 
 class CriteriaModelAdmin(ModelAdmin):
@@ -239,6 +240,7 @@ class CriteriaModelAdmin(ModelAdmin):
         "marker__name",
         "marker__pillar__name",
     )
+    ordering = ("concatenated_code",)
 
 
 class QuestionnaireQuestionModelAdmin(ModelAdmin):
@@ -257,6 +259,7 @@ class QuestionnaireQuestionModelAdmin(ModelAdmin):
         "criteria__marker__name",
         "criteria__marker__pillar__name",
     )
+    ordering = ("concatenated_code",)
 
 
 class SurveyAdminGroup(ModelAdminGroup):

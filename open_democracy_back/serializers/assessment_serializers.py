@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from open_democracy_back.exceptions import ErrorCode
+from open_democracy_back.models import Participation
 from open_democracy_back.models.questionnaire_and_profiling_models import Question
 
 from open_democracy_back.models.assessment_models import (
@@ -136,8 +138,29 @@ class AssessmentResponseSerializer(ResponseSerializer):
     def validate(self, data):
         assessment = data["assessment"]
         population = assessment.population
+        user = self.context["request"].user
+
+        participation = Participation.objects.get(
+            assessment_id=assessment.pk,
+            id=self.context["request"].data["participation_id"],
+            user=user,
+        )
+
+        question = data["question"]
+
+        is_initiator = assessment.initiated_by_user.id == user.id
+        is_expert = assessment.experts.filter(id=user.id).exists()
+
+        # Filter role and profile if the user is not an initiator or expert
+        if not (is_initiator or is_expert):
+            questions = Question.objects.filter_by_role(
+                participation.role
+            ).filter_by_profiles(participation.profiles.all())
+        else:
+            questions = Question.objects
+
         if (
-            not Question.objects.filter_by_population(population)
+            not questions.filter_by_population(population)
             .filter(id=data["question"].id)
             .exists()
         ):
@@ -145,7 +168,6 @@ class AssessmentResponseSerializer(ResponseSerializer):
                 detail="You don't need to respond to this question.",
                 code=ErrorCode.QUESTION_NOT_NEEDED.value,
             )
-        question = data["question"]
         if question.objectivity == "subjective" or question.survey_type == "profiling":
             raise serializers.ValidationError(
                 detail="A subjective response or profiling response must be link to the participation, not the assessment",

@@ -37,7 +37,6 @@ from open_democracy_back.models.representativity_models import (
     AssessmentRepresentativity,
     RepresentativityCriteria,
 )
-from open_democracy_back.permissions import IsAssessmentAdminOrReadOnly
 from open_democracy_back.scoring import (
     get_scores_by_assessment_pk,
 )
@@ -236,7 +235,7 @@ class CurrentAssessmentView(APIView):
 class AssessmentResponseView(
     mixins.ListModelMixin, UpdateOrCreateModelMixin, viewsets.GenericViewSet
 ):
-    permission_classes = [IsAssessmentAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
     serializer_class = AssessmentResponseSerializer
 
     def get_queryset(self):
@@ -254,7 +253,7 @@ class AssessmentResponseView(
 
 
 class CurrentAssessmentResponseView(mixins.ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [IsAuthenticated, IsAssessmentAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
     serializer_class = AssessmentResponseSerializer
 
     def get_queryset(self):
@@ -295,10 +294,12 @@ class AssessmentAddExpertView(APIView):
 
 
 class CompletedQuestionsInitializationView(APIView):
-    permission_classes = [IsAuthenticated, IsAssessmentAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
-    def patch(self, _, assessment_id):
-        assessment = Assessment.objects.get(id=assessment_id)
+    def patch(self, request, assessment_id):
+        assessment = Assessment.objects.get(
+            id=assessment_id, initiated_by_user=request.user
+        )
         assessment.is_initialization_questions_completed = True
         assessment.save()
 

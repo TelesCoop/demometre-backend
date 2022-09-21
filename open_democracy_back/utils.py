@@ -52,3 +52,11 @@ class QuestionType(models.TextChoices):
     CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
     BOOLEAN = "boolean", "Binaire oui / non"
     PERCENTAGE = "percentage", "Pourcentage"
+
+
+class SerializerContext:
+    def get_serializer_context(self):
+        """
+        Extra context provided to the serializer class.
+        """
+        return {"request": self.request, "format": self.format_kwarg, "view": self}

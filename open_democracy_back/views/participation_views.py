@@ -25,6 +25,7 @@ from open_democracy_back.serializers.participation_serializers import (
     ParticipationSerializer,
     ParticipationResponseSerializer,
 )
+from open_democracy_back.utils import SerializerContext
 
 NUMERICAL_OPERATOR_CONVERSION = {
     "<": operator.lt,
@@ -152,7 +153,7 @@ class ParticipationView(
             serializer.save()
 
 
-class CurrentParticipationView(APIView):
+class CurrentParticipationView(SerializerContext, APIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self) -> QuerySet:
@@ -169,7 +170,9 @@ class CurrentParticipationView(APIView):
         if instance:
             instance.is_current = True
             instance.save()
-        serializer = ParticipationSerializer(instance)
+        serializer = ParticipationSerializer(
+            instance, context=self.get_serializer_context()
+        )
         return RestResponse(serializer.data)
 
     def post(self, request):
@@ -182,7 +185,9 @@ class CurrentParticipationView(APIView):
         instance.is_current = True
         instance.save()
 
-        serializer = ParticipationSerializer(instance)
+        serializer = ParticipationSerializer(
+            instance, context=self.get_serializer_context()
+        )
         return RestResponse(serializer.data)
 
 
@@ -230,7 +235,7 @@ class CurrentParticipationResponseView(mixins.ListModelMixin, viewsets.GenericVi
         return query
 
 
-class CompletedQuestionsParticipationView(APIView):
+class CompletedQuestionsParticipationView(SerializerContext, APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, pk):
@@ -249,5 +254,7 @@ class CompletedQuestionsParticipationView(APIView):
             participation_pillar_completed.save()
         else:
             return RestResponse(status=status.HTTP_400_BAD_REQUEST)
-        serializer = ParticipationSerializer(participation)
+        serializer = ParticipationSerializer(
+            participation, context=self.get_serializer_context()
+        )
         return RestResponse(serializer.data, status=status.HTTP_200_OK)

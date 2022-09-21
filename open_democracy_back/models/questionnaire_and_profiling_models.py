@@ -337,7 +337,10 @@ class QuestionQuerySet(models.QuerySet):
         )
 
     def filter_by_role(self, role):
-        return self.filter(Q(roles=role) | Q(roles=None))
+        return self.filter(Q(roles=role) | Q(roles__isnull=True))
+
+    def filter_by_profiles(self, profiles):
+        return self.filter(Q(profiles__in=profiles) | Q(profiles__isnull=True))
 
 
 class QuestionManager(models.Manager):
@@ -349,6 +352,9 @@ class QuestionManager(models.Manager):
 
     def filter_by_role(self, role):
         return self.get_queryset().filter_by_role(role)
+
+    def filter_by_profiles(self, profiles):
+        return self.get_queryset().filter_by_profiles(profiles)
 
 
 @register_snippet

@@ -337,10 +337,10 @@ class QuestionQuerySet(models.QuerySet):
         )
 
     def filter_by_role(self, role):
-        return self.filter(Q(roles=role) | Q(roles=None))
+        return self.filter(Q(roles=role) | Q(roles__isnull=True))
 
     def filter_by_profiles(self, profiles):
-        return self.filter(Q(profiles__in=profiles) | Q(profiles=None))
+        return self.filter(Q(profiles__in=profiles) | Q(profiles__isnull=True))
 
 
 class QuestionManager(models.Manager):

@@ -140,12 +140,6 @@ class AssessmentResponseSerializer(ResponseSerializer):
         population = assessment.population
         user = self.context["request"].user
 
-        participation = Participation.objects.get(
-            assessment_id=assessment.pk,
-            id=self.context["request"].data["participation_id"],
-            user=user,
-        )
-
         question = data["question"]
 
         is_initiator = assessment.initiated_by_user.id == user.id
@@ -153,6 +147,11 @@ class AssessmentResponseSerializer(ResponseSerializer):
 
         # Filter role and profile if the user is not an initiator or expert
         if not (is_initiator or is_expert):
+            participation = Participation.objects.get(
+                assessment_id=assessment.pk,
+                id=self.context["request"].data["participation_id"],
+                user=user,
+            )
             questions = Question.objects.filter_by_role(
                 participation.role
             ).filter_by_profiles(participation.profiles.all())

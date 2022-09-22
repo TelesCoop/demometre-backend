@@ -150,7 +150,9 @@ def front_end_reset_password(request):
             code=ErrorCode.WRONG_PASSWORD_RESET_KEY.value,
         )
 
-    is_valid_key = datetime.now() - user.reset_key.reset_key_datetime
+    is_valid_key = datetime.now().replace(
+        tzinfo=None
+    ) - user.reset_key.reset_key_datetime.replace(tzinfo=None)
     if is_valid_key.days != 0:
         raise PermissionDenied(
             detail="The reset password key is outdated (24h max).",

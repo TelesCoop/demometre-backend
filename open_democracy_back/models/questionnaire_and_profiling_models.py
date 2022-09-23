@@ -748,7 +748,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
         verbose_name="Filtre par question",
         related_name="%(class)s_that_depend_on_me",
         null=True,
-        blank=True,
+        blank=False,
     )
 
     # if conditional question is unique or multiple choices type

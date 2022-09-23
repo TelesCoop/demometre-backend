@@ -53,7 +53,7 @@ class MultipleChoiceStrategy(QuestionStrategy):
         return any(
             [
                 response in rule.response_choices.all()
-                for response in response.multiple_choice_response
+                for response in response.multiple_choice_response.all()
             ]
         )
 

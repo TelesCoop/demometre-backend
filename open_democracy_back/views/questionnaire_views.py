@@ -60,6 +60,12 @@ class QuestionnaireQuestionView(
 ):
 
     serializer_class = QuestionnaireQuestionSerializer
+    ordering = (
+        "code",
+        "criteria__code",
+        "criteria__marker__code",
+        "criteria__marker__pillar__code",
+    )
 
     def get_queryset(self):
         return QuestionnaireQuestion.objects.exclude(

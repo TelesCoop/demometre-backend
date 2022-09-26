@@ -58,8 +58,13 @@ class QuestionnaireQuestionView(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
+
     serializer_class = QuestionnaireQuestionSerializer
-    queryset = QuestionnaireQuestion.objects.all()
+
+    def get_queryset(self):
+        return QuestionnaireQuestion.objects.exclude(
+            criteria__marker__pillar__isnull=True
+        )
 
 
 class DefinitionView(

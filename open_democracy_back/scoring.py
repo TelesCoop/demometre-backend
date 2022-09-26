@@ -242,9 +242,9 @@ def get_score_of_closed_with_scale_question(queryset) -> List[QuestionScore]:
                 )
                 category_count += 1
 
-        score_by_question_id[closed_with_scale_response.question_id]["score"] += (
-            category_score / category_count
-        )
+        score_by_question_id[closed_with_scale_response.question_id][
+            "score"
+        ] += category_score / (category_count or 1)
         score_by_question_id[closed_with_scale_response.question_id]["count"] += 1
         score_by_question_id[closed_with_scale_response.question_id][
             "question__criteria_id"

@@ -64,6 +64,7 @@ def get_score_of_boolean_question(queryset) -> List[QuestionScore]:
 def get_score_of_unique_choice_question(queryset) -> List[QuestionScore]:
     result = (
         queryset.filter(question__type=QuestionType.UNIQUE_CHOICE)
+        .exclude(unique_choice_response__linearized_score__isnull=True)
         .values(
             "question_id",
             "question__criteria_id",
@@ -82,6 +83,7 @@ def get_score_of_unique_choice_question(queryset) -> List[QuestionScore]:
 def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
     multiple_choice_scores = (
         queryset.filter(question__type=QuestionType.MULTIPLE_CHOICE)
+        .exclude(multiple_choice_response__linearized_score__isnull=True)
         .annotate(
             multiple_choice_score_max=Max("multiple_choice_response__linearized_score")
         )

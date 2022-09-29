@@ -3,10 +3,8 @@ from typing import TypedDict, List, DefaultDict, Dict, Callable, Any
 
 import numpy as np
 import pandas as pd
-import rollbar
 from django.db.models import Case, When, Value, IntegerField, Avg, FloatField, Max
 
-from open_democracy_back import settings
 from open_democracy_back.models import (
     SCORE_MAP,
     ParticipationResponse,
@@ -83,7 +81,6 @@ def get_score_of_unique_choice_question(queryset) -> List[QuestionScore]:
 def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
     multiple_choice_scores = (
         queryset.filter(question__type=QuestionType.MULTIPLE_CHOICE)
-        .exclude(multiple_choice_response__linearized_score__isnull=True)
         .annotate(
             multiple_choice_score_max=Max("multiple_choice_response__linearized_score")
         )
@@ -106,21 +103,20 @@ def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
         )
     )
     for score in multiple_choice_scores:
-        multiple_choice_score_dict[score["question_id"]]["score"] += (
-            score["multiple_choice_score_max"]
-            if isinstance(score["multiple_choice_score_max"], float)
-            else 0
-        )
-        multiple_choice_score_dict[score["question_id"]]["count"] += 1
-        multiple_choice_score_dict[score["question_id"]][
-            "question__criteria_id"
-        ] = score["question__criteria_id"]
-        multiple_choice_score_dict[score["question_id"]][
-            "question__criteria__marker_id"
-        ] = score["question__criteria__marker_id"]
-        multiple_choice_score_dict[score["question_id"]][
-            "question__criteria__marker__pillar_id"
-        ] = score["question__criteria__marker__pillar_id"]
+        if isinstance(score["multiple_choice_score_max"], float):
+            multiple_choice_score_dict[score["question_id"]]["score"] += score[
+                "multiple_choice_score_max"
+            ]
+            multiple_choice_score_dict[score["question_id"]]["count"] += 1
+            multiple_choice_score_dict[score["question_id"]][
+                "question__criteria_id"
+            ] = score["question__criteria_id"]
+            multiple_choice_score_dict[score["question_id"]][
+                "question__criteria__marker_id"
+            ] = score["question__criteria__marker_id"]
+            multiple_choice_score_dict[score["question_id"]][
+                "question__criteria__marker__pillar_id"
+            ] = score["question__criteria__marker__pillar_id"]
 
     result: List[QuestionScore] = []
     for key in multiple_choice_score_dict:
@@ -147,7 +143,7 @@ def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
 def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
     percentage_responses = (
         queryset.filter(question__type=QuestionType.PERCENTAGE)
-        .exclude(percentage_response__isnull=True)
+        .exclude(percentage_response=None)
         .prefetch_related("question__percentage_ranges", "question__criteria__marker")
     )
 
@@ -172,11 +168,6 @@ def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
                 score = percentage_range.linearized_score
                 break
         if score is None:
-            if hasattr(settings, "production"):
-                rollbar.report_message(
-                    f"Response {response.id} of percentage question {response.question_id} don't have score",
-                    "warning",
-                )
             continue
 
         percentage_scores_dict[response.question_id]["score"] += score
@@ -236,27 +227,24 @@ def get_score_of_closed_with_scale_question(queryset) -> List[QuestionScore]:
             closed_with_scale_response_categorie
         ) in closed_with_scale_response.closed_with_scale_response_categories.all():
             response_choice = closed_with_scale_response_categorie.response_choice
-            if response_choice:
-                category_score += (
-                    response_choice.linearized_score
-                    if isinstance(response_choice.linearized_score, float)
-                    else 0
-                )
+            if response_choice and isinstance(response_choice.linearized_score, float):
+                category_score += response_choice.linearized_score
                 category_count += 1
 
-        score_by_question_id[closed_with_scale_response.question_id][
-            "score"
-        ] += category_score / (category_count or 1)
-        score_by_question_id[closed_with_scale_response.question_id]["count"] += 1
-        score_by_question_id[closed_with_scale_response.question_id][
-            "question__criteria_id"
-        ] = closed_with_scale_response.question.criteria_id
-        score_by_question_id[closed_with_scale_response.question_id][
-            "question__criteria__marker_id"
-        ] = closed_with_scale_response.question.criteria.marker_id
-        score_by_question_id[closed_with_scale_response.question_id][
-            "question__criteria__marker__pillar_id"
-        ] = closed_with_scale_response.question.criteria.marker.pillar_id
+        if category_count > 0:
+            score_by_question_id[closed_with_scale_response.question_id][
+                "score"
+            ] += category_score / (category_count or 1)
+            score_by_question_id[closed_with_scale_response.question_id]["count"] += 1
+            score_by_question_id[closed_with_scale_response.question_id][
+                "question__criteria_id"
+            ] = closed_with_scale_response.question.criteria_id
+            score_by_question_id[closed_with_scale_response.question_id][
+                "question__criteria__marker_id"
+            ] = closed_with_scale_response.question.criteria.marker_id
+            score_by_question_id[closed_with_scale_response.question_id][
+                "question__criteria__marker__pillar_id"
+            ] = closed_with_scale_response.question.criteria.marker.pillar_id
 
     result: List[QuestionScore] = []
     for key in score_by_question_id:

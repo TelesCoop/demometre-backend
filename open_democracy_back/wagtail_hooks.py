@@ -250,7 +250,13 @@ class QuestionnaireQuestionModelAdmin(ModelAdmin):
     menu_label = "Question"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_filter = ["criteria__marker__pillar__name", "objectivity", "roles", "type"]
+    list_filter = [
+        "criteria__marker__pillar__name",
+        "objectivity",
+        "roles",
+        "profiles",
+        "type",
+    ]
     search_fields = (
         "name",
         "question_statement",

@@ -13,6 +13,7 @@ from rest_framework.response import Response as RestResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
+from rest_framework.response import Response
 from my_auth.models import User
 from my_auth.serializers import UserSerializer
 
@@ -43,6 +44,8 @@ from open_democracy_back.scoring import (
 from open_democracy_back.serializers.assessment_serializers import (
     AssessmentResponseSerializer,
     AssessmentSerializer,
+    EpciSerializer,
+    MunicipalitySerializer,
 )
 from open_democracy_back.utils import ManagedAssessmentType
 
@@ -201,6 +204,23 @@ class AssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
             )
 
         return RestResponse(status=200, data=self.serializer_class(assessment).data)
+
+
+class ZipCodeLocalitiesView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class_municipality = MunicipalitySerializer
+    serializer_class_epci = EpciSerializer
+
+    def list(self, request, zip_code):
+        municipalities = self.serializer_class_municipality(
+            Municipality.objects.filter(zip_codes__code=zip_code), many=True
+        )
+        epcis = self.serializer_class_epci(
+            EPCI.objects.filter(
+                related_municipalities_ordered__municipality__zip_codes__code=zip_code
+            ),
+            many=True,
+        )
+        return Response({"municipalities": municipalities.data, "epcis": epcis.data})
 
 
 class AnimatorAssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):

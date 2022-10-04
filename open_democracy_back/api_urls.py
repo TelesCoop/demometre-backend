@@ -43,6 +43,7 @@ from .views.assessment_views import (
     CompletedQuestionsInitializationView,
     ExpertView,
     PublishedAssessmentsView,
+    ZipCodeLocalitiesView,
     initialize_assessment,
     AssessmentScoreView,
     CurrentAssessmentView,
@@ -123,6 +124,10 @@ router.register(r"experts", ExpertView, basename="Workshop")
 
 
 urlpatterns = [
+    path(
+        "localites/by-zip-code/<int:zip_code>/",
+        ZipCodeLocalitiesView.as_view({"get": "list"}),
+    ),
     path("assessments/", AssessmentsView.as_view({"get": "list"})),
     path("assessments/by-animator/", AnimatorAssessmentsView.as_view({"get": "list"})),
     path("assessments/by-locality/", AssessmentsView.as_view({"get": "get_or_create"})),

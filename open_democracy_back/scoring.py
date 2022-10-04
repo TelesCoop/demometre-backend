@@ -310,11 +310,16 @@ def get_pillars_score_by_markers_score(
 
 
 def get_scores_by_assessment_pk(assessment_pk: int) -> Dict[str, Dict[str, float]]:
-    participation_responses = ParticipationResponse.objects.filter(
-        participation__user__is_unknown_user=False,
-        participation__assessment_id=assessment_pk,
-        question__profiling_question=False,
-    ).exclude(has_passed=True)
+    # We ignore responses of question that have not criterias
+    participation_responses = (
+        ParticipationResponse.objects.filter(
+            participation__user__is_unknown_user=False,
+            participation__assessment_id=assessment_pk,
+            question__profiling_question=False,
+        )
+        .exclude(has_passed=True)
+        .exclude(question__criteria=None)
+    )
 
     assessment_responses = AssessmentResponse.objects.filter(
         answered_by__is_unknown_user=False,

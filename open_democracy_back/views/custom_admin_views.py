@@ -67,8 +67,23 @@ def anomaly(request):
             }
         )
 
+    questions_without_criteria = Question.objects.filter(
+        criteria=None, profiling_question=False
+    )
+    questions_without_criteria_list = []
+    for question_without_criteria in questions_without_criteria:
+        questions_without_criteria_list.append(
+            {
+                "text": str(question_without_criteria),
+                "url": f"/admin/open_democracy_back/questionnairequestion/edit/{question_without_criteria.id}/",
+            }
+        )
+
     return render(
         request,
         "admin/missing_score.html",
-        {"score_missing_list": score_missing_list},
+        {
+            "score_missing_list": score_missing_list,
+            "questions_without_criteria_list": questions_without_criteria_list,
+        },
     )

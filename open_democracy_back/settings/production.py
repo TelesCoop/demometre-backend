@@ -40,3 +40,5 @@ SERVER_EMAIL = "no-reply@telescoop.fr"
 
 BASE_URL = "http://democratieouverte.tlscp.fr"
 FRONT_END_URL = "http://democratieouverte.tlscp.fr"
+
+WAGTAIL_ENABLE_UPDATE_CHECK = False  # Disable update alerts

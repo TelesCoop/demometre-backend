@@ -61,10 +61,10 @@ class QuestionnaireQuestionView(
 
     serializer_class = QuestionnaireQuestionSerializer
     ordering = (
-        "code",
-        "criteria__code",
-        "criteria__marker__code",
         "criteria__marker__pillar__code",
+        "criteria__marker__code",
+        "criteria__code",
+        "code",
     )
 
     def get_queryset(self):

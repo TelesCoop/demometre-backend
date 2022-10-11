@@ -159,9 +159,10 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
 
     base_queryset[f"{base_count}__question_id"] = question.pk
 
+    # We don't want to show when the user respond "skip"
     closed_with_scale_responses = ClosedWithScaleCategoryResponse.objects.filter(
         **base_queryset
-    )
+    ).exclude(response_choice_id=None)
     result = closed_with_scale_responses.values(
         "category_id", "response_choice_id"
     ).annotate(count=Count("id"))

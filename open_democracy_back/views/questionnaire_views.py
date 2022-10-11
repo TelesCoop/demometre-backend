@@ -58,18 +58,16 @@ class QuestionnaireQuestionView(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-
     serializer_class = QuestionnaireQuestionSerializer
-    ordering = (
-        "code",
-        "criteria__code",
-        "criteria__marker__code",
-        "criteria__marker__pillar__code",
-    )
 
     def get_queryset(self):
         return QuestionnaireQuestion.objects.exclude(
             criteria__marker__pillar__isnull=True
+        ).order_by(
+            "criteria__marker__pillar__code",
+            "criteria__marker__code",
+            "criteria__code",
+            "code",
         )
 
 

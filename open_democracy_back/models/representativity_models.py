@@ -172,7 +172,7 @@ class AssessmentRepresentativity(models.Model):
             [
                 (
                     (response_choice_count["total"] / total_response) * 100
-                    > self.acceptability_threshold_considered
+                    >= self.acceptability_threshold_considered
                 )
                 if not response_choice_count["ignore_for_acceptability_threshold"]
                 else True

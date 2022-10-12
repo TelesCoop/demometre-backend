@@ -11,7 +11,7 @@ http://xxx/admin/.
 Les questions ne sont pas configurés comme des pages
 
 ### Partie expert
-afin de pouvoir la tester il y a plusieurs étapes (en effet seulement les experts associés à une évaluation doivent pouvoir avoir accès à cette partie là):
+Afin de pouvoir la tester il y a plusieurs étapes (en effet seulement les experts associés à une évaluation doivent pouvoir avoir accès à cette partie là):
 - Dans le backoffice : Paramètres > Utilisateurs > Rechercher l'utilisateur que l'on veut déclarer en tant qu'expert. Aller dans l'onglet Rôles et sélectionner la case Experts puis enregistrer. La personne est alors enregistrée comme étant un expert
 
 ![](readme-images/expert-role.png)

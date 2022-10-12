@@ -13,6 +13,7 @@ from rest_framework.response import Response as RestResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
+from rest_framework.response import Response
 from my_auth.models import User
 from my_auth.serializers import UserSerializer
 
@@ -43,6 +44,8 @@ from open_democracy_back.scoring import (
 from open_democracy_back.serializers.assessment_serializers import (
     AssessmentResponseSerializer,
     AssessmentSerializer,
+    EpciSerializer,
+    MunicipalitySerializer,
 )
 from open_democracy_back.utils import ManagedAssessmentType
 
@@ -151,7 +154,7 @@ class AssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
             user_id = None
         else:
             user_id = request.user.id
-        zip_code = request.GET.get("zip_code").replace(" ", "")
+        locality_id = request.GET.get("locality_id")
         locality_type = request.GET.get("locality_type")
         assessment = None
         assessments_usable = Assessment.objects.all().exclude(
@@ -159,37 +162,14 @@ class AssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
             & ~Q(initiated_by_user_id=user_id)
         )
         if locality_type == LocalityType.MUNICIPALITY:
-
-            municipality = Municipality.objects.filter(zip_codes__code=zip_code)
-            if municipality.count() == 0:
-                raise ValidationFieldError(
-                    "zip_code",
-                    detail="The zip code does not correspond to any municipality",
-                    code=ErrorCode.NO_ZIP_CODE_MUNICIPALITY.value,
-                )
-            if municipality.count() > 1:
-                logger.warning(
-                    f"There is several municipality corresponding to zip_code: {zip_code} (we are using the first occurence)"
-                )
+            municipality = Municipality.objects.get(id=locality_id)
             assessment, _ = assessments_usable.get_or_create(
-                locality_type=locality_type, municipality=municipality.first()
+                locality_type=locality_type, municipality=municipality
             )
         elif locality_type == LocalityType.INTERCOMMUNALITY:
-            epci = EPCI.objects.filter(
-                related_municipalities_ordered__municipality__zip_codes__code=zip_code
-            )
-            if epci.count() == 0:
-                raise ValidationFieldError(
-                    "zip_code",
-                    detail="The zip code does not correspond to any epci",
-                    code=ErrorCode.NO_ZIP_CODE_EPCI.value,
-                )
-            if epci.count() > 1:
-                logger.warning(
-                    f"There is several EPCI corresponding to zip_code: {zip_code} (we are using the first occurence)"
-                )
+            epci = EPCI.objects.get(id=locality_id)
             assessment, _ = assessments_usable.get_or_create(
-                locality_type=locality_type, epci=epci.first()
+                locality_type=locality_type, epci=epci
             )
 
         else:
@@ -201,6 +181,28 @@ class AssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):
             )
 
         return RestResponse(status=200, data=self.serializer_class(assessment).data)
+
+
+class ZipCodeLocalitiesView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class_municipality = MunicipalitySerializer
+    serializer_class_epci = EpciSerializer
+
+    def list(self, request, zip_code):
+        municipalities = self.serializer_class_municipality(
+            Municipality.objects.filter(zip_codes__code=zip_code).distinct(), many=True
+        )
+        epcis = self.serializer_class_epci(
+            EPCI.objects.filter(
+                related_municipalities_ordered__municipality__zip_codes__code=zip_code
+            ).distinct(),
+            many=True,
+        )
+        return Response(
+            {
+                LocalityType.MUNICIPALITY: municipalities.data,
+                LocalityType.INTERCOMMUNALITY: epcis.data,
+            }
+        )
 
 
 class AnimatorAssessmentsView(mixins.ListModelMixin, viewsets.GenericViewSet):

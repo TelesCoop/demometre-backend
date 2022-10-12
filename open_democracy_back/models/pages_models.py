@@ -777,6 +777,31 @@ class EvaluationInitiationPage(Page):
     search_assessment_description = models.TextField(
         default="", verbose_name="Description", blank=True
     )
+    search_assessment_locality_type_question = models.TextField(
+        default="",
+        verbose_name="Question Commune / Interco",
+        blank=True,
+    )
+    search_assessment_locality_type_description = models.TextField(
+        default="",
+        verbose_name="Description de la question Commune / Interco",
+        blank=True,
+    )
+    search_assessment_zip_code_question = models.TextField(
+        default="",
+        verbose_name="Question du code postal",
+        blank=True,
+    )
+    search_assessment_zip_code_description = models.TextField(
+        default="",
+        verbose_name="Description de la question du code postal",
+        blank=True,
+    )
+    search_assessment_no_result = models.TextField(
+        default="",
+        verbose_name="Aucun résultat",
+        blank=True,
+    )
 
     cgu_consent_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
@@ -972,6 +997,11 @@ class EvaluationInitiationPage(Page):
             [
                 FieldPanel("search_assessment_title"),
                 FieldPanel("search_assessment_description"),
+                FieldPanel("search_assessment_locality_type_question"),
+                FieldPanel("search_assessment_locality_type_description"),
+                FieldPanel("search_assessment_zip_code_question"),
+                FieldPanel("search_assessment_zip_code_description"),
+                FieldPanel("search_assessment_no_result"),
             ],
             heading="Recherche d'une évaluation",
         ),

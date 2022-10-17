@@ -121,6 +121,7 @@ class ReferentialPageSerializer(PageSerialiserWithLocale):
         model = ReferentialPage
         fields = PAGE_FIELDS + [
             "description",
+            "rosette_legend",
             "pillar_block_title",
             "pillar_block_left_content",
             "pillar_block_right_content",

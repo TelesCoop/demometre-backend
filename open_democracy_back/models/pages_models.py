@@ -307,6 +307,13 @@ class ReferentialPage(Page):
         verbose_name="Légende du schéma interactif",
     )
 
+    pillar_structure_legend = RichTextField(
+        blank=True,
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Légende du schéma d'arborescence du DémoMètre",
+    )
+
     pillar_block_title = models.CharField(
         max_length=68,
         verbose_name="Titre",
@@ -370,6 +377,7 @@ class ReferentialPage(Page):
         FieldPanel("introduction"),
         FieldPanel("description"),
         FieldPanel("rosette_legend"),
+        FieldPanel("pillar_structure_legend"),
         MultiFieldPanel(
             [
                 FieldPanel("pillar_block_title"),

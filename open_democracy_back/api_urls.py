@@ -11,6 +11,7 @@ from open_democracy_back.views.content_views import BlogPostView, ResourceView
 
 from open_democracy_back.views.page_views import (
     AnimatorPageView,
+    ContentPageView,
     EvaluationInitiationPageSerializerView,
     EvaluationQuestionnairePageView,
     HomePageView,
@@ -30,6 +31,7 @@ from open_democracy_back.views.representativity_views import (
     RepresentativityCriteriaView,
 )
 from open_democracy_back.views.setting_views import (
+    ImportantPagesSettingsView,
     RGPDSettingsView,
     StructureSettingsView,
 )
@@ -83,6 +85,16 @@ router.register(
     r"animator-pages",
     AnimatorPageView,
     basename="AnimatorPage",
+)
+router.register(
+    r"content-pages",
+    ContentPageView,
+    basename="ContentPage",
+)
+router.register(
+    r"important-pages-settings",
+    ImportantPagesSettingsView,
+    basename="ImportantPagesSettings",
 )
 router.register(r"rgpd-settings", RGPDSettingsView, basename="RGPDSettings")
 router.register(

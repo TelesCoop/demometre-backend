@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from open_democracy_back.models.settings_models import RGPDSettings, StructureSettings
+from open_democracy_back.models.settings_models import (
+    ImportantPagesSettings,
+    RGPDSettings,
+    StructureSettings,
+)
+from open_democracy_back.serializers.page_serializers import ContentPageSerializer
 
 
 class StructureSettingsSerializer(serializers.ModelSerializer):
@@ -54,5 +59,21 @@ class RGPDSettingsSerializer(serializers.ModelSerializer):
             "terms_of_sale_url",
             "confidentiality_policy_url",
             "content_license_url",
+        ]
+        read_only_fields = fields
+
+
+class ImportantPagesSettingsSerializer(serializers.ModelSerializer):
+    faq_page = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_faq_page(obj: ImportantPagesSettings):
+        page = obj.faq_page.specific
+        return ContentPageSerializer(page).data
+
+    class Meta:
+        model = ImportantPagesSettings
+        fields = [
+            "faq_page",
         ]
         read_only_fields = fields

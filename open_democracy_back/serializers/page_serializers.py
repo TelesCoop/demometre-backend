@@ -9,6 +9,7 @@ from open_democracy_back.models.contents_models import (
 )
 from open_democracy_back.models.pages_models import (
     AnimatorPage,
+    ContentPage,
     EvaluationInitiationPage,
     EvaluationQuestionnairePage,
     ProjectPage,
@@ -417,4 +418,11 @@ class AnimatorPageSerializer(PageSerialiserWithLocale):
             "responses_title",
             "responses_intro",
         ]
+        read_only_fields = fields
+
+
+class ContentPageSerializer(PageSerialiserWithLocale):
+    class Meta:
+        model = ContentPage
+        fields = ["id", "locale_code", "title", "content"]
         read_only_fields = fields

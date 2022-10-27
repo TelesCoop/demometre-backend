@@ -2,6 +2,7 @@ from django.db import models
 from wagtail.contrib.settings.models import BaseSetting, register_setting
 from wagtail.documents.models import Document
 from wagtail.documents.edit_handlers import DocumentChooserPanel
+from wagtail.admin.edit_handlers import PageChooserPanel
 
 
 @register_setting
@@ -65,3 +66,22 @@ class RGPDSettings(BaseSetting):
 
     class Meta:
         verbose_name = "RGPD"
+
+
+@register_setting
+class ImportantPagesSettings(BaseSetting):
+    class Meta:
+        verbose_name = "Pages importantes"
+
+    faq_page = models.ForeignKey(
+        "wagtailcore.Page",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="FAQ",
+    )
+
+    panels = [
+        PageChooserPanel("faq_page"),
+    ]

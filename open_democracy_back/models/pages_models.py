@@ -1318,3 +1318,24 @@ class AnimatorPage(Page):
 
     class Meta:
         verbose_name = "Espace Expert"
+
+
+class ContentPage(Page):
+    parent_page_types = ["HomePage"]
+    subpage_types: List[str] = []
+    preview_modes = None
+
+    content = RichTextField(
+        default="",
+        verbose_name="Contenu de la page",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("content"),
+    ]
+
+    # Admin tabs list (Remove promotion and settings tabs)
+    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
+
+    class Meta:
+        verbose_name = "Page de contenu"

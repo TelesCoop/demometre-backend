@@ -897,6 +897,18 @@ class EvaluationInitiationPage(Page):
         max_length=68, default="", verbose_name="Ajout d'un expert - Bouton NON"
     )
 
+    dashboard_title = models.CharField(
+        max_length=255,
+        default="",
+        verbose_name="Titre",
+    )
+    dashboard_description = RichTextField(
+        verbose_name="Description",
+        default="",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        blank=True,
+    )
+
     must_be_connected_to_create_title = models.CharField(
         max_length=255, default="", verbose_name="Titre"
     )
@@ -1061,6 +1073,13 @@ class EvaluationInitiationPage(Page):
                 FieldPanel("add_expert_button_no"),
             ],
             heading="Une évaluation participative correspond",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("dashboard_title"),
+                FieldPanel("dashboard_description"),
+            ],
+            heading="Tableau de bord de l'évaluation",
         ),
         MultiFieldPanel(
             [

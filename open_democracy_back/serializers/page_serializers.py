@@ -354,6 +354,8 @@ class EvaluationInitiationPageSerializer(PageSerialiserWithLocale):
             "add_expert_description",
             "add_expert_button_yes",
             "add_expert_button_no",
+            "dashboard_title",
+            "dashboard_description",
             "must_be_connected_to_create_title",
             "must_be_connected_to_create_description",
             "create_quick_assessment_title",

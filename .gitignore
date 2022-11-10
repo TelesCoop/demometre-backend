@@ -41,3 +41,5 @@ db.sqlite3-journal
 
 *.ipynb
 .ipynb_checkpoints/
+
+local_settings.ini

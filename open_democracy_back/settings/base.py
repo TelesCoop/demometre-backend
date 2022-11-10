@@ -110,6 +110,15 @@ DATABASES = {
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
+if config.getstr("database.engine") == "postgres":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config.getstr("database.name"),  # noqa: F405
+            "USER": config.getstr("database.user"),  # noqa: F405
+            "PASSWORD": config.getstr("database.password"),  # noqa: F405
+        }
+    }
 
 
 # Password validation

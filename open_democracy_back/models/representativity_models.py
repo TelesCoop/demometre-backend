@@ -136,7 +136,8 @@ class AssessmentRepresentativity(models.Model):
                 total=Count(
                     "unique_choice_participationresponses",
                     filter=Q(
-                        unique_choice_participationresponses__participation__assessment_id=self.assessment_id
+                        unique_choice_participationresponses__participation__assessment_id=self.assessment_id,
+                        unique_choice_participationresponses__participation__user__is_unknown_user=False,
                     ),
                 )
             )
@@ -147,7 +148,8 @@ class AssessmentRepresentativity(models.Model):
     def total_responses(self):
         return (
             self.representativity_criteria.profiling_question.participationresponses.filter(
-                participation__assessment_id=self.assessment_id
+                participation__assessment_id=self.assessment_id,
+                participation__user__is_unknown_user=False,
             )
             .exclude(unique_choice_response=None)
             .count()

@@ -231,7 +231,6 @@ class CurrentParticipationResponseView(mixins.ListModelMixin, viewsets.GenericVi
         if context:
             is_profiling_question = context == "profiling"
             query = query.filter(question__profiling_question=is_profiling_question)
-
         return query
 
 

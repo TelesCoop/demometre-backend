@@ -446,7 +446,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         max_length=32,
         choices=[("objective", "Objective"), ("subjective", "Subjective")],
         default="subjective",
-        verbose_name="Objective / Subjective",
+        verbose_name="Objective / Subjective (Non modifiable)",
+        help_text="Ce champ n'est pas modifiable après la création de la question",
     )
     method = models.CharField(
         max_length=32,
@@ -524,6 +525,13 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         if self.profiling_question:
             return f"Profilage: {self.name}"
         return f"{self.concatenated_code}: {self.name}"
+
+    def save(self, *args, **kwargs):
+        # Passing from objectivity to subjectivity is not allowed
+        if self.id:
+            old_value = Question.objects.get(id=self.id)
+            self.objectivity = old_value.objectivity
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["code"]

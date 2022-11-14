@@ -116,7 +116,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_participation_nb(obj: Assessment):
-        return obj.participations.count()
+        return obj.participations.filter(user__is_unknown_user=False).count()
 
     class Meta:
         model = Assessment

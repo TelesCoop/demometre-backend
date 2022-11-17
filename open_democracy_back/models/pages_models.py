@@ -421,6 +421,16 @@ class ReferentialPage(Page):
         verbose_name = "Référentiel"
 
 
+class ParticipationBoardPage(Page):
+    parent_page_types = ["HomePage"]
+    subpage_types: List[str] = []
+    max_count_per_parent = 1
+    preview_modes = None
+
+    class Meta:
+        verbose_name = "Tableau de bord de la participation"
+
+
 class ResultsPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []

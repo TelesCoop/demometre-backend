@@ -2,6 +2,7 @@ from rest_framework import mixins, viewsets
 from open_democracy_back.models.pages_models import (
     AnimatorPage,
     ContentPage,
+    ParticipationBoardPage,
     EvaluationInitiationPage,
     EvaluationQuestionnairePage,
     HomePage,
@@ -14,6 +15,7 @@ from open_democracy_back.models.pages_models import (
 from open_democracy_back.serializers.page_serializers import (
     AnimatorPageSerializer,
     ContentPageSerializer,
+    ParticipationBoardPageSerializer,
     EvaluationInitiationPageSerializer,
     EvaluationQuestionnairePageSerializer,
     HomePageSerializer,
@@ -49,6 +51,15 @@ class ReferentialPageView(
 ):
     serializer_class = ReferentialPageSerializer
     queryset = ReferentialPage.objects.all()
+
+
+class ParticipationBoardPageView(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = ParticipationBoardPageSerializer
+    queryset = ParticipationBoardPage.objects.all()
 
 
 class ResultsPageView(

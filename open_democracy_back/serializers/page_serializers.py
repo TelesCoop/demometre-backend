@@ -10,6 +10,7 @@ from open_democracy_back.models.contents_models import (
 from open_democracy_back.models.pages_models import (
     AnimatorPage,
     ContentPage,
+    ParticipationBoardPage,
     EvaluationInitiationPage,
     EvaluationQuestionnairePage,
     ProjectPage,
@@ -134,6 +135,13 @@ class ReferentialPageSerializer(PageSerialiserWithLocale):
             "criteria_block_left_content",
             "criteria_block_right_content",
         ]
+        read_only_fields = fields
+
+
+class ParticipationBoardPageSerializer(PageSerialiserWithLocale):
+    class Meta:
+        model = ParticipationBoardPage
+        fields = ["id", "title", "locale_code"]
         read_only_fields = fields
 
 

@@ -18,7 +18,7 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
 
 config = getconf.ConfigGetter(
-    "do",
+    "demometre",
     [os.environ.get('CONFIG_PATH'), "./local_settings.ini"],
 )
 

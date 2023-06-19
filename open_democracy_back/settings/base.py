@@ -19,7 +19,7 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 
 config = getconf.ConfigGetter(
     "do",
-    ["/etc/telescoop/do/settings.ini", "./local_settings.ini"],
+    [os.environ.get('CONFIG_PATH'), "./local_settings.ini"],
 )
 
 

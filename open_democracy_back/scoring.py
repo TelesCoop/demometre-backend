@@ -268,12 +268,17 @@ def get_score_of_closed_with_scale_question(queryset) -> List[QuestionScore]:
     return result
 
 
+def get_score_of_number_question(queryset) -> List[QuestionScore]:
+    pass
+
+
 SCORES_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
     QuestionType.BOOLEAN.value: get_score_of_boolean_question,  # type: ignore
     QuestionType.UNIQUE_CHOICE.value: get_score_of_unique_choice_question,  # type: ignore
     QuestionType.MULTIPLE_CHOICE.value: get_score_of_multiple_choice_question,  # type: ignore
     QuestionType.PERCENTAGE.value: get_score_of_percentage_question,  # type: ignore
     QuestionType.CLOSED_WITH_SCALE.value: get_score_of_closed_with_scale_question,  # type: ignore
+    QuestionType.NUMBER.value: get_score_of_number_question,  # type: ignore
 }
 
 

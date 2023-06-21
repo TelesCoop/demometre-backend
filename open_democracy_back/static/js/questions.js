@@ -7,41 +7,64 @@ if (
     var rulesForResponseChoiceQuestions = document.querySelector("#id_response_choices-FORMS").closest(".object")
     var rulesForMultipleChoiceQuestion = document.querySelector("#id_max_multiple_choices").closest(".object")
     var rulesForClosedWithScaleQuestion = document.querySelector("#id_categories-ADD").closest(".object")
+    var rulesForPercentageQuestion;
+    var rulesForNumberQuestion;
     try {
-        var rulesForPercentageQuestion = document.querySelector("#id_percentage_ranges-TOTAL_FORMS").closest(".object")
+        rulesForPercentageQuestion = document.querySelector("#id_percentage_ranges-TOTAL_FORMS").closest(".object")
     } catch {
-        var rulesForPercentageQuestion = document.createElement("div");
+        rulesForPercentageQuestion = document.createElement("div");
+    }
+    try {
+        rulesForNumberQuestion = document.querySelector(".number-question-panel")
+    } catch {
+        rulesForNumberQuestion = document.createElement("div");
     }
 
 
+
     function responseRules(questionType) {
-        if (questionType == "unique_choice" ||
-            questionType == "multiple_choice" ||
-            questionType == "closed_with_scale") {
-            rulesForResponseChoiceQuestions.style.display = "block";
-            rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForMultipleChoiceQuestion.style.display = "none";
-            rulesForPercentageQuestion.style.display = "none";
-            if (questionType == "multiple_choice") {
-                rulesForMultipleChoiceQuestion.style.display = "block";
-            } else if (questionType == "closed_with_scale") {
-                rulesForClosedWithScaleQuestion.style.display = "block";
-            }
-        } else if (questionType == "boolean") {
-            rulesForResponseChoiceQuestions.style.display = "none";
-            rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForMultipleChoiceQuestion.style.display = "none";
-            rulesForPercentageQuestion.style.display = "none";
-        } else if (questionType == "percentage") {
-            rulesForResponseChoiceQuestions.style.display = "none";
-            rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForMultipleChoiceQuestion.style.display = "none";
-            rulesForPercentageQuestion.style.display = "block";
-        } else {
-            rulesForResponseChoiceQuestions.style.display = "none";
-            rulesForClosedWithScaleQuestion.style.display = "none";
-            rulesForMultipleChoiceQuestion.style.display = "none";
-            rulesForPercentageQuestion.style.display = "none";
+        switch (questionType) {
+            case "unique_choice":
+            case "multiple_choice":
+            case "closed_with_scale":
+                rulesForResponseChoiceQuestions.style.display = "block";
+                rulesForClosedWithScaleQuestion.style.display = "none";
+                rulesForMultipleChoiceQuestion.style.display = "none";
+                rulesForPercentageQuestion.style.display = "none";
+                rulesForNumberQuestion.style.display = "none";
+                if (questionType == "multiple_choice") {
+                    rulesForMultipleChoiceQuestion.style.display = "block";
+                } else if (questionType == "closed_with_scale") {
+                    rulesForClosedWithScaleQuestion.style.display = "block";
+                }
+                break;
+            case "boolean":
+                rulesForResponseChoiceQuestions.style.display = "none";
+                rulesForClosedWithScaleQuestion.style.display = "none";
+                rulesForMultipleChoiceQuestion.style.display = "none";
+                rulesForPercentageQuestion.style.display = "none";
+                rulesForNumberQuestion.style.display = "none";
+                break;
+            case "percentage":
+                rulesForResponseChoiceQuestions.style.display = "none";
+                rulesForClosedWithScaleQuestion.style.display = "none";
+                rulesForMultipleChoiceQuestion.style.display = "none";
+                rulesForPercentageQuestion.style.display = "block";
+                // rulesForNumberQuestion.style.display = "none";
+                break
+            case "number":
+                rulesForResponseChoiceQuestions.style.display = "none";
+                rulesForClosedWithScaleQuestion.style.display = "none";
+                rulesForMultipleChoiceQuestion.style.display = "none";
+                rulesForPercentageQuestion.style.display = "none";
+                rulesForNumberQuestion.style.display = "block";
+                break;
+            default:
+                rulesForResponseChoiceQuestions.style.display = "none";
+                rulesForClosedWithScaleQuestion.style.display = "none";
+                rulesForMultipleChoiceQuestion.style.display = "none";
+                rulesForPercentageQuestion.style.display = "none";
+                rulesForNumberQuestion.style.display = "none";
         }
     }
 

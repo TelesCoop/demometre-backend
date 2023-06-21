@@ -29,6 +29,7 @@ class Command(BaseCommand):
                     unique_choice_response_id=assessment_response.unique_choice_response_id,
                     boolean_response=assessment_response.boolean_response,
                     percentage_response=assessment_response.percentage_response,
+                    number_response=assessment_response.number_response,
                     participation_id=user_participation.id,
                 )
             else:

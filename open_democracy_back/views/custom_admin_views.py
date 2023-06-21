@@ -5,15 +5,21 @@ from open_democracy_back.models import Question
 from open_democracy_back.utils import QuestionType
 
 
-def get_percentage_range_line_error(question):
+def range_error(question, attribute_name):
     ranges = []
-    for percentage_range in question.percentage_ranges.all():
-        if percentage_range.linearized_score is not None:
+    for range in getattr(question, attribute_name).all():
+        if range.linearized_score is not None:
             continue
-        ranges.append(
-            f"{percentage_range.lower_bound} à {percentage_range.upper_bound}"
-        )
+        ranges.append(range.boundaries)
     return ", ".join(ranges)
+
+
+def get_percentage_range_line_error(question):
+    return range_error(question, "percentage_ranges")
+
+
+def get_number_range_line_error(question):
+    return range_error(question, "number_ranges")
 
 
 def get_response_choices_line_error(question):
@@ -30,6 +36,7 @@ MISSING_SCORE_MAP = {
     QuestionType.MULTIPLE_CHOICE.value: get_response_choices_line_error,  # type: ignore
     QuestionType.CLOSED_WITH_SCALE.value: get_response_choices_line_error,  # type: ignore
     QuestionType.PERCENTAGE.value: get_percentage_range_line_error,  # type: ignore
+    QuestionType.NUMBER.value: get_number_range_line_error,  # type: ignore
 }
 
 
@@ -44,6 +51,10 @@ def anomaly(request):
                     type=QuestionType.PERCENTAGE,
                 )
                 | Q(
+                    number_ranges__linearized_score__isnull=True,
+                    type=QuestionType.NUMBER,
+                )
+                | Q(
                     response_choices__linearized_score__isnull=True,
                     type__in=[
                         QuestionType.UNIQUE_CHOICE,
@@ -53,7 +64,7 @@ def anomaly(request):
                 )
             )
         )
-        .prefetch_related("percentage_ranges", "response_choices")
+        .prefetch_related("percentage_ranges", "number_ranges", "response_choices")
         .distinct()
     )
 

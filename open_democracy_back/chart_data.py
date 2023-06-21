@@ -205,10 +205,16 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
     return data
 
 
+def get_chart_data_of_number_question(question, assessment_id):
+    # TODO : add support for number question
+    pass
+
+
 CHART_DATA_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
     QuestionType.BOOLEAN.value: get_chart_data_of_boolean_question,  # type: ignore
     QuestionType.UNIQUE_CHOICE.value: get_chart_data_of_unique_choice_question,  # type: ignore
     QuestionType.MULTIPLE_CHOICE.value: get_chart_data_of_multiple_choice_question,  # type: ignore
     QuestionType.PERCENTAGE.value: get_chart_data_of_percentage_question,  # type: ignore
     QuestionType.CLOSED_WITH_SCALE.value: get_chart_data_of_closed_with_scale_question,  # type: ignore
+    QuestionType.NUMBER.value: get_chart_data_of_number_question,  # type: ignore
 }

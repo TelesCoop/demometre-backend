@@ -26,6 +26,7 @@ RESPONSE_FIELDS = [
     "multiple_choice_response_ids",
     "boolean_response",
     "percentage_response",
+    "number_response",
     "closed_with_scale_response_categories",
 ]
 OPTIONAL_RESPONSE_FIELDS = [

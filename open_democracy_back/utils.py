@@ -55,6 +55,16 @@ class QuestionType(models.TextChoices):
     NUMBER = "number", "Nombre"
 
 
+QUESTION_TYPE_WITH_SCORE = [
+    QuestionType.BOOLEAN,
+    QuestionType.UNIQUE_CHOICE,
+    QuestionType.MULTIPLE_CHOICE,
+    QuestionType.PERCENTAGE,
+    QuestionType.NUMBER,
+    QuestionType.CLOSED_WITH_SCALE,
+]
+
+
 class SerializerContext:
     def get_serializer_context(self):
         """

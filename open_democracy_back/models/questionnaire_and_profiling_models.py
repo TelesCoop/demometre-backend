@@ -14,6 +14,7 @@ from wagtail.admin.edit_handlers import (
     FieldRowPanel,
     MultiFieldPanel,
     StreamFieldPanel,
+    HelpPanel,
 )
 from wagtail.core import blocks
 from wagtail.core.fields import RichTextField, StreamField
@@ -563,6 +564,27 @@ class QuestionnaireQuestionManager(QuestionManager):
         return super().get_queryset().filter(profiling_question=False)
 
 
+def get_number_multifield_panel(is_profiling_question=False):
+    panels = [
+        FieldPanel("min_number_value"),
+        FieldPanel("max_number_value"),
+        FieldPanel("step_number_value"),
+    ]
+    if not is_profiling_question:
+        panels.append(
+            HelpPanel(
+                '<div class="help-block help-info">Attention à prendre en compte la granularité dans les bornes des scores associés</div">'
+            )
+        )
+        panels.append(InlinePanel("number_ranges", help_text="Test"))
+
+    return MultiFieldPanel(
+        panels,
+        heading="Paramétrage d'une question de nombre",
+        classname="collapsible number-question-panel",
+    )
+
+
 @register_snippet
 class QuestionnaireQuestion(Question):
     objects = QuestionnaireQuestionManager()
@@ -579,19 +601,7 @@ class QuestionnaireQuestion(Question):
             "percentage_ranges",
             label="Score associé aux réponses d'une question de pourcentage",
         ),
-        MultiFieldPanel(
-            [
-                FieldPanel("min_number_value"),
-                FieldPanel("max_number_value"),
-                FieldPanel("step_number_value"),
-                InlinePanel(
-                    "number_ranges",
-                    label="Score associé aux réponses d'une question de nombre",
-                ),
-            ],
-            heading="Paramétrage d'une question de nombre",
-            classname="collapsible number-question-panel",
-        ),
+        get_number_multifield_panel(),
         *Question.explanation_panels,
     ]
 
@@ -627,6 +637,7 @@ class ProfilingQuestion(Question):
         *Question.principal_panels,
         *Question.commun_types_panels,
         *Question.explanation_panels,
+        get_number_multifield_panel(True),
     ]
 
     # TODO : the search not works because filter on profiling_question=True

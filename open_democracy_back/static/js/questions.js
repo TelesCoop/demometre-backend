@@ -7,17 +7,12 @@ if (
     var rulesForResponseChoiceQuestions = document.querySelector("#id_response_choices-FORMS").closest(".object")
     var rulesForMultipleChoiceQuestion = document.querySelector("#id_max_multiple_choices").closest(".object")
     var rulesForClosedWithScaleQuestion = document.querySelector("#id_categories-ADD").closest(".object")
+    var rulesForNumberQuestion = document.querySelector(".number-question-panel") || document.createElement("div");
     var rulesForPercentageQuestion;
-    var rulesForNumberQuestion;
     try {
         rulesForPercentageQuestion = document.querySelector("#id_percentage_ranges-TOTAL_FORMS").closest(".object")
     } catch {
         rulesForPercentageQuestion = document.createElement("div");
-    }
-    try {
-        rulesForNumberQuestion = document.querySelector(".number-question-panel")
-    } catch {
-        rulesForNumberQuestion = document.createElement("div");
     }
 
 

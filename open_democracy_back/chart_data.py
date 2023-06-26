@@ -215,7 +215,7 @@ def get_chart_data_of_number_question(question, assessment_id):
     result = model.objects.filter(**base_queryset).get(question_id=question.id)
 
     return {
-        "value": {"label": "Valeur", "value": result.number_response},
+        "value": result.number_response,
     }
 
 

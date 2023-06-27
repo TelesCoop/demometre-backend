@@ -43,3 +43,4 @@ db.sqlite3-journal
 .ipynb_checkpoints/
 
 local_settings.ini
+dump.sql

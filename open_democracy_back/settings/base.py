@@ -110,7 +110,7 @@ DATABASES = {
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
-if config.getstr("database.engine") == "postgres":
+if config.getstr("database.engine") == "postgresql":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",

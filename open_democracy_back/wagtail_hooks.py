@@ -58,7 +58,6 @@ from open_democracy_back.views.wagtail_rule_views import (
 
 
 class RulesButtonHelper(ButtonHelper):
-
     # Define classes for our button, here we can set an icon for example
     view_button_classnames = ["button-small", "icon", "icon-cogs"]
 
@@ -326,11 +325,28 @@ class RepresentativityModelAdmin(ModelAdmin):
     search_fields = ("name",)
 
 
+class CanNotCreatePermissionHelper(PermissionHelper):
+    def user_can_create(self, user):
+        return False
+
+
+class CanNotDeletePermissionHelper(PermissionHelper):
+    def user_can_delete_obj(self, user, _):
+        return False
+
+
+class CanNotCreateOrDeletePermissionHelper(
+    CanNotCreatePermissionHelper, CanNotDeletePermissionHelper
+):
+    pass
+
+
 class AssessmentTypeModelAdmin(ModelAdmin):
     model = AssessmentType
     menu_label = "Type d'Évaluation"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
+    permission_helper_class = CanNotCreateOrDeletePermissionHelper
 
 
 class AssessmentModelAdmin(ModelAdmin):

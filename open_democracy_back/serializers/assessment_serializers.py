@@ -78,6 +78,7 @@ class EpciSerializer(serializers.ModelSerializer):
 
 class AssessmentTypeSerializer(serializers.ModelSerializer):
     pdf_url = serializers.SerializerMethodField()
+    name = serializers.CharField(source="get_assessment_type_display")
 
     @staticmethod
     def get_pdf_url(obj: AssessmentType):

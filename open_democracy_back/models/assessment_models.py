@@ -143,12 +143,12 @@ class MunicipalityOrderByEPCI(Orderable):
 
 @register_snippet
 class AssessmentType(models.Model):
-    name = models.CharField(max_length=64, verbose_name="Nom")
     assessment_type = models.CharField(
         max_length=32,
         choices=ManagedAssessmentType.choices,
         verbose_name="Evaluation géré par le code",
         unique=True,
+        editable=False,
     )
     for_who = models.CharField(
         max_length=510, blank=True, verbose_name="A qui c'est adressé"
@@ -171,8 +171,6 @@ class AssessmentType(models.Model):
     )
 
     panels = [
-        FieldPanel("name"),
-        FieldPanel("assessment_type"),
         FieldPanel("for_who", widget=forms.Textarea),
         FieldPanel("what", widget=forms.Textarea),
         FieldPanel("for_what", widget=forms.Textarea),
@@ -182,7 +180,7 @@ class AssessmentType(models.Model):
     ]
 
     def __str__(self):
-        return self.name
+        return self.get_assessment_type_display()
 
     class Meta:
         verbose_name = "Type d'évaluation"

@@ -58,16 +58,16 @@ class FullWorkshopView(
 
 
 class WorkshopParticipationView(
-    mixins.ListModelMixin,
     UpdateOrCreateModelMixin,
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsWorkshopExpert]
     serializer_class = WorkshopParticipationWithProfilingResponsesSerializer
 
-    def get_queryset(self, workshop_pk) -> QuerySet:
+    def get_queryset(self) -> QuerySet:
         return Participation.objects.filter(
-            workshop__animator_id=self.request.user.id, workshop_id=workshop_pk
+            workshop__animator_id=self.request.user.id,
+            workshop_id=self.request.data["workshop_id"],
         )
 
     def create(self, request, *args, **kwargs):
@@ -75,16 +75,11 @@ class WorkshopParticipationView(
             # Create or update a workshop participation with all its profiling responses
 
             # 1 - Retrieve Participant if exists or create new one
-            email = request.data["participant_email"]
+            email = request.data["participant_email"] or None
             name = request.data["participant_name"]
             try:
-                if "id" in request.data.keys():
-                    participationId = request.data["id"]
-                    participant = Participation.objects.get(
-                        id=participationId
-                    ).participant
-                else:
-                    participant = Participant.objects.get(name=name)
+                participation_id = request.data.get("id")
+                participant = self.get_queryset().get(id=participation_id).participant
                 participant.name = name
                 participant.email = email
                 participant.save()
@@ -125,7 +120,7 @@ class WorkshopParticipationView(
             return response
 
     def get_or_update_object(self, request, workshop_pk):
-        return self.get_queryset(workshop_pk).get(
+        return self.get_queryset().get(
             id=request.data.get("id"),
         )
 

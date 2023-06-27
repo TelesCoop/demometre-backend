@@ -37,7 +37,7 @@ class InitiatorType(models.TextChoices):
 class ManagedAssessmentType(models.TextChoices):
     QUICK = "quick", "Diagnostic rapide"
     PARTICIPATIVE = "participative", "Evaluation participative"
-    WITH_EXPERT = "with_expert", "Evaluation avec experts"
+    WITH_EXPERT = "with_expert", "Evaluation avec expert"
 
 
 class BooleanOperator(models.TextChoices):

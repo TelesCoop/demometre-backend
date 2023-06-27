@@ -8,7 +8,7 @@ if (
     var royaltyPayedBoolean = document.querySelector("#id_royalty_payed").closest(".object")
 
     function assessmentTypeDrawerQuestions(assessmentTypeText) {
-        if (assessmentTypeText == "Evaluation avec experts") {
+        if (assessmentTypeText == "Evaluation avec expert") {
             expertsInputSelect.style.display = "block";
             royaltyPayedBoolean.style.display = "block";
         } else {

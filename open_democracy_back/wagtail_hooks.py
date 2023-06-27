@@ -325,11 +325,28 @@ class RepresentativityModelAdmin(ModelAdmin):
     search_fields = ("name",)
 
 
+class CanNotCreatePermissionHelper(PermissionHelper):
+    def user_can_create(self, user):
+        return False
+
+
+class CanNotDeletePermissionHelper(PermissionHelper):
+    def user_can_delete_obj(self, user, _):
+        return False
+
+
+class CanNotCreateOrDeletePermissionHelper(
+    CanNotCreatePermissionHelper, CanNotDeletePermissionHelper
+):
+    pass
+
+
 class AssessmentTypeModelAdmin(ModelAdmin):
     model = AssessmentType
     menu_label = "Type d'Évaluation"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
+    permission_helper_class = CanNotCreateOrDeletePermissionHelper
 
 
 class AssessmentModelAdmin(ModelAdmin):

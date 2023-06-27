@@ -58,7 +58,6 @@ from open_democracy_back.views.wagtail_rule_views import (
 
 
 class RulesButtonHelper(ButtonHelper):
-
     # Define classes for our button, here we can set an icon for example
     view_button_classnames = ["button-small", "icon", "icon-cogs"]
 

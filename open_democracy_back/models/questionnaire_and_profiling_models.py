@@ -920,7 +920,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     }
 
     def save(self, *args, **kwargs):
-        # Make sure the data is consistent
+        # Make sure the data is consistent with the question type
         if self.conditional_question.type in self.FIELDS_TO_NOT_CLEAN_BY_QUESTION_TYPE:
             fields_to_clean = [
                 field

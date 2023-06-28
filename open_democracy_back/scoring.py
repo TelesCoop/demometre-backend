@@ -285,6 +285,7 @@ def get_score_of_number_question(queryset) -> List[QuestionScore]:
     )
     for response in number_responses:
         score = None
+        # get the score of the first matching number range
         for number_range in response.question.number_ranges.all():
             lower_bound, upper_bound = get_lower_and_upper_bound(
                 number_range.lower_bound, number_range.upper_bound
@@ -293,6 +294,8 @@ def get_score_of_number_question(queryset) -> List[QuestionScore]:
                 score = number_range.linearized_score
                 break
 
+        # if no matching number range was found, skip this response
+        # TODO: maybe we should improve admin validations to avoid this case
         if score is None:
             continue
 

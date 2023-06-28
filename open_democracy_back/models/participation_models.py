@@ -117,6 +117,7 @@ class Response(models.Model):
     percentage_response = models.IntegerField(
         blank=True, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
+    number_response = models.FloatField(blank=True, null=True)
 
     class Meta:
         abstract = True

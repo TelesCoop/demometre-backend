@@ -25,7 +25,7 @@ from open_democracy_back.serializers.participation_serializers import (
     ParticipationSerializer,
     ParticipationResponseSerializer,
 )
-from open_democracy_back.utils import SerializerContext
+from open_democracy_back.utils import SerializerContext, QuestionType
 
 NUMERICAL_OPERATOR_CONVERSION = {
     "<": operator.lt,
@@ -70,11 +70,19 @@ class PercentageStrategy(QuestionStrategy):
         )
 
 
+class NumberStrategy(QuestionStrategy):
+    def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+        return NUMERICAL_OPERATOR_CONVERSION[rule.numerical_operator](
+            response.number_response, rule.float_value
+        )
+
+
 RULES_STRATEGY = {
-    "unique_choice": UniqueChoiceStrategy(),
-    "multiple_choice": MultipleChoiceStrategy(),
-    "boolean": BooleanStrategy(),
-    "percentage": PercentageStrategy(),
+    QuestionType.UNIQUE_CHOICE.value: UniqueChoiceStrategy(),  # type: ignore
+    QuestionType.MULTIPLE_CHOICE.value: MultipleChoiceStrategy(),  # type: ignore
+    QuestionType.BOOLEAN.value: BooleanStrategy(),  # type: ignore
+    QuestionType.PERCENTAGE.value: PercentageStrategy(),  # type: ignore
+    QuestionType.NUMBER.value: NumberStrategy(),  # type: ignore
 }
 
 

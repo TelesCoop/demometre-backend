@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Dict, Callable
 
 from django.db.models import Count, Avg, Q, F
+from rest_framework.exceptions import ValidationError
 
 from open_democracy_back.models import (
     ResponseChoice,
@@ -205,10 +206,24 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
     return data
 
 
+def get_chart_data_of_number_question(question, assessment_id):
+    if question.objectivity != "objective":
+        raise ValidationError("Number question must be objective.")
+    base_queryset = get_chart_data_objective_queryset(assessment_id)
+    model = AssessmentResponse
+
+    result = model.objects.filter(**base_queryset).get(question_id=question.id)
+
+    return {
+        "value": result.number_response,
+    }
+
+
 CHART_DATA_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
     QuestionType.BOOLEAN.value: get_chart_data_of_boolean_question,  # type: ignore
     QuestionType.UNIQUE_CHOICE.value: get_chart_data_of_unique_choice_question,  # type: ignore
     QuestionType.MULTIPLE_CHOICE.value: get_chart_data_of_multiple_choice_question,  # type: ignore
     QuestionType.PERCENTAGE.value: get_chart_data_of_percentage_question,  # type: ignore
     QuestionType.CLOSED_WITH_SCALE.value: get_chart_data_of_closed_with_scale_question,  # type: ignore
+    QuestionType.NUMBER.value: get_chart_data_of_number_question,  # type: ignore
 }

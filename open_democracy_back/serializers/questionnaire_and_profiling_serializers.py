@@ -31,6 +31,9 @@ QUESTION_FIELDS = [
     "role_ids",
     "population_lower_bound",
     "population_upper_bound",
+    "min_number_value",
+    "max_number_value",
+    "step_number_value",
 ]
 SCORE_FIELDS = [
     "score_1",

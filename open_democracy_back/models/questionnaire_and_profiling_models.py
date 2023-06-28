@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django import forms
@@ -13,6 +14,7 @@ from wagtail.admin.edit_handlers import (
     FieldRowPanel,
     MultiFieldPanel,
     StreamFieldPanel,
+    HelpPanel,
 )
 from wagtail.core import blocks
 from wagtail.core.fields import RichTextField, StreamField
@@ -415,6 +417,18 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         help_text="Pour une question à choix multiple, indiquer le nombre maximum de choix possible",
     )
 
+    min_number_value = models.FloatField(
+        verbose_name="Valeur minimale du champ nombre", blank=True, null=True
+    )
+    max_number_value = models.FloatField(
+        verbose_name="Valeur maximale du champ nombre", blank=True, null=True
+    )
+    step_number_value = models.FloatField(
+        verbose_name="Granularité minimale du champ nombre (ex: 1, 0.1, 0.01, ...)",
+        blank=True,
+        null=True,
+    )
+
     description = RichTextField(
         null=True,
         blank=True,
@@ -526,6 +540,14 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
             return f"Profilage: {self.name}"
         return f"{self.concatenated_code}: {self.name}"
 
+    def clean(self):
+        if self.type == QuestionType.NUMBER.value:
+            if self.step_number_value is None:
+                raise ValidationError(
+                    "La granularité du champ nombre doit être renseignée",
+                    code="invalid",
+                )
+
     def save(self, *args, **kwargs):
         # Passing from objectivity to subjectivity is not allowed
         if self.id:
@@ -540,6 +562,27 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 class QuestionnaireQuestionManager(QuestionManager):
     def get_queryset(self):
         return super().get_queryset().filter(profiling_question=False)
+
+
+def get_number_multifield_panel(is_profiling_question=False):
+    panels = [
+        FieldPanel("min_number_value"),
+        FieldPanel("max_number_value"),
+        FieldPanel("step_number_value"),
+    ]
+    if not is_profiling_question:
+        panels.append(
+            HelpPanel(
+                '<div class="help-block help-info">Attention à prendre en compte la granularité dans les bornes des scores associés</div">'
+            )
+        )
+        panels.append(InlinePanel("number_ranges", help_text="Test"))
+
+    return MultiFieldPanel(
+        panels,
+        heading="Paramétrage d'une question de nombre",
+        classname="collapsible number-question-panel",
+    )
 
 
 @register_snippet
@@ -558,6 +601,7 @@ class QuestionnaireQuestion(Question):
             "percentage_ranges",
             label="Score associé aux réponses d'une question de pourcentage",
         ),
+        get_number_multifield_panel(),
         *Question.explanation_panels,
     ]
 
@@ -593,6 +637,7 @@ class ProfilingQuestion(Question):
         *Question.principal_panels,
         *Question.commun_types_panels,
         *Question.explanation_panels,
+        get_number_multifield_panel(True),
     ]
 
     # TODO : the search not works because filter on profiling_question=True
@@ -709,8 +754,68 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
         ),
     ]
 
+    @property
+    def str_boundaries(self):
+        return f"{self.lower_bound}% à {self.upper_bound}%"
+
     def __str__(self):
-        return f"{self.question} : [{self.lower_bound}%,{self.upper_bound}%] = {self.associated_score}"
+        return f"{self.question} : {self.str_boundaries} = {self.associated_score}"
+
+    class Meta:
+        verbose_name_plural = "Scores pour les différentes fourchettes"
+        verbose_name = "Score pour une fourcette donnée"
+        ordering = ["sort_order"]
+
+
+class NumberRange(TimeStampedModel, Orderable, Score):
+    question = ParentalKey(
+        Question, on_delete=models.CASCADE, related_name="number_ranges"
+    )
+
+    lower_bound = models.FloatField(
+        verbose_name="Borne inférieure",
+        help_text="Si la réponse est suppérieur ou égale à",
+        null=True,
+        blank=True,
+    )
+
+    upper_bound = models.FloatField(
+        verbose_name="Borne suppérieure",
+        help_text="Si la réponse est inférieur ou égale à",
+        null=True,
+        blank=True,
+    )
+
+    panels = [
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [FieldPanel("lower_bound"), FieldPanel("upper_bound")],
+                ),
+                FieldPanel("associated_score"),
+            ],
+            heading="Score associé à une fourchette de nombre",
+        ),
+    ]
+
+    @property
+    def str_boundaries(self):
+        if self.lower_bound is None:
+            return f"=< {self.upper_bound}"
+        elif self.upper_bound is None:
+            return f"=> {self.lower_bound}"
+        else:
+            return f">= {self.lower_bound} et <= {self.upper_bound}"
+
+    def __str__(self):
+        return f"{self.question} : {self.str_boundaries} = {self.associated_score}"
+
+    def clean(self):
+        if self.lower_bound is None and self.upper_bound is None:
+            raise ValidationError(
+                "Au moins une borne doit être renseignée",
+                code="invalid",
+            )
 
     class Meta:
         verbose_name_plural = "Scores pour les différentes fourchettes"
@@ -720,6 +825,7 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
 
 # Update linearized score on save
 pre_save.connect(Score.update_score, sender=PercentageRange)
+pre_save.connect(Score.update_score, sender=NumberRange)
 
 
 class Category(TimeStampedModel, Orderable):
@@ -762,11 +868,12 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     # if conditional question is unique or multiple choices type
     response_choices = models.ManyToManyField(ResponseChoice)
 
-    # if conditional question is percentage
+    # if conditional question is percentage or number
     numerical_operator = models.CharField(
         max_length=8, choices=NUMERICAL_OPERATOR, blank=True, null=True
     )
     numerical_value = models.IntegerField(blank=True, null=True)
+    float_value = models.FloatField(blank=True, null=True)
 
     # if conditional question is boolean
     boolean_response = models.BooleanField(blank=True, null=True)
@@ -790,20 +897,42 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
 
         return f"(ID: {str(self.id)}) {str(self.conditional_question)}, {condition_question_str}"
 
+    RULE_FIELDS_TO_CLEAN = [
+        "numerical_operator",
+        "numerical_value",
+        "float_value",
+        "boolean_response",
+    ]
+    FIELDS_TO_NOT_CLEAN_BY_QUESTION_TYPE = {
+        QuestionType.UNIQUE_CHOICE.value: [],  # type: ignore
+        QuestionType.MULTIPLE_CHOICE.value: [],  # type: ignore
+        QuestionType.PERCENTAGE.value: [  # type: ignore
+            "numerical_operator",
+            "numerical_value",
+        ],
+        QuestionType.NUMBER.value: [  # type: ignore
+            "numerical_operator",
+            "float_value",
+        ],
+        QuestionType.BOOLEAN.value: [  # type: ignore
+            "boolean_response",
+        ],
+    }
+
     def save(self, *args, **kwargs):
-        # Make sure the data is consistent
-        if (
-            self.conditional_question.type == QuestionType.MULTIPLE_CHOICE
-            or self.conditional_question.type == QuestionType.UNIQUE_CHOICE
-        ):
-            self.numerical_operator = None
-            self.numerical_value = None
-            self.boolean_response = None
-        elif self.conditional_question.type == QuestionType.PERCENTAGE:
-            self.boolean_response = None
-        elif self.conditional_question.type == QuestionType.BOOLEAN:
-            self.numerical_operator = None
-            self.numerical_value = None
+        # Make sure the data is consistent with the question type
+        if self.conditional_question.type in self.FIELDS_TO_NOT_CLEAN_BY_QUESTION_TYPE:
+            fields_to_clean = [
+                field
+                for field in self.RULE_FIELDS_TO_CLEAN
+                if field
+                not in self.FIELDS_TO_NOT_CLEAN_BY_QUESTION_TYPE[
+                    self.conditional_question.type
+                ]
+            ]
+            for field_to_clean in fields_to_clean:
+                setattr(self, field_to_clean, None)
+
         super().save(*args, **kwargs)
 
 

@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 class Participant(models.Model):
     name = models.CharField(max_length=150)
-    email = models.EmailField(_("email address"), blank=True, unique=True)
+    email = models.EmailField(_("email address"), blank=True, unique=True, null=True)
 
 
 class Workshop(models.Model):

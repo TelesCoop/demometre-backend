@@ -55,6 +55,16 @@ class QuestionType(models.TextChoices):
     NUMBER = "number", "Nombre"
 
 
+class QuestionObjectivity(models.TextChoices):
+    OBJECTIVE = "objective", "Objective"
+    SUBJECTIVE = "subjective", "Subjective"
+
+
+class QuestionMethod(models.TextChoices):
+    QUANTITATIVE = "quantitative", "Quantitative"
+    QUALITATIVE = "qualitative", "Qualitative"
+
+
 QUESTION_TYPE_WITH_SCORE = [
     QuestionType.BOOLEAN,
     QuestionType.UNIQUE_CHOICE,

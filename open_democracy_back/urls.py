@@ -16,6 +16,7 @@ urlpatterns = [
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
     path("backup/", include("telescoop_backup.urls")),
+    path("hijack/", include("hijack.urls")),
 ]
 
 

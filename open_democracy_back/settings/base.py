@@ -63,6 +63,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "anymail",
     "generic_chooser",
+    "hijack",
+    "hijack.contrib.admin",
 ]
 
 MIDDLEWARE = [
@@ -76,6 +78,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
+    "hijack.middleware.HijackUserMiddleware",
 ]
 
 ROOT_URLCONF = "open_democracy_back.urls"
@@ -224,3 +227,6 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = "my_auth.User"
+
+HIJACK_ALLOW_GET_REQUESTS = True
+LOGIN_REDIRECT_URL = "/"

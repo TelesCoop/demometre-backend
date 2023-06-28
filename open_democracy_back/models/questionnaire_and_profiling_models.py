@@ -624,7 +624,7 @@ class Score(models.Model):
         verbose_name="Score associé",
         blank=True,
         null=True,
-        help_text="Si pertinant",
+        help_text="Si pertinent",
         validators=[MinValueValidator(1), MaxValueValidator(4)],
     )
 

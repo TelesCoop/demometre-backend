@@ -398,9 +398,13 @@ def get_scores_by_assessment_pk(assessment_pk: int) -> Dict[str, Dict[str, float
         "type": [],
     }
     for question_type in QUESTION_TYPE_WITH_SCORE:
-        question_type_scores = SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore
-            participation_responses
-        )
+        # Skip number question type because we don't want to consider in score until we have to handle subjective number question
+        if question_type == QuestionType.NUMBER:
+            question_type_scores = []
+        else:
+            question_type_scores = SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore
+                participation_responses
+            )
 
         question_type_scores.extend(
             SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore

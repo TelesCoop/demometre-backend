@@ -84,7 +84,9 @@ class WorkshopParticipationView(
                 participant.email = email
                 participant.save()
             except ObjectDoesNotExist:
-                participant = Participant.objects.create(name=name, email=email)
+                participant = Participant.objects.update_or_create(
+                    email=email, defaults={"name": name}
+                )[0]
             # Add participant_id in data dict before create or update participation
             request.data["participant_id"] = participant.id
 

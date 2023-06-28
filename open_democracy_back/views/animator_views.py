@@ -58,7 +58,7 @@ class FullWorkshopView(
 
 
 class WorkshopParticipationView(
-    UpdateOrCreateModelMixin,
+    mixins.CreateModelMixin,
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsWorkshopExpert]
@@ -79,25 +79,38 @@ class WorkshopParticipationView(
             name = request.data["participant_name"]
             try:
                 participation_id = request.data.get("id")
-                participant = self.get_queryset().get(id=participation_id).participant
+                participation = self.get_queryset().get(id=participation_id)
+                participant = participation.participant
                 participant.name = name
                 participant.email = email
                 participant.save()
             except ObjectDoesNotExist:
-                participant = Participant.objects.update_or_create(
-                    email=email, defaults={"name": name}
+                # Raise error when we already have this participant email in this workshop
+                if (
+                    email
+                    and self.get_queryset().filter(participant__email=email).exists()
+                ):
+                    raise APIException(
+                        "Participant already exists for this workshop",
+                        code=ErrorCode.PARTICIPANT_ALREADY_EXISTS,
+                    )
+                participant, new = Participant.objects.filter(
+                    email__isnull=False
+                ).update_or_create(email=email, defaults={"name": name})
+                participation = Participation.objects.get_or_create(
+                    participant_id=participant.id,
+                    workshop_id=request.data["workshop_id"],
+                    assessment_id=request.data["assessment_id"],
                 )[0]
-            # Add participant_id in data dict before create or update participation
-            request.data["participant_id"] = participant.id
 
-            # 2 - Pop responses from data before create or update participation (Otherwise serializer will reject it)
+            # 2 - Update role of participant
+            participation.role_id = request.data["role_id"]
+            participation.save()
+
+            # 3 - Pop responses from data before create or update participation (Otherwise serializer will reject it)
             responses_data = []
             if "responses" in request.data.keys():
                 responses_data = request.data.pop("responses")
-
-            # 3 - Create or update participation
-            response = super().create(request, *args, **kwargs)
-            participation = Participation.objects.get(id=response.data["id"])
 
             # 4 - Create or update all profiling responses of participation
             for item in responses_data:
@@ -115,16 +128,11 @@ class WorkshopParticipationView(
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
 
-            # 5 - Update htmlResponse data to respond with all participation responses data
-            response.data = WorkshopParticipationWithProfilingResponsesSerializer(
-                participation
-            ).data
-            return response
-
-    def get_or_update_object(self, request, workshop_pk):
-        return self.get_queryset().get(
-            id=request.data.get("id"),
-        )
+            return RestResponse(
+                WorkshopParticipationWithProfilingResponsesSerializer(
+                    participation
+                ).data
+            )
 
 
 class WorkshopParticipationResponseView(

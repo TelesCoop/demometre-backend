@@ -373,20 +373,13 @@ def get_pillars_score_by_markers_score(
 
 def get_scores_by_assessment_pk(assessment_pk: int) -> Dict[str, Dict[str, float]]:
     # We ignore responses of question that have not criterias
-    participation_responses = (
-        ParticipationResponse.objects.filter(
-            participation__user__is_unknown_user=False,
-            participation__assessment_id=assessment_pk,
-            question__profiling_question=False,
-        )
-        .exclude(has_passed=True)
-        .exclude(question__criteria=None)
+    participation_responses = ParticipationResponse.objects.accounted_in_assessment(
+        assessment_pk
     )
 
-    assessment_responses = AssessmentResponse.objects.filter(
-        answered_by__is_unknown_user=False,
-        assessment_id=assessment_pk,
-    ).exclude(has_passed=True)
+    assessment_responses = AssessmentResponse.objects.accounted_in_assessment(
+        assessment_pk
+    )
 
     score_by_question_id: Dict[str, float] = {}
     df_dict: Dict[str, List[Any]] = {

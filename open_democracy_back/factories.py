@@ -16,6 +16,10 @@ from open_democracy_back.models import (
     Assessment,
     Role,
     Municipality,
+    Department,
+    Region,
+    Response,
+    AssessmentResponse,
 )
 from open_democracy_back.utils import QuestionObjectivity, QuestionMethod, InitiatorType
 
@@ -28,9 +32,9 @@ class UserFactory(factory.django.DjangoModelFactory):
     first_name: str = factory.Faker("first_name")
     last_name: str = factory.Faker("last_name")
     email: str = factory.Faker("email")
-    is_admin: Optional[bool] = False
+    username: str = factory.LazyAttribute(lambda user: user.email)
+    is_staff: Optional[bool] = False
     is_active: Optional[bool] = True
-    activation_key: Optional[bool] = False
 
     @factory.post_generation
     def set_password(self, create, extracted, **kwargs):
@@ -42,7 +46,7 @@ class PillarFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Pillar
 
-    code: int = factory.LazyAttribute(lambda a: random.randint(1, 20))
+    code: str = factory.LazyAttribute(lambda a: str(random.randint(1, 20)))
     name: str = factory.Faker("name")
     description: str = factory.Faker("text")
 
@@ -51,7 +55,7 @@ class MarkerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Marker
 
-    code: int = factory.LazyAttribute(lambda a: random.randint(1, 20))
+    code: str = factory.LazyAttribute(lambda a: str(random.randint(1, 20)))
     name: str = factory.Faker("name")
     description: str = factory.Faker("text")
     pillar = factory.SubFactory(PillarFactory)
@@ -61,7 +65,7 @@ class CriteriaFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Criteria
 
-    code: int = factory.LazyAttribute(lambda a: random.randint(1, 20))
+    code: str = factory.LazyAttribute(lambda a: str(random.randint(1, 20)))
     name: str = factory.Faker("name")
     description: str = factory.Faker("text")
     marker = factory.SubFactory(MarkerFactory)
@@ -71,7 +75,7 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Question
 
-    code: int = factory.LazyAttribute(lambda a: random.randint(1, 20))
+    code: str = factory.LazyAttribute(lambda a: str(random.randint(1, 20)))
     name: str = factory.Faker("name")
     question_statement: str = factory.Faker("text")
     mandatory: bool = False
@@ -99,11 +103,40 @@ class RoleFactory(factory.django.DjangoModelFactory):
     description: str = factory.Faker("text")
 
 
+class RegionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Region
+
+    name: str = factory.Faker("name")
+    code: str = factory.Faker("zipcode")
+
+
+class DepartmentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Department
+
+    name: str = factory.Faker("name")
+    code: str = factory.Faker("zipcode")
+    region = factory.SubFactory(RegionFactory)
+
+
+class MunicipalityFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Municipality
+
+    name: str = factory.Faker("name")
+    code: str = factory.Faker("zipcode")
+    department: str = factory.SubFactory(DepartmentFactory)
+
+    population: int = factory.Faker("random_int")
+
+
 class AssessmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Assessment
 
     initiated_by_user = factory.SubFactory(UserFactory)
+    municipality = factory.SubFactory(MunicipalityFactory)
     initiator_type = InitiatorType.INDIVIDUAL
     initialized_to_the_name_of: str = factory.Faker("name")
     initialization_date = factory.lazy_attribute(lambda o: datetime.date.today())
@@ -115,14 +148,6 @@ class AssessmentFactory(factory.django.DjangoModelFactory):
                 self.assessment_type = AssessmentType.objects.first()
             else:
                 self.assessment_type = extracted
-
-    @factory.post_generation
-    def set_municipality(self, create, extracted, **kwargs):
-        if create:
-            if not extracted:
-                self.municipality = Municipality.objects.first()
-            else:
-                self.municipality = extracted
 
 
 class ParticipationFactory(factory.django.DjangoModelFactory):
@@ -137,8 +162,29 @@ class ParticipationFactory(factory.django.DjangoModelFactory):
 
 class ResponseFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = ParticipationResponse
+        model = Response
 
     question = factory.SubFactory(QuestionFactory)
     has_passed: bool = False
+
+
+class ParticipationResponseFactory(ResponseFactory):
+    class Meta:
+        model = ParticipationResponse
+
     participation = factory.SubFactory(ParticipationFactory)
+
+    @factory.post_generation
+    def assessment(self, create, extracted, **kwargs):
+        if create and extracted:
+            participation = self.participation
+            participation.assessment = extracted
+            participation.save()
+
+
+class AssessmentResponseFactory(ResponseFactory):
+    class Meta:
+        model = AssessmentResponse
+
+    assessment = factory.SubFactory(AssessmentFactory)
+    answered_by = factory.SubFactory(UserFactory)

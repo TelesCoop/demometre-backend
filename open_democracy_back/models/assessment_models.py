@@ -306,6 +306,14 @@ class Assessment(TimeStampedModel, ClusterableModel):
         verbose_name_plural = "Évaluations"
 
 
+class AssessmentResponseQuerySet(models.QuerySet):
+    def accounted_in_assessment(self, assessment_pk):
+        return self.filter(
+            answered_by__is_unknown_user=False,
+            assessment_id=assessment_pk,
+        ).exclude(has_passed=True)
+
+
 # All questionnaire objective responses are assessment responses
 class AssessmentResponse(Response):
     assessment = models.ForeignKey(
@@ -314,6 +322,8 @@ class AssessmentResponse(Response):
     answered_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, related_name="assessment_responses", null=True
     )
+
+    objects = AssessmentResponseQuerySet.as_manager()
 
     class Meta:
         unique_together = ["assessment", "question"]

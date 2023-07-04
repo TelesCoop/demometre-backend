@@ -20,6 +20,8 @@ from open_democracy_back.models import (
     Region,
     Response,
     AssessmentResponse,
+    ResponseChoice,
+    Score,
 )
 from open_democracy_back.utils import QuestionObjectivity, QuestionMethod, InitiatorType
 
@@ -160,6 +162,22 @@ class ParticipationFactory(factory.django.DjangoModelFactory):
     consent: bool = True
 
 
+class ScoreFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Score
+
+    associated_score = factory.Faker("random_int", min=1, max=4)
+
+
+class ResponseChoiceFactory(ScoreFactory):
+    class Meta:
+        model = ResponseChoice
+
+    question = factory.SubFactory(QuestionFactory)
+    response_choice = factory.Faker("text")
+    description = factory.Faker("text")
+
+
 class ResponseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Response
@@ -180,6 +198,11 @@ class ParticipationResponseFactory(ResponseFactory):
             participation = self.participation
             participation.assessment = extracted
             participation.save()
+
+    @factory.post_generation
+    def multiple_choice_response(self, create, extracted, **kwargs):
+        if create and extracted:
+            self.multiple_choice_response.set(extracted)
 
 
 class AssessmentResponseFactory(ResponseFactory):

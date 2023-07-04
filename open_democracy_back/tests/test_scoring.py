@@ -11,6 +11,7 @@ from open_democracy_back.factories import (
     PercentageRangeFactory,
     CategoryFactory,
     ClosedWithScaleCategoryResponseFactory,
+    NumberRangeFactory,
 )
 from open_democracy_back.models import (
     ParticipationResponse,
@@ -24,6 +25,7 @@ from open_democracy_back.scoring import (
     get_score_of_multiple_choice_question,
     get_score_of_percentage_question,
     get_score_of_closed_with_scale_question,
+    get_score_of_number_question,
 )
 from open_democracy_back.utils import QuestionType, QuestionObjectivity
 
@@ -333,4 +335,43 @@ class TestScoring(TestCase):
         )
 
     def test_get_score_of_number_question(self):
-        pass
+        question = QuestionFactory(type=QuestionType.NUMBER)
+        number_range_1 = NumberRangeFactory(
+            question=question, lower_bound=None, upper_bound=25.5, associated_score=1
+        )
+        NumberRangeFactory(
+            question=question, lower_bound=25.6, upper_bound=50, associated_score=2
+        )
+        number_range_3 = NumberRangeFactory(
+            question=question, lower_bound=50.1, upper_bound=100, associated_score=4
+        )
+        assessment = AssessmentFactory()
+
+        ParticipationResponseFactory(
+            number_response=20.4,
+            assessment=assessment,
+            question=question,
+        )
+        ParticipationResponseFactory(
+            number_response=60.8,
+            assessment=assessment,
+            question=question,
+        )
+        value = mean([number_range_1.linearized_score, number_range_3.linearized_score])
+        participation_responses = ParticipationResponse.objects.accounted_in_assessment(
+            assessment.pk
+        )
+        score = get_score_of_number_question(participation_responses)
+
+        self.assertEqual(len(score), 1)
+        self.assertDictEqual(
+            score[0],
+            QuestionScore(
+                question_id=question.id,
+                question__criteria_id=question.criteria.id,
+                question__criteria__marker_id=question.criteria.marker.id,
+                question__criteria__marker__pillar_id=question.criteria.marker.pillar_id,
+                # Score = 2 because the response is 40.4 and is in the range [31, 50]
+                score=value,
+            ),
+        )

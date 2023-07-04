@@ -25,6 +25,7 @@ from open_democracy_back.models import (
     PercentageRange,
     Category,
     ClosedWithScaleCategoryResponse,
+    NumberRange,
 )
 from open_democracy_back.utils import QuestionObjectivity, QuestionMethod, InitiatorType
 
@@ -179,6 +180,15 @@ class PercentageRangeFactory(ScoreFactory):
     question = factory.SubFactory(QuestionFactory)
     lower_bound: int = factory.Faker("random_int", min=0, max=100)
     upper_bound: int = factory.Faker("random_int", min=0, max=100)
+
+
+class NumberRangeFactory(ScoreFactory):
+    class Meta:
+        model = NumberRange
+
+    question = factory.SubFactory(QuestionFactory)
+    lower_bound: float = factory.Faker("random_float", min=0, max=100)
+    upper_bound: float = factory.Faker("random_float", min=0, max=100)
 
 
 class ResponseChoiceFactory(ScoreFactory):

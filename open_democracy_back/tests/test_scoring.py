@@ -335,7 +335,9 @@ class TestScoring(TestCase):
         )
 
     def test_get_score_of_number_question(self):
-        question = QuestionFactory(type=QuestionType.NUMBER)
+        question = QuestionFactory(
+            type=QuestionType.NUMBER, max_number_value=100, step_number_value=0.1
+        )
         number_range_1 = NumberRangeFactory(
             question=question, lower_bound=None, upper_bound=25.5, associated_score=1
         )

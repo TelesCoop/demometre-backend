@@ -576,7 +576,12 @@ def get_number_multifield_panel(is_profiling_question=False):
                 '<div class="help-block help-info">Attention à prendre en compte la granularité dans les bornes des scores associés</div">'
             )
         )
-        panels.append(InlinePanel("number_ranges", help_text="Test"))
+        panels.append(
+            InlinePanel(
+                "number_ranges",
+                label="Score associé aux réponses d'une question nombre",
+            )
+        )
 
     return MultiFieldPanel(
         panels,
@@ -769,7 +774,7 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
 
     class Meta:
         verbose_name_plural = "Scores pour les différentes fourchettes"
-        verbose_name = "Score pour une fourcette donnée"
+        verbose_name = "Score pour une fourchette donnée"
         ordering = ["sort_order"]
 
 
@@ -833,7 +838,7 @@ class NumberRange(TimeStampedModel, Orderable, Score):
 
     class Meta:
         verbose_name_plural = "Scores pour les différentes fourchettes"
-        verbose_name = "Score pour une fourcette donnée"
+        verbose_name = "Score pour une fourchette donnée"
         ordering = ["sort_order"]
 
 

@@ -9,6 +9,8 @@ from open_democracy_back.factories import (
     AssessmentResponseFactory,
     ResponseChoiceFactory,
     PercentageRangeFactory,
+    CategoryFactory,
+    ClosedWithScaleCategoryResponseFactory,
 )
 from open_democracy_back.models import (
     ParticipationResponse,
@@ -21,6 +23,7 @@ from open_democracy_back.scoring import (
     QuestionScore,
     get_score_of_multiple_choice_question,
     get_score_of_percentage_question,
+    get_score_of_closed_with_scale_question,
 )
 from open_democracy_back.utils import QuestionType, QuestionObjectivity
 
@@ -268,4 +271,66 @@ class TestScoring(TestCase):
         )
 
     def test_get_score_of_closed_with_scale_question_works(self):
+        question = QuestionFactory(type=QuestionType.CLOSED_WITH_SCALE)
+        response_1 = ResponseChoiceFactory(question=question, associated_score=1)
+        response_2 = ResponseChoiceFactory(question=question, associated_score=2)
+        response_3 = ResponseChoiceFactory(question=question, associated_score=3)
+        response_4 = ResponseChoiceFactory(question=question, associated_score=4)
+        category_1 = CategoryFactory(question=question)
+        category_2 = CategoryFactory(question=question)
+        assessment = AssessmentFactory()
+
+        participation_response_1 = ParticipationResponseFactory(
+            assessment=assessment,
+            question=question,
+        )
+        ClosedWithScaleCategoryResponseFactory(
+            participation_response=participation_response_1,
+            category=category_1,
+            response_choice=response_1,
+        )
+        ClosedWithScaleCategoryResponseFactory(
+            participation_response=participation_response_1,
+            category=category_2,
+            response_choice=response_4,
+        )
+
+        participation_response_2 = ParticipationResponseFactory(
+            assessment=assessment,
+            question=question,
+        )
+        ClosedWithScaleCategoryResponseFactory(
+            participation_response=participation_response_2,
+            category=category_1,
+            response_choice=response_2,
+        )
+        ClosedWithScaleCategoryResponseFactory(
+            participation_response=participation_response_2,
+            category=category_2,
+            response_choice=response_3,
+        )
+        value = mean(
+            [
+                response_1.linearized_score,
+                response_2.linearized_score,
+                response_3.linearized_score,
+                response_4.linearized_score,
+            ]
+        )
+        participation_responses = ParticipationResponse.objects.accounted_in_assessment(
+            assessment.pk
+        )
+        score = get_score_of_closed_with_scale_question(participation_responses)
+        self.assertDictEqual(
+            score[0],
+            QuestionScore(
+                question_id=question.id,
+                question__criteria_id=question.criteria.id,
+                question__criteria__marker_id=question.criteria.marker.id,
+                question__criteria__marker__pillar_id=question.criteria.marker.pillar_id,
+                score=value,
+            ),
+        )
+
+    def test_get_score_of_number_question(self):
         pass

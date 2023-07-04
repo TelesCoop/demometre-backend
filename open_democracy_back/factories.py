@@ -23,6 +23,8 @@ from open_democracy_back.models import (
     ResponseChoice,
     Score,
     PercentageRange,
+    Category,
+    ClosedWithScaleCategoryResponse,
 )
 from open_democracy_back.utils import QuestionObjectivity, QuestionMethod, InitiatorType
 
@@ -188,6 +190,14 @@ class ResponseChoiceFactory(ScoreFactory):
     description = factory.Faker("text")
 
 
+class CategoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Category
+
+    question = factory.SubFactory(QuestionFactory)
+    category = factory.Faker("text")
+
+
 class ResponseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Response
@@ -213,6 +223,14 @@ class ParticipationResponseFactory(ResponseFactory):
     def multiple_choice_response(self, create, extracted, **kwargs):
         if create and extracted:
             self.multiple_choice_response.set(extracted)
+
+
+class ClosedWithScaleCategoryResponseFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ClosedWithScaleCategoryResponse
+
+    category = factory.SubFactory(CategoryFactory)
+    response_choice = factory.SubFactory(ResponseChoiceFactory)
 
 
 class AssessmentResponseFactory(ResponseFactory):

@@ -22,6 +22,7 @@ from open_democracy_back.models import (
     AssessmentResponse,
     ResponseChoice,
     Score,
+    PercentageRange,
 )
 from open_democracy_back.utils import QuestionObjectivity, QuestionMethod, InitiatorType
 
@@ -167,6 +168,15 @@ class ScoreFactory(factory.django.DjangoModelFactory):
         model = Score
 
     associated_score = factory.Faker("random_int", min=1, max=4)
+
+
+class PercentageRangeFactory(ScoreFactory):
+    class Meta:
+        model = PercentageRange
+
+    question = factory.SubFactory(QuestionFactory)
+    lower_bound: int = factory.Faker("random_int", min=0, max=100)
+    upper_bound: int = factory.Faker("random_int", min=0, max=100)
 
 
 class ResponseChoiceFactory(ScoreFactory):

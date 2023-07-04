@@ -8,6 +8,7 @@ from open_democracy_back.factories import (
     AssessmentFactory,
     AssessmentResponseFactory,
     ResponseChoiceFactory,
+    PercentageRangeFactory,
 )
 from open_democracy_back.models import (
     ParticipationResponse,
@@ -19,6 +20,7 @@ from open_democracy_back.scoring import (
     get_score_of_unique_choice_question,
     QuestionScore,
     get_score_of_multiple_choice_question,
+    get_score_of_percentage_question,
 )
 from open_democracy_back.utils import QuestionType, QuestionObjectivity
 
@@ -223,3 +225,47 @@ class TestScoring(TestCase):
                 score=value,
             ),
         )
+
+    def test_get_score_of_percentage_question_works(self):
+        question = QuestionFactory(type=QuestionType.PERCENTAGE)
+        PercentageRangeFactory(
+            question=question, lower_bound=0, upper_bound=30, associated_score=1
+        )
+        response_percentage_range = PercentageRangeFactory(
+            question=question, lower_bound=31, upper_bound=50, associated_score=2
+        )
+        PercentageRangeFactory(
+            question=question, lower_bound=51, upper_bound=100, associated_score=4
+        )
+        assessment = AssessmentFactory()
+
+        ParticipationResponseFactory(
+            percentage_response=20,
+            assessment=assessment,
+            question=question,
+        )
+        ParticipationResponseFactory(
+            percentage_response=60,
+            assessment=assessment,
+            question=question,
+        )
+        participation_responses = ParticipationResponse.objects.accounted_in_assessment(
+            assessment.pk
+        )
+        score = get_score_of_percentage_question(participation_responses)
+
+        self.assertEqual(len(score), 1)
+        self.assertDictEqual(
+            score[0],
+            QuestionScore(
+                question_id=question.id,
+                question__criteria_id=question.criteria.id,
+                question__criteria__marker_id=question.criteria.marker.id,
+                question__criteria__marker__pillar_id=question.criteria.marker.pillar_id,
+                # Score = 2 because the response is 40 and is in the range [31, 50]
+                score=response_percentage_range.linearized_score,
+            ),
+        )
+
+    def test_get_score_of_closed_with_scale_question_works(self):
+        pass

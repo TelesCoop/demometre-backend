@@ -761,6 +761,12 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
     def __str__(self):
         return f"{self.question} : {self.str_boundaries} = {self.associated_score}"
 
+    def clean(self):
+        if self.lower_bound > self.upper_bound:
+            raise ValidationError(
+                "La borne inférieure doit être inférieure ou égale à la borne supérieure"
+            )
+
     class Meta:
         verbose_name_plural = "Scores pour les différentes fourchettes"
         verbose_name = "Score pour une fourcette donnée"
@@ -815,6 +821,14 @@ class NumberRange(TimeStampedModel, Orderable, Score):
             raise ValidationError(
                 "Au moins une borne doit être renseignée",
                 code="invalid",
+            )
+        if (
+            self.lower_bound is not None
+            and self.upper_bound is not None
+            and self.lower_bound > self.upper_bound
+        ):
+            raise ValidationError(
+                "La borne inférieure doit être inférieure ou égale à la borne supérieure"
             )
 
     class Meta:

@@ -80,9 +80,11 @@ class TestScoring(TestCase):
             boolean_response=True, assessment=assessment, question=question_1
         )
         bad_assessment_responses = [
+            # should not count because user has passed this question
             AssessmentResponseFactory(
                 has_passed=True, assessment=assessment, question=question_2
             ),
+            # should not count because user is anonymous
             AssessmentResponseFactory(
                 boolean_response=True, assessment=assessment, question=question_3
             ),
@@ -107,9 +109,13 @@ class TestScoring(TestCase):
                 boolean_response=True, assessment=assessment, question=question
             ),
             ParticipationResponseFactory(
+                boolean_response=True, assessment=assessment, question=question
+            ),
+            ParticipationResponseFactory(
                 boolean_response=False, assessment=assessment, question=question
             ),
         ]
+        average_value = mean([response.boolean_response for response in responses])
 
         score = get_score_of_boolean_question(
             ParticipationResponse.objects.accounted_in_assessment(assessment.pk)
@@ -122,13 +128,16 @@ class TestScoring(TestCase):
                     "question__criteria_id": question.criteria.id,
                     "question__criteria__marker_id": question.criteria.marker.id,
                     "question__criteria__marker__pillar_id": question.criteria.marker.pillar_id,
-                    "avg": 0.6666666666666666,
+                    "avg": average_value,
                     "score": SCORE_MAP[2],
                 }
             ],
         )
         responses[0].boolean_response = False
         responses[0].save()
+        responses[1].boolean_response = False
+        responses[1].save()
+        average_value = mean([response.boolean_response for response in responses])
 
         score = get_score_of_boolean_question(
             ParticipationResponse.objects.accounted_in_assessment(assessment.pk)
@@ -141,7 +150,7 @@ class TestScoring(TestCase):
                 "question__criteria_id": question.criteria.id,
                 "question__criteria__marker_id": question.criteria.marker.id,
                 "question__criteria__marker__pillar_id": question.criteria.marker.pillar_id,
-                "avg": 0.3333333333333333,
+                "avg": average_value,
                 "score": SCORE_MAP[1],
             },
         )

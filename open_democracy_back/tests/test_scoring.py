@@ -38,14 +38,17 @@ class TestScoring(TestCase):
         )
         assessment = AssessmentFactory()
         bad_responses = [
+            # should not count because user is anonymous
             ParticipationResponseFactory(
                 boolean_response=True, assessment=assessment, question=question
             ),
+            # should not count because it's a profiling question
             ParticipationResponseFactory(
                 boolean_response=True,
                 assessment=assessment,
                 question=profiling_question,
             ),
+            # should not count because user has passed this question
             ParticipationResponseFactory(
                 assessment=assessment, question=question, has_passed=True
             ),

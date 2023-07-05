@@ -124,6 +124,11 @@ class Response(models.Model):
 
 
 class ParticipationResponseQuerySet(models.QuerySet):
+    """
+    This queryset class override ParticipationResponseQuerySet manager, it is used to filter participation responses.
+    https://docs.djangoproject.com/fr/4.2/topics/db/managers/
+    """
+
     def accounted_in_assessment(self, assessment_pk):
         return (
             self.filter(

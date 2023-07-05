@@ -307,12 +307,8 @@ class Assessment(TimeStampedModel, ClusterableModel):
 
 
 class AssessmentResponseQuerySet(models.QuerySet):
-    """
-    This queryset class override AssessmentResponse manager, it is used to filter assessment responses.
-    https://docs.djangoproject.com/fr/4.2/topics/db/managers/
-    """
-
     def accounted_in_assessment(self, assessment_pk):
+        # filter responses to include only those from target assessment and ignore those from anonymous users and passed responses
         return self.filter(
             answered_by__is_unknown_user=False,
             assessment_id=assessment_pk,

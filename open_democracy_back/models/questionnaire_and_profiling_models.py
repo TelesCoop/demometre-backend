@@ -576,7 +576,12 @@ def get_number_multifield_panel(is_profiling_question=False):
                 '<div class="help-block help-info">Attention à prendre en compte la granularité dans les bornes des scores associés</div">'
             )
         )
-        panels.append(InlinePanel("number_ranges", help_text="Test"))
+        panels.append(
+            InlinePanel(
+                "number_ranges",
+                label="Score associé aux réponses d'une question nombre",
+            )
+        )
 
     return MultiFieldPanel(
         panels,
@@ -761,9 +766,15 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
     def __str__(self):
         return f"{self.question} : {self.str_boundaries} = {self.associated_score}"
 
+    def clean(self):
+        if self.lower_bound > self.upper_bound:
+            raise ValidationError(
+                "La borne inférieure doit être inférieure ou égale à la borne supérieure"
+            )
+
     class Meta:
         verbose_name_plural = "Scores pour les différentes fourchettes"
-        verbose_name = "Score pour une fourcette donnée"
+        verbose_name = "Score pour une fourchette donnée"
         ordering = ["sort_order"]
 
 
@@ -816,10 +827,18 @@ class NumberRange(TimeStampedModel, Orderable, Score):
                 "Au moins une borne doit être renseignée",
                 code="invalid",
             )
+        if (
+            self.lower_bound is not None
+            and self.upper_bound is not None
+            and self.lower_bound > self.upper_bound
+        ):
+            raise ValidationError(
+                "La borne inférieure doit être inférieure ou égale à la borne supérieure"
+            )
 
     class Meta:
         verbose_name_plural = "Scores pour les différentes fourchettes"
-        verbose_name = "Score pour une fourcette donnée"
+        verbose_name = "Score pour une fourchette donnée"
         ordering = ["sort_order"]
 
 

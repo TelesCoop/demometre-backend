@@ -123,11 +123,27 @@ class Response(models.Model):
         abstract = True
 
 
+class ParticipationResponseQuerySet(models.QuerySet):
+    def accounted_in_assessment(self, assessment_pk):
+        # filter responses to include only those from target assessment and ignore those from anonymous users and passed responses.
+        return (
+            self.filter(
+                participation__user__is_unknown_user=False,
+                participation__assessment_id=assessment_pk,
+                question__profiling_question=False,
+            )
+            .exclude(has_passed=True)
+            .exclude(question__criteria=None)
+        )
+
+
 # All subjective and profiling responses are participation responses
 class ParticipationResponse(Response):
     participation = models.ForeignKey(
         Participation, on_delete=models.CASCADE, related_name="responses"
     )
+
+    objects = ParticipationResponseQuerySet.as_manager()
 
     class Meta:
         unique_together = ["participation", "question"]

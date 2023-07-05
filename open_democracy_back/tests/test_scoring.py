@@ -373,7 +373,6 @@ class TestScoring(TestCase):
                 question__criteria_id=question.criteria.id,
                 question__criteria__marker_id=question.criteria.marker.id,
                 question__criteria__marker__pillar_id=question.criteria.marker.pillar_id,
-                # Score = 2 because the response is 40.4 and is in the range [31, 50]
                 score=value,
             ),
         )

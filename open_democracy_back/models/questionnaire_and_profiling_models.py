@@ -663,8 +663,8 @@ class ProfilingQuestion(Question):
 
 SCORE_MAP = {
     4: 1,
-    3: 0.66,
-    2: 0.33,
+    3: 2 / 3,
+    2: 1 / 3,
     1: 0,
 }
 

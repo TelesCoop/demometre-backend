@@ -226,6 +226,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         help_text="Si l'évaluation est initié au nom de la localité, quelqu'un peut tout de même être à la source",
     )
     initiator_type = models.CharField(
+        "type d'initilisateur",
         max_length=32,
         choices=InitiatorType.choices,
         blank=True,

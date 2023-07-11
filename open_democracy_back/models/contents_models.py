@@ -3,12 +3,15 @@ import datetime
 from django.db import models
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils.text import slugify
 from wagtail.admin.edit_handlers import FieldPanel, MultiFieldPanel
+from wagtail.core.fields import StreamField
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
 from open_democracy_back.models.questionnaire_and_profiling_models import Pillar
+from open_democracy_back.models.utils import BODY_FIELD_PARAMS
 
 
 @register_snippet
@@ -66,26 +69,42 @@ class Article(index.Indexed, models.Model):
         related_name="+",
     )
     title = models.CharField(max_length=128, verbose_name="Title")
+    slug = models.CharField(max_length=150, blank=True, null=True)
     publication_date = models.DateTimeField(
         verbose_name="Date de publication",
         default=datetime.datetime.now,
         help_text="Permet de trier l'ordre d'affichage des articles de blog",
     )
     short_description = models.CharField(
-        max_length=1024, blank=True, null=True, verbose_name="Description courte"
+        max_length=1024,
+        blank=True,
+        null=True,
+        verbose_name="Description courte",
+        help_text="Ce texte apparait sur la miniature",
+    )
+    content = StreamField(
+        BODY_FIELD_PARAMS,
+        blank=True,
+        verbose_name="Contenu",
+        help_text="Corps de l'article",
     )
     external_link = models.CharField(
-        verbose_name="Lien externe", blank=True, null=True, max_length=300
+        verbose_name="Lien externe",
+        blank=True,
+        null=True,
+        max_length=300,
+        help_text="Si ce champ est rempli, le corps de l'article sera ignoré",
     )
     pillars = models.ManyToManyField(
         Pillar, related_name="%(class)ss", blank=True, verbose_name="Piliers concernés"
     )
 
     panels = [
-        FieldPanel("title", widget=forms.Textarea),
+        FieldPanel("title"),
         ImageChooserPanel("image"),
         FieldPanel("publication_date"),
         FieldPanel("short_description", widget=forms.Textarea),
+        FieldPanel("content"),
         FieldPanel("external_link"),
         FieldPanel("pillars", widget=forms.CheckboxSelectMultiple),
     ]
@@ -93,6 +112,12 @@ class Article(index.Indexed, models.Model):
     search_fields = [
         index.SearchField("title", partial_match=True),
     ]
+
+    def save(self, **kwargs):
+        super().save(**kwargs)
+        if not self.slug:
+            self.slug = slugify(self.title)
+            super().save()
 
     def __str__(self):
         return self.title

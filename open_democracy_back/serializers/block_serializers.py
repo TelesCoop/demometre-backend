@@ -106,14 +106,23 @@ class SerializerStreamField(Field):
         return representation
 
 
-class FileUrlSerializer(serializers.Serializer):
-    url = serializers.SerializerMethodField()
+class DocumentSerializer(serializers.Serializer):
+    url = serializers.FileField(source="document")
+    title = serializers.CharField()
 
     class Meta:
-        fields = ("url",)
+        fields = ("url", "title")
+
+
+class ImageSerializer(serializers.Serializer):
+    url = serializers.SerializerMethodField()
+    caption = serializers.CharField()
+
+    class Meta:
+        fields = ("url", "caption")
 
     def get_url(self, obj):
-        return obj.file.url
+        return obj["image"].file.url
 
 
 class RichTextSerializer(serializers.Serializer):

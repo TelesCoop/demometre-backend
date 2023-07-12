@@ -31,9 +31,17 @@ BODY_FIELD_PARAMS = [
         blocks.StructBlock(
             [
                 ("image", ImageChooserBlock()),
-                ("legend", blocks.TextBlock(label="légende")),
+                ("caption", blocks.TextBlock(label="légende")),
             ]
         ),
     ),
-    ("pdf", DocumentChooserBlock()),
+    (
+        "pdf",
+        blocks.StructBlock(
+            [
+                ("document", DocumentChooserBlock()),
+                ("title", blocks.TextBlock(label="titre")),
+            ]
+        ),
+    ),
 ]

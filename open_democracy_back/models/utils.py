@@ -3,9 +3,9 @@ from wagtail.documents.blocks import DocumentChooserBlock
 from wagtail.images.blocks import ImageChooserBlock
 
 
-def paragraph_block(additional_field, required):
+def rich_text_block(additional_field, required):
     return (
-        "paragraph",
+        "rich_text",
         blocks.RichTextBlock(
             label="Contenu",
             features=SIMPLE_RICH_TEXT_FIELD_FEATURE
@@ -25,20 +25,15 @@ COLOR_CHOICES = (
 )
 
 BODY_FIELD_PARAMS = [
-    # Is h1
+    rich_text_block(["h2"], True),
     (
-        "heading",
-        blocks.CharBlock(form_classname="full title", label="Titre de la page"),
-    ),
-    (
-        "section",
+        "image",
         blocks.StructBlock(
             [
-                paragraph_block(["h2"], True),
-            ],
-            label="Section",
+                ("image", ImageChooserBlock()),
+                ("legend", blocks.TextBlock(label="légende")),
+            ]
         ),
     ),
-    ("image", ImageChooserBlock()),
     ("pdf", DocumentChooserBlock()),
 ]

@@ -116,11 +116,11 @@ class FileUrlSerializer(serializers.Serializer):
         return obj.file.url
 
 
-class SectionSerializer(serializers.Serializer):
+class RichTextSerializer(serializers.Serializer):
     html = serializers.SerializerMethodField()
 
     class Meta:
         fields = ("html",)
 
     def get_html(self, obj):
-        return obj["paragraph"].source
+        return obj.source

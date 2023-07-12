@@ -62,7 +62,7 @@ class Feedback(index.Indexed, models.Model):
 class Article(index.Indexed, models.Model):
     image = models.ForeignKey(
         "wagtailimages.Image",
-        verbose_name="Image",
+        verbose_name="Image principale",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,

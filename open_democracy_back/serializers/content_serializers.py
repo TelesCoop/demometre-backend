@@ -11,7 +11,7 @@ from open_democracy_back.models.contents_models import (
 from open_democracy_back.serializers.block_serializers import (
     SerializerStreamField,
     FileUrlSerializer,
-    SectionSerializer,
+    RichTextSerializer,
 )
 
 
@@ -56,7 +56,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         serializers={
             "image": FileUrlSerializer,
             "pdf": FileUrlSerializer,
-            "section": SectionSerializer,
+            "rich_text": RichTextSerializer,
         }
     )
 

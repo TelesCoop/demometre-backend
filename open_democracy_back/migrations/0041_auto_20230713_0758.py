@@ -6,69 +6,225 @@ import wagtail.core.blocks
 import wagtail.core.fields
 import wagtail.documents.blocks
 import wagtail.images.blocks
+from django.utils.text import slugify
+
+
+def add_slugs(apps, _):
+    BlogPost = apps.get_model("open_democracy_back", "BlogPost")
+    Resource = apps.get_model("open_democracy_back", "Resource")
+    for model in [BlogPost, Resource]:
+        for instance in model.objects.all():
+            instance.slug = slugify(instance.title)
+            instance.save()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wagtailimages', '0023_add_choose_permissions'),
-        ('open_democracy_back', '0040_auto_20230704_1526'),
+        ("wagtailimages", "0023_add_choose_permissions"),
+        ("open_democracy_back", "0040_auto_20230704_1526"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='blogpost',
-            name='content',
-            field=wagtail.core.fields.StreamField([('rich_text', wagtail.core.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'h3', 'h4', 'ol', 'ul', 'document-link', 'h2'], label='Contenu', required=True)), ('image', wagtail.core.blocks.StructBlock([('image', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.TextBlock(label='légende'))])), ('pdf', wagtail.core.blocks.StructBlock([('document', wagtail.documents.blocks.DocumentChooserBlock()), ('title', wagtail.core.blocks.TextBlock(label='titre'))]))], blank=True, help_text="Corps de l'article", verbose_name='Contenu'),
+            model_name="blogpost",
+            name="content",
+            field=wagtail.core.fields.StreamField(
+                [
+                    (
+                        "rich_text",
+                        wagtail.core.blocks.RichTextBlock(
+                            features=[
+                                "bold",
+                                "italic",
+                                "link",
+                                "h3",
+                                "h4",
+                                "ol",
+                                "ul",
+                                "document-link",
+                                "h2",
+                            ],
+                            label="Contenu",
+                            required=True,
+                        ),
+                    ),
+                    (
+                        "image",
+                        wagtail.core.blocks.StructBlock(
+                            [
+                                ("image", wagtail.images.blocks.ImageChooserBlock()),
+                                (
+                                    "caption",
+                                    wagtail.core.blocks.TextBlock(label="légende"),
+                                ),
+                            ]
+                        ),
+                    ),
+                    (
+                        "pdf",
+                        wagtail.core.blocks.StructBlock(
+                            [
+                                (
+                                    "document",
+                                    wagtail.documents.blocks.DocumentChooserBlock(),
+                                ),
+                                ("title", wagtail.core.blocks.TextBlock(label="titre")),
+                            ]
+                        ),
+                    ),
+                ],
+                blank=True,
+                help_text="Corps de l'article",
+                verbose_name="Contenu",
+            ),
         ),
         migrations.AddField(
-            model_name='blogpost',
-            name='slug',
+            model_name="blogpost",
+            name="slug",
             field=models.CharField(blank=True, max_length=150, null=True),
         ),
         migrations.AddField(
-            model_name='resource',
-            name='content',
-            field=wagtail.core.fields.StreamField([('rich_text', wagtail.core.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'h3', 'h4', 'ol', 'ul', 'document-link', 'h2'], label='Contenu', required=True)), ('image', wagtail.core.blocks.StructBlock([('image', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.TextBlock(label='légende'))])), ('pdf', wagtail.core.blocks.StructBlock([('document', wagtail.documents.blocks.DocumentChooserBlock()), ('title', wagtail.core.blocks.TextBlock(label='titre'))]))], blank=True, help_text="Corps de l'article", verbose_name='Contenu'),
+            model_name="resource",
+            name="content",
+            field=wagtail.core.fields.StreamField(
+                [
+                    (
+                        "rich_text",
+                        wagtail.core.blocks.RichTextBlock(
+                            features=[
+                                "bold",
+                                "italic",
+                                "link",
+                                "h3",
+                                "h4",
+                                "ol",
+                                "ul",
+                                "document-link",
+                                "h2",
+                            ],
+                            label="Contenu",
+                            required=True,
+                        ),
+                    ),
+                    (
+                        "image",
+                        wagtail.core.blocks.StructBlock(
+                            [
+                                ("image", wagtail.images.blocks.ImageChooserBlock()),
+                                (
+                                    "caption",
+                                    wagtail.core.blocks.TextBlock(label="légende"),
+                                ),
+                            ]
+                        ),
+                    ),
+                    (
+                        "pdf",
+                        wagtail.core.blocks.StructBlock(
+                            [
+                                (
+                                    "document",
+                                    wagtail.documents.blocks.DocumentChooserBlock(),
+                                ),
+                                ("title", wagtail.core.blocks.TextBlock(label="titre")),
+                            ]
+                        ),
+                    ),
+                ],
+                blank=True,
+                help_text="Corps de l'article",
+                verbose_name="Contenu",
+            ),
         ),
         migrations.AddField(
-            model_name='resource',
-            name='slug',
+            model_name="resource",
+            name="slug",
             field=models.CharField(blank=True, max_length=150, null=True),
         ),
         migrations.AlterField(
-            model_name='assessment',
-            name='initiator_type',
-            field=models.CharField(blank=True, choices=[('collectivity', 'La collectivité'), ('association', 'Une association'), ('individual', 'Un particulier'), ('other', 'Autre')], max_length=32, null=True, verbose_name="type d'initilisateur"),
+            model_name="assessment",
+            name="initiator_type",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("collectivity", "La collectivité"),
+                    ("association", "Une association"),
+                    ("individual", "Un particulier"),
+                    ("other", "Autre"),
+                ],
+                max_length=32,
+                null=True,
+                verbose_name="type d'initilisateur",
+            ),
         ),
         migrations.AlterField(
-            model_name='blogpost',
-            name='external_link',
-            field=models.CharField(blank=True, help_text="Si ce champ est rempli, le corps de l'article sera ignoré", max_length=300, null=True, verbose_name='Lien externe'),
+            model_name="blogpost",
+            name="external_link",
+            field=models.CharField(
+                blank=True,
+                help_text="Si ce champ est rempli, le corps de l'article sera ignoré",
+                max_length=300,
+                null=True,
+                verbose_name="Lien externe",
+            ),
         ),
         migrations.AlterField(
-            model_name='blogpost',
-            name='image',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='wagtailimages.image', verbose_name='Image principale'),
+            model_name="blogpost",
+            name="image",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="wagtailimages.image",
+                verbose_name="Image principale",
+            ),
         ),
         migrations.AlterField(
-            model_name='blogpost',
-            name='short_description',
-            field=models.CharField(blank=True, help_text='Ce texte apparait sur la miniature', max_length=1024, null=True, verbose_name='Description courte'),
+            model_name="blogpost",
+            name="short_description",
+            field=models.CharField(
+                blank=True,
+                help_text="Ce texte apparait sur la miniature",
+                max_length=1024,
+                null=True,
+                verbose_name="Description courte",
+            ),
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='external_link',
-            field=models.CharField(blank=True, help_text="Si ce champ est rempli, le corps de l'article sera ignoré", max_length=300, null=True, verbose_name='Lien externe'),
+            model_name="resource",
+            name="external_link",
+            field=models.CharField(
+                blank=True,
+                help_text="Si ce champ est rempli, le corps de l'article sera ignoré",
+                max_length=300,
+                null=True,
+                verbose_name="Lien externe",
+            ),
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='image',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='wagtailimages.image', verbose_name='Image principale'),
+            model_name="resource",
+            name="image",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="wagtailimages.image",
+                verbose_name="Image principale",
+            ),
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='short_description',
-            field=models.CharField(blank=True, help_text='Ce texte apparait sur la miniature', max_length=1024, null=True, verbose_name='Description courte'),
+            model_name="resource",
+            name="short_description",
+            field=models.CharField(
+                blank=True,
+                help_text="Ce texte apparait sur la miniature",
+                max_length=1024,
+                null=True,
+                verbose_name="Description courte",
+            ),
         ),
+        migrations.RunPython(add_slugs, migrations.RunPython.noop),
     ]

@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import wagtail.core.fields
+import wagtail.fields
 
 
 class Migration(migrations.Migration):
@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
                 ('list_workshops_title', models.CharField(max_length=128, verbose_name='Titre')),
                 ('list_workshop_intro', models.TextField(default='', verbose_name='Introduction')),
-                ('close_workshop_validation', wagtail.core.fields.RichTextField(default='', help_text="Après clôture l'expert ne pourra plus accéder aux réponses des participants et donc ne pourra plus les modifier, leurs réponses seront alors pris en compte pour le calcul des résultats", verbose_name="Explication du la clôture d'un workshop")),
+                ('close_workshop_validation', wagtail.fields.RichTextField(default='', help_text="Après clôture l'expert ne pourra plus accéder aux réponses des participants et donc ne pourra plus les modifier, leurs réponses seront alors pris en compte pour le calcul des résultats", verbose_name="Explication du la clôture d'un workshop")),
                 ('add_participants_title', models.CharField(max_length=128, verbose_name='Titre')),
                 ('add_participants_intro', models.TextField(default='', verbose_name='Introduction')),
                 ('responses_title', models.CharField(max_length=128, verbose_name='Titre')),

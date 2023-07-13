@@ -1,31 +1,29 @@
 from typing import List
+
 from django import forms
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from wagtail.core import blocks
-from wagtail.core.fields import RichTextField, StreamField
-from wagtail.admin.edit_handlers import (
-    FieldPanel,
+from modelcluster.fields import ParentalKey
+from wagtail import blocks
+from wagtail.admin.panels import (
     MultiFieldPanel,
-    StreamFieldPanel,
     FieldRowPanel,
     ObjectList,
     TabbedInterface,
     InlinePanel,
+    FieldPanel,
 )
-
-from wagtail.images.edit_handlers import ImageChooserPanel
+from wagtail.fields import RichTextField, StreamField
 from wagtail.images.blocks import ImageChooserBlock
+from wagtail.models import Page
 from wagtail.snippets.blocks import SnippetChooserBlock
-from wagtail.snippets.edit_handlers import SnippetChooserPanel
-from wagtail.core.models import Page
 from wagtailsvg.blocks import SvgChooserBlock
+
 from open_democracy_back.models.contents_models import Partner, Person
 from open_democracy_back.utils import (
     SIMPLE_RICH_TEXT_FIELD_FEATURE,
     ManagedAssessmentType,
 )
-from modelcluster.fields import ParentalKey
 
 
 class HomePage(Page):
@@ -95,7 +93,7 @@ class HomePage(Page):
         FieldPanel("introduction"),
         MultiFieldPanel(
             [
-                ImageChooserPanel("intro_image"),
+                FieldPanel("intro_image"),
                 FieldPanel("intro_youtube_video_id"),
             ],
             heading="Image ou Vidéo d'introduction",
@@ -182,6 +180,7 @@ class UsagePage(Page):
         ],
         blank=True,
         verbose_name="Etapes d'utilisation",
+        use_json_field=True,
     )
 
     participate_block_title = models.CharField(
@@ -241,17 +240,18 @@ class UsagePage(Page):
         blank=True,
         verbose_name="Descriptif des différents types d'évaluation",
         help_text="Pour modifier le descriptif de chaque type d'évaluation il faut directement aller dans le type d'évaluation correspondant",
+        use_json_field=True,
     )
 
     content_panels = Page.content_panels + [
         FieldPanel("tag_line"),
         FieldPanel("introduction"),
-        ImageChooserPanel("intro_image"),
+        FieldPanel("intro_image"),
         MultiFieldPanel(
             [
                 FieldPanel("step_of_use_title"),
                 FieldPanel("step_of_use_intro"),
-                StreamFieldPanel("steps_of_use", classname="full"),
+                FieldPanel("steps_of_use", classname="full"),
             ],
             heading="Etapes d'utilisation du DémoMètre",
         ),
@@ -273,7 +273,7 @@ class UsagePage(Page):
             [
                 FieldPanel("start_assessment_block_title"),
                 FieldPanel("start_assessment_block_intro", widget=forms.Textarea),
-                StreamFieldPanel("start_assessment_block_data", classname="full"),
+                FieldPanel("start_assessment_block_data", classname="full"),
             ],
             heading="Lancer une nouvelle évaluation",
         ),
@@ -388,7 +388,7 @@ class ReferentialPage(Page):
                     ],
                     heading="Contenu",
                 ),
-                ImageChooserPanel("pillar_block_image"),
+                FieldPanel("pillar_block_image"),
             ],
             heading="Explication des piliers",
         ),
@@ -460,7 +460,7 @@ class ResultsPage(Page):
         FieldPanel("tag_line"),
         FieldPanel("tag_line_no_results"),
         FieldPanel("introduction"),
-        ImageChooserPanel("intro_image"),
+        FieldPanel("intro_image"),
     ]
 
     class Meta:
@@ -510,6 +510,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Texte",
+        use_json_field=True,
     )
 
     objective_block_title = models.CharField(
@@ -540,6 +541,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Les objectifs",
+        use_json_field=True,
     )
 
     impact_block_title = models.CharField(
@@ -564,6 +566,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Les impacts",
+        use_json_field=True,
     )
 
     who_block_title = models.CharField(
@@ -619,6 +622,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Membres du Comité - contenu",
+        use_json_field=True,
     )
 
     who_partner_sub_block_title = models.CharField(
@@ -644,6 +648,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Partenaires - contenu",
+        use_json_field=True,
     )
 
     how_block_title = models.CharField(
@@ -697,30 +702,31 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Contenu",
+        use_json_field=True,
     )
 
     content_panels = Page.content_panels + [
         FieldPanel("tag_line", widget=forms.Textarea),
         FieldPanel("introduction"),
-        ImageChooserPanel("intro_image"),
+        FieldPanel("intro_image"),
         MultiFieldPanel(
             [
                 FieldPanel("why_block_title"),
-                StreamFieldPanel("why_block_data", classname="full"),
+                FieldPanel("why_block_data", classname="full"),
             ],
             heading="Bloc pourquoi",
         ),
         MultiFieldPanel(
             [
                 FieldPanel("objective_block_title"),
-                StreamFieldPanel("objective_block_data", classname="full"),
+                FieldPanel("objective_block_data", classname="full"),
             ],
             heading="Bloc objectif",
         ),
         MultiFieldPanel(
             [
                 FieldPanel("impact_block_title"),
-                StreamFieldPanel("impact_block_data", classname="full"),
+                FieldPanel("impact_block_data", classname="full"),
             ],
             heading="Bloc Impact",
         ),
@@ -730,7 +736,7 @@ class ProjectPage(Page):
                 MultiFieldPanel(
                     [
                         FieldPanel("who_crew_sub_block_title"),
-                        ImageChooserPanel("who_crew_sub_block_image"),
+                        FieldPanel("who_crew_sub_block_image"),
                         InlinePanel(
                             "who_crew_sub_block_members",
                             label="Membres de Démocratie Ouverte",
@@ -742,18 +748,14 @@ class ProjectPage(Page):
                     [
                         FieldPanel("who_committee_sub_block_title"),
                         FieldPanel("who_committee_sub_block_description"),
-                        StreamFieldPanel(
-                            "who_committee_sub_block_data", classname="full"
-                        ),
+                        FieldPanel("who_committee_sub_block_data", classname="full"),
                     ],
                     heading="Sous bloc : Equipe Comité d’orientation",
                 ),
                 MultiFieldPanel(
                     [
                         FieldPanel("who_partner_sub_block_title"),
-                        StreamFieldPanel(
-                            "who_partner_sub_block_data", classname="full"
-                        ),
+                        FieldPanel("who_partner_sub_block_data", classname="full"),
                     ],
                     heading="Sous bloc : Partenaire",
                 ),
@@ -763,7 +765,7 @@ class ProjectPage(Page):
         MultiFieldPanel(
             [
                 FieldPanel("how_block_title"),
-                StreamFieldPanel("how_block_data", classname="full"),
+                FieldPanel("how_block_data", classname="full"),
             ],
             heading="Bloc Comment",
         ),
@@ -783,7 +785,7 @@ class ProjectPagePerson(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE, verbose_name="Membre")
 
     panels = [
-        SnippetChooserPanel("person"),
+        FieldPanel("person"),
     ]
 
     class Meta:

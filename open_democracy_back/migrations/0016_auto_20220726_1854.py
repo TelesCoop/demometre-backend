@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import wagtail.core.fields
+import wagtail.fields
 
 
 class Migration(migrations.Migration):
@@ -62,42 +62,42 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='evaluationinitiationpage',
             name='create_assessment_with_expert_description',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Description'),
+            field=wagtail.fields.RichTextField(blank=True, default='', verbose_name='Description'),
         ),
         migrations.AlterField(
             model_name='evaluationinitiationpage',
             name='create_participation_assessment_description',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Description'),
+            field=wagtail.fields.RichTextField(blank=True, default='', verbose_name='Description'),
         ),
         migrations.AlterField(
             model_name='evaluationinitiationpage',
             name='create_quick_assessment_description',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Description'),
+            field=wagtail.fields.RichTextField(blank=True, default='', verbose_name='Description'),
         ),
         migrations.AlterField(
             model_name='evaluationinitiationpage',
             name='init_description',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Description'),
+            field=wagtail.fields.RichTextField(blank=True, default='', verbose_name='Description'),
         ),
         migrations.AlterField(
             model_name='evaluationinitiationpage',
             name='no_assessment_description',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Description'),
+            field=wagtail.fields.RichTextField(blank=True, default='', verbose_name='Description'),
         ),
         migrations.AlterField(
             model_name='evaluationinitiationpage',
             name='one_assessment_with_expert_description',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Description'),
+            field=wagtail.fields.RichTextField(blank=True, default='', verbose_name='Description'),
         ),
         migrations.AlterField(
             model_name='evaluationinitiationpage',
             name='one_participation_assessment_description',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Description'),
+            field=wagtail.fields.RichTextField(blank=True, default='', verbose_name='Description'),
         ),
         migrations.AlterField(
             model_name='evaluationinitiationpage',
             name='one_quick_assessment_description',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Description'),
+            field=wagtail.fields.RichTextField(blank=True, default='', verbose_name='Description'),
         ),
         migrations.CreateModel(
             name='StructureSettings',

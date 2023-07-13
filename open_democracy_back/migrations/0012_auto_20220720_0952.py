@@ -4,8 +4,8 @@ from django.db import migrations, models
 import django.db.models.deletion
 import modelcluster.fields
 import open_democracy_back.models.contents_models
-import wagtail.core.blocks
-import wagtail.core.fields
+import wagtail.blocks
+import wagtail.fields
 import wagtail.search.index
 import wagtail.snippets.blocks
 
@@ -35,12 +35,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='projectpage',
             name='who_committee_sub_block_data',
-            field=wagtail.core.fields.StreamField([('group_committees', wagtail.core.blocks.StructBlock([('committee', wagtail.core.blocks.CharBlock(label='Nom')), ('committee_members', wagtail.core.blocks.ListBlock(wagtail.snippets.blocks.SnippetChooserBlock(open_democracy_back.models.contents_models.Person), label='Membre'))], label='Groupe du Comité d’orientation', label_format='{title}'))], blank=True, verbose_name='Membres du Comité - contenu'),
+            field=wagtail.fields.StreamField([('group_committees', wagtail.blocks.StructBlock([('committee', wagtail.blocks.CharBlock(label='Nom')), ('committee_members', wagtail.blocks.ListBlock(wagtail.snippets.blocks.SnippetChooserBlock(open_democracy_back.models.contents_models.Person), label='Membre'))], label='Groupe du Comité d’orientation', label_format='{title}'))], blank=True, verbose_name='Membres du Comité - contenu'),
         ),
         migrations.AddField(
             model_name='projectpage',
             name='who_committee_sub_block_description',
-            field=wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Le Comité d’orientation - description'),
+            field=wagtail.fields.RichTextField(blank=True, default='', verbose_name='Le Comité d’orientation - description'),
         ),
         migrations.AddField(
             model_name='projectpage',

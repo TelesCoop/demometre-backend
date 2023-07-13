@@ -10,8 +10,8 @@ import model_utils.fields
 import modelcluster.fields
 import open_democracy_back.models.contents_models
 import uuid
-import wagtail.core.blocks
-import wagtail.core.fields
+import wagtail.blocks
+import wagtail.fields
 import wagtail.images.blocks
 import wagtail.search.index
 import wagtail.snippets.blocks
@@ -97,7 +97,7 @@ class Migration(migrations.Migration):
             name='Criteria',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('description', wagtail.core.fields.RichTextField(blank=True, help_text='Description pour le référentiel', null=True, verbose_name='Description')),
+                ('description', wagtail.fields.RichTextField(blank=True, help_text='Description pour le référentiel', null=True, verbose_name='Description')),
                 ('score_1', models.TextField(blank=True, default='', help_text='Description pour le référentiel', verbose_name='Score = 1')),
                 ('score_2', models.TextField(blank=True, default='', help_text='Description pour le référentiel', verbose_name='Score = 2')),
                 ('score_3', models.TextField(blank=True, default='', help_text='Description pour le référentiel', verbose_name='Score = 3')),
@@ -105,7 +105,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=125, verbose_name='Nom')),
                 ('code', models.CharField(help_text='Correspond au numéro (ou lettre) de ce critère dans son marqueur', max_length=2, verbose_name='Code')),
                 ('concatenated_code', models.CharField(default='', max_length=8)),
-                ('explanatory', wagtail.core.fields.StreamField([('category', wagtail.core.blocks.StructBlock([('title', wagtail.core.blocks.CharBlock(label='Titre')), ('description', wagtail.core.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Description'))], label='Catégorie', label_format='Catégorie : {title}'))], blank=True, verbose_name='Explicatif du critère')),
+                ('explanatory', wagtail.fields.StreamField([('category', wagtail.blocks.StructBlock([('title', wagtail.blocks.CharBlock(label='Titre')), ('description', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Description'))], label='Catégorie', label_format='Catégorie : {title}'))], blank=True, verbose_name='Explicatif du critère')),
             ],
             options={
                 'verbose_name': '3. Critère',
@@ -119,7 +119,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('word', models.CharField(max_length=255, verbose_name='mot')),
-                ('explanation', wagtail.core.fields.RichTextField(verbose_name='explication')),
+                ('explanation', wagtail.fields.RichTextField(verbose_name='explication')),
             ],
             options={
                 'verbose_name': 'Définition',
@@ -157,12 +157,12 @@ class Migration(migrations.Migration):
             name='EvaluationInitPage',
             fields=[
                 ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-                ('introduction', wagtail.core.fields.RichTextField(default='', help_text="Expliquer qu'aucune évaluation n'existe dans cette localité là, que des questions sur la vie politique de la ville précise seront posées, qu'il faut être connecté pour pouvoir initer une évaluation etc", verbose_name="Explication de l'initialisation")),
+                ('introduction', wagtail.fields.RichTextField(default='', help_text="Expliquer qu'aucune évaluation n'existe dans cette localité là, que des questions sur la vie politique de la ville précise seront posées, qu'il faut être connecté pour pouvoir initer une évaluation etc", verbose_name="Explication de l'initialisation")),
                 ('public_name_question', models.TextField(default='', help_text="Question RGPD - La réponse est oui / non - Si l'évaluation est faite au nom d'une association alors c'est le nom de cette association qui sera affichée", verbose_name="Enoncé de la question sur la publication ou non du nom de l'initateur")),
                 ('public_name_question_description', models.TextField(default='', help_text="Expliciter à l'utilisateur ce qu'implique ou non d'autoriser à publier son nom", verbose_name="Description de la question sur la publication ou non du nom de l'initateur")),
                 ('representativity_title', models.TextField(default='', help_text="Correspond à la partie où seront posées les questions sur les seuils d'acceptabilité de la représentativité", verbose_name="Titre pour les questions sur les seuils d'acceptabilité de la représentativité")),
-                ('representativity_description', wagtail.core.fields.RichTextField(default='', help_text='Permet à la personne de mieux comprendre les questions sur les représentativités, et lui donne des éléments de réponse', verbose_name='Description de la question sur la limite de représentativité')),
-                ('initialization_validation', wagtail.core.fields.RichTextField(default='', help_text="S'affichera une fois l'initialisation de l'évaluation terminée", verbose_name="Texte de validation de l'initialisation d'une évaluation")),
+                ('representativity_description', wagtail.fields.RichTextField(default='', help_text='Permet à la personne de mieux comprendre les questions sur les représentativités, et lui donne des éléments de réponse', verbose_name='Description de la question sur la limite de représentativité')),
+                ('initialization_validation', wagtail.fields.RichTextField(default='', help_text="S'affichera une fois l'initialisation de l'évaluation terminée", verbose_name="Texte de validation de l'initialisation d'une évaluation")),
             ],
             options={
                 'verbose_name': "Initialisation d'une évaluation",
@@ -176,7 +176,7 @@ class Migration(migrations.Migration):
                 ('account_incentive_title', models.CharField(default='', max_length=68, verbose_name="Titre pour l'incitation à la connexion")),
                 ('account_incentive', models.CharField(default='', max_length=255, verbose_name='Incitation à la connexion')),
                 ('introduction', models.TextField(default='')),
-                ('data_consent', wagtail.core.fields.RichTextField(default='', help_text='Demande de consentement à conserver les données personnelles demandées, RGPD', verbose_name='Consentement sur les données personnelles')),
+                ('data_consent', wagtail.fields.RichTextField(default='', help_text='Demande de consentement à conserver les données personnelles demandées, RGPD', verbose_name='Consentement sur les données personnelles')),
             ],
             options={
                 'verbose_name': "Intro à l'évaluation",
@@ -206,7 +206,7 @@ class Migration(migrations.Migration):
             name='Marker',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('description', wagtail.core.fields.RichTextField(blank=True, help_text='Description pour le référentiel', null=True, verbose_name='Description')),
+                ('description', wagtail.fields.RichTextField(blank=True, help_text='Description pour le référentiel', null=True, verbose_name='Description')),
                 ('score_1', models.TextField(blank=True, default='', help_text='Description pour le référentiel', verbose_name='Score = 1')),
                 ('score_2', models.TextField(blank=True, default='', help_text='Description pour le référentiel', verbose_name='Score = 2')),
                 ('score_3', models.TextField(blank=True, default='', help_text='Description pour le référentiel', verbose_name='Score = 3')),
@@ -253,7 +253,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=125, verbose_name='Nom')),
                 ('code', models.CharField(help_text='Correspond au numéro (ou lettre) de ce pilier', max_length=2, verbose_name='Code')),
                 ('order', models.IntegerField(default='1', help_text="Permet de ranger dans l'ordre voulu les piliers", verbose_name='Ordre')),
-                ('description', wagtail.core.fields.RichTextField(blank=True, help_text='Description pour le référentiel', null=True, verbose_name='Description')),
+                ('description', wagtail.fields.RichTextField(blank=True, help_text='Description pour le référentiel', null=True, verbose_name='Description')),
             ],
             options={
                 'verbose_name': '1. Pilier',
@@ -289,8 +289,8 @@ class Migration(migrations.Migration):
                 ('population_lower_bound', models.IntegerField(blank=True, help_text="Si aucune valeur n'est renseignée, aucune borne inférieur ne sera prise en compte", null=True, verbose_name='Borne inférieure (population min)')),
                 ('population_upper_bound', models.IntegerField(blank=True, help_text="Si aucune valeur n'est renseignée, aucune borne suppérieur ne sera prise en compte", null=True, verbose_name='Borne suppérieur (population max)')),
                 ('max_multiple_choices', models.IntegerField(blank=True, help_text='Pour une question à choix multiple, indiquer le nombre maximum de choix possible', null=True, verbose_name='Nombre maximal de choix possible')),
-                ('description', wagtail.core.fields.RichTextField(blank=True, help_text='Texte précisant la question et pourquoi elle est posée.', null=True, verbose_name='Description')),
-                ('comments', wagtail.core.fields.RichTextField(blank=True, help_text='Indication affichée uniquement pour les administrateurs.', null=True, verbose_name="Commentaires (pour l'interne)")),
+                ('description', wagtail.fields.RichTextField(blank=True, help_text='Texte précisant la question et pourquoi elle est posée.', null=True, verbose_name='Description')),
+                ('comments', wagtail.fields.RichTextField(blank=True, help_text='Indication affichée uniquement pour les administrateurs.', null=True, verbose_name="Commentaires (pour l'interne)")),
                 ('objectivity', models.CharField(choices=[('objective', 'Objective'), ('subjective', 'Subjective')], default='subjective', max_length=32, verbose_name='Objective / Subjective')),
                 ('method', models.CharField(blank=True, choices=[('quantitative', 'Quantitative'), ('qualitative', 'Qualitative')], max_length=32, verbose_name='Methode')),
                 ('profiling_question', models.BooleanField(default=False)),
@@ -359,17 +359,17 @@ class Migration(migrations.Migration):
             fields=[
                 ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
                 ('tag_line', models.CharField(default='', max_length=510, verbose_name="Phrase d'accroche")),
-                ('introduction', wagtail.core.fields.RichTextField(default='', verbose_name='Introduction')),
+                ('introduction', wagtail.fields.RichTextField(default='', verbose_name='Introduction')),
                 ('step_of_use_title', models.CharField(blank=True, help_text="Si ce champ est vide les étapes d'utilisation du DémoMètre ne s'afficheront pas", max_length=68, verbose_name='Titre')),
                 ('step_of_use_intro', models.CharField(blank=True, max_length=510, verbose_name='Intro')),
-                ('steps_of_use', wagtail.core.fields.StreamField([('step', wagtail.core.blocks.StructBlock([('image', wagtail.images.blocks.ImageChooserBlock(label='Image')), ('title', wagtail.core.blocks.CharBlock(label='Titre')), ('description', wagtail.core.blocks.TextBlock(label='Description'))], label='Etape', label_format='Etape : {title}'))], blank=True, verbose_name="Etapes d'utilisation")),
+                ('steps_of_use', wagtail.fields.StreamField([('step', wagtail.blocks.StructBlock([('image', wagtail.images.blocks.ImageChooserBlock(label='Image')), ('title', wagtail.blocks.CharBlock(label='Titre')), ('description', wagtail.blocks.TextBlock(label='Description'))], label='Etape', label_format='Etape : {title}'))], blank=True, verbose_name="Etapes d'utilisation")),
                 ('participate_block_title', models.CharField(blank=True, help_text="Si ce champ est vide les étapes d'utilisation du DémoMètre ne s'afficheront pas", max_length=68, verbose_name='Titre')),
                 ('participate_block_intro', models.CharField(blank=True, max_length=510, verbose_name='Intro')),
-                ('participate_left_paragraph', wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de gauche')),
-                ('participate_right_paragraph', wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de droite')),
+                ('participate_left_paragraph', wagtail.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de gauche')),
+                ('participate_right_paragraph', wagtail.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de droite')),
                 ('start_assessment_block_title', models.CharField(blank=True, help_text="Si ce champ est vide les étapes d'utilisation du DémoMètre ne s'afficheront pas", max_length=68, verbose_name='Titre')),
                 ('start_assessment_block_intro', models.CharField(blank=True, max_length=510, verbose_name='Intro')),
-                ('start_assessment_block_data', wagtail.core.fields.StreamField([('assessment_type', wagtail.core.blocks.StructBlock([('title', wagtail.core.blocks.CharBlock(label='Titre')), ('type', wagtail.core.blocks.ChoiceBlock(choices=[('quick', 'Diagnostic rapide'), ('participative', 'Evaluation participative'), ('with_expert', 'Evaluation avec experts')], label='Type')), ('pdf_button', wagtail.core.blocks.CharBlock(label='Label du bouton pour le pdf'))], label="Type d'évaluation", label_format='Evaluation : {title}'))], blank=True, help_text="Pour modifier le descriptif de chaque type d'évaluation il faut directement aller dans le type d'évaluation correspondant", verbose_name="Descriptif des différents types d'évaluation")),
+                ('start_assessment_block_data', wagtail.fields.StreamField([('assessment_type', wagtail.blocks.StructBlock([('title', wagtail.blocks.CharBlock(label='Titre')), ('type', wagtail.blocks.ChoiceBlock(choices=[('quick', 'Diagnostic rapide'), ('participative', 'Evaluation participative'), ('with_expert', 'Evaluation avec experts')], label='Type')), ('pdf_button', wagtail.blocks.CharBlock(label='Label du bouton pour le pdf'))], label="Type d'évaluation", label_format='Evaluation : {title}'))], blank=True, help_text="Pour modifier le descriptif de chaque type d'évaluation il faut directement aller dans le type d'évaluation correspondant", verbose_name="Descriptif des différents types d'évaluation")),
                 ('intro_image', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='wagtailimages.image', verbose_name='Image')),
             ],
             options={
@@ -435,15 +435,15 @@ class Migration(migrations.Migration):
             fields=[
                 ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
                 ('introduction', models.CharField(default='', max_length=255)),
-                ('description', wagtail.core.fields.RichTextField(default='', verbose_name='Description')),
+                ('description', wagtail.fields.RichTextField(default='', verbose_name='Description')),
                 ('pillar_block_title', models.CharField(blank=True, help_text="si ce champs est vide l'explication des piliers ne s'affichera pas", max_length=68, verbose_name='Titre')),
-                ('pillar_block_left_content', wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de gauche')),
-                ('pillar_block_right_content', wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de droite')),
+                ('pillar_block_left_content', wagtail.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de gauche')),
+                ('pillar_block_right_content', wagtail.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de droite')),
                 ('marker_block_title', models.CharField(blank=True, help_text="si ce champs est vide l'explication des marqueurs ne s'affichera pas", max_length=68, verbose_name='Titre')),
-                ('marker_block_content', wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Contenu')),
+                ('marker_block_content', wagtail.fields.RichTextField(blank=True, default='', verbose_name='Contenu')),
                 ('criteria_block_title', models.CharField(blank=True, help_text="si ce champs est vide l'explication des critères d'évaluation ne s'affichera pas", max_length=68, verbose_name='Titre')),
-                ('criteria_block_left_content', wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de gauche')),
-                ('criteria_block_right_content', wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de droite')),
+                ('criteria_block_left_content', wagtail.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de gauche')),
+                ('criteria_block_right_content', wagtail.fields.RichTextField(blank=True, default='', verbose_name='Paragraphe de droite')),
                 ('pillar_block_image', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='wagtailimages.image', verbose_name='Image')),
             ],
             options={
@@ -479,18 +479,18 @@ class Migration(migrations.Migration):
             fields=[
                 ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
                 ('tag_line', models.CharField(default='', max_length=510, verbose_name="Phrase d'accroche")),
-                ('introduction', wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Introduction')),
+                ('introduction', wagtail.fields.RichTextField(blank=True, default='', verbose_name='Introduction')),
                 ('why_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Titre')),
-                ('why_block_data', wagtail.core.fields.StreamField([('richtext', wagtail.core.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Paragraphe')), ('image', wagtail.images.blocks.ImageChooserBlock(label='Image'))], blank=True, verbose_name='Texte')),
+                ('why_block_data', wagtail.fields.StreamField([('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Paragraphe')), ('image', wagtail.images.blocks.ImageChooserBlock(label='Image'))], blank=True, verbose_name='Texte')),
                 ('objective_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Titre')),
-                ('objective_block_data', wagtail.core.fields.StreamField([('objective', wagtail.core.blocks.StructBlock([('svg', wagtailsvg.blocks.SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.core.blocks.CharBlock(label='Titre'))], label='Objectif', label_format='Objectif : {title}'))], blank=True, verbose_name='Les objectifs')),
+                ('objective_block_data', wagtail.fields.StreamField([('objective', wagtail.blocks.StructBlock([('svg', wagtailsvg.blocks.SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.blocks.CharBlock(label='Titre'))], label='Objectif', label_format='Objectif : {title}'))], blank=True, verbose_name='Les objectifs')),
                 ('impact_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Titre')),
-                ('impact_block_data', wagtail.core.fields.StreamField([('impact', wagtail.core.blocks.StructBlock([('image', wagtail.images.blocks.ImageChooserBlock(label='Image')), ('title', wagtail.core.blocks.CharBlock(label='Titre'))], label='Impact', label_format='Impact : {title}'))], blank=True, verbose_name='Les impacts')),
+                ('impact_block_data', wagtail.fields.StreamField([('impact', wagtail.blocks.StructBlock([('image', wagtail.images.blocks.ImageChooserBlock(label='Image')), ('title', wagtail.blocks.CharBlock(label='Titre'))], label='Impact', label_format='Impact : {title}'))], blank=True, verbose_name='Les impacts')),
                 ('who_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Titre')),
                 ('who_partner_sub_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Partenaires - titre')),
-                ('who_partner_sub_block_data', wagtail.core.fields.StreamField([('group_partners', wagtail.core.blocks.StructBlock([('title', wagtail.core.blocks.CharBlock(label='Titre')), ('description', wagtail.core.blocks.CharBlock(label='Description')), ('partners', wagtail.core.blocks.ListBlock(wagtail.snippets.blocks.SnippetChooserBlock(open_democracy_back.models.contents_models.Partner)))], label='Type de partenaires', label_format='{title}'))], blank=True, verbose_name='Partenaires - contenu')),
+                ('who_partner_sub_block_data', wagtail.fields.StreamField([('group_partners', wagtail.blocks.StructBlock([('title', wagtail.blocks.CharBlock(label='Titre')), ('description', wagtail.blocks.CharBlock(label='Description')), ('partners', wagtail.blocks.ListBlock(wagtail.snippets.blocks.SnippetChooserBlock(open_democracy_back.models.contents_models.Partner)))], label='Type de partenaires', label_format='{title}'))], blank=True, verbose_name='Partenaires - contenu')),
                 ('how_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Titre')),
-                ('how_block_data', wagtail.core.fields.StreamField([('title', wagtail.core.blocks.CharBlock(label='Titre')), ('richtext', wagtail.core.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Paragraphe')), ('step', wagtail.core.blocks.ListBlock(wagtail.core.blocks.StructBlock([('svg', wagtailsvg.blocks.SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.core.blocks.CharBlock(label='Titre')), ('richtext', wagtail.core.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Descriptif')), ('link', wagtail.core.blocks.CharBlock(label='Lien en savoir plus', required=False))]), label='Etapes', label_format='Carte : {title}'))], blank=True, verbose_name='Contenu')),
+                ('how_block_data', wagtail.fields.StreamField([('title', wagtail.blocks.CharBlock(label='Titre')), ('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Paragraphe')), ('step', wagtail.blocks.ListBlock(wagtail.blocks.StructBlock([('svg', wagtailsvg.blocks.SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.blocks.CharBlock(label='Titre')), ('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Descriptif')), ('link', wagtail.blocks.CharBlock(label='Lien en savoir plus', required=False))]), label='Etapes', label_format='Carte : {title}'))], blank=True, verbose_name='Contenu')),
                 ('intro_image', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='wagtailimages.image', verbose_name='Image')),
             ],
             options={
@@ -631,7 +631,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
                 ('tag_line', models.CharField(default='', max_length=255, verbose_name="Phrase d'accroche")),
-                ('introduction', wagtail.core.fields.RichTextField(default='', verbose_name='Introduction')),
+                ('introduction', wagtail.fields.RichTextField(default='', verbose_name='Introduction')),
                 ('intro_youtube_video_id', models.CharField(blank=True, help_text="Indiquer ici seulement l'id de la video youtube, celui-ci est indiqué dans l'url après 'v='. Exemple : pour https://www.youtube.com/watch?v=xMQMvVIB0vM renseigner xMQMvVIB0vM", max_length=15, null=True, verbose_name='Vidéo Youtube (id)')),
                 ('feedback_block_title', models.CharField(blank=True, help_text="Si ce champ est vide les retours d'expérience ne s'afficheront pas sur l'accueil", max_length=68, verbose_name="Titre du bloc retours d'expérience")),
                 ('feedback_block_intro', models.CharField(blank=True, max_length=255, verbose_name="Intro du bloc retours d'expérience")),

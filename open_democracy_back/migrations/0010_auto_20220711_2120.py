@@ -2,8 +2,8 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import wagtail.core.blocks
-import wagtail.core.fields
+import wagtail.blocks
+import wagtail.fields
 
 
 class Migration(migrations.Migration):
@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='criteria',
             name='explanatory',
-            field=wagtail.core.fields.StreamField([('category', wagtail.core.blocks.StructBlock([('title', wagtail.core.blocks.CharBlock(label='Titre')), ('description', wagtail.core.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Description'))], label='Catégorie', label_format='Catégorie : {title}'))], blank=True, verbose_name='Explicatif du critère (sources, exemples, obligations légales ...)'),
+            field=wagtail.fields.StreamField([('category', wagtail.blocks.StructBlock([('title', wagtail.blocks.CharBlock(label='Titre')), ('description', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Description'))], label='Catégorie', label_format='Catégorie : {title}'))], blank=True, verbose_name='Explicatif du critère (sources, exemples, obligations légales ...)'),
         ),
         migrations.AlterField(
             model_name='marker',
@@ -66,7 +66,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
                 ('tag_line', models.CharField(default='', max_length=510, verbose_name="Phrase d'accroche")),
-                ('introduction', wagtail.core.fields.RichTextField(default='', verbose_name='Introduction')),
+                ('introduction', wagtail.fields.RichTextField(default='', verbose_name='Introduction')),
                 ('intro_image', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='wagtailimages.image', verbose_name='Image')),
             ],
             options={

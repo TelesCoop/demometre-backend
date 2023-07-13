@@ -2,8 +2,8 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import wagtail.core.blocks
-import wagtail.core.fields
+import wagtail.blocks
+import wagtail.fields
 import wagtail.documents.blocks
 import wagtail.images.blocks
 from django.utils.text import slugify
@@ -29,11 +29,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="blogpost",
             name="content",
-            field=wagtail.core.fields.StreamField(
+            field=wagtail.fields.StreamField(
                 [
                     (
                         "rich_text",
-                        wagtail.core.blocks.RichTextBlock(
+                        wagtail.blocks.RichTextBlock(
                             features=[
                                 "bold",
                                 "italic",
@@ -51,25 +51,25 @@ class Migration(migrations.Migration):
                     ),
                     (
                         "image",
-                        wagtail.core.blocks.StructBlock(
+                        wagtail.blocks.StructBlock(
                             [
                                 ("image", wagtail.images.blocks.ImageChooserBlock()),
                                 (
                                     "caption",
-                                    wagtail.core.blocks.TextBlock(label="légende"),
+                                    wagtail.blocks.TextBlock(label="légende"),
                                 ),
                             ]
                         ),
                     ),
                     (
                         "pdf",
-                        wagtail.core.blocks.StructBlock(
+                        wagtail.blocks.StructBlock(
                             [
                                 (
                                     "document",
                                     wagtail.documents.blocks.DocumentChooserBlock(),
                                 ),
-                                ("title", wagtail.core.blocks.TextBlock(label="titre")),
+                                ("title", wagtail.blocks.TextBlock(label="titre")),
                             ]
                         ),
                     ),
@@ -87,11 +87,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="resource",
             name="content",
-            field=wagtail.core.fields.StreamField(
+            field=wagtail.fields.StreamField(
                 [
                     (
                         "rich_text",
-                        wagtail.core.blocks.RichTextBlock(
+                        wagtail.blocks.RichTextBlock(
                             features=[
                                 "bold",
                                 "italic",
@@ -109,25 +109,25 @@ class Migration(migrations.Migration):
                     ),
                     (
                         "image",
-                        wagtail.core.blocks.StructBlock(
+                        wagtail.blocks.StructBlock(
                             [
                                 ("image", wagtail.images.blocks.ImageChooserBlock()),
                                 (
                                     "caption",
-                                    wagtail.core.blocks.TextBlock(label="légende"),
+                                    wagtail.blocks.TextBlock(label="légende"),
                                 ),
                             ]
                         ),
                     ),
                     (
                         "pdf",
-                        wagtail.core.blocks.StructBlock(
+                        wagtail.blocks.StructBlock(
                             [
                                 (
                                     "document",
                                     wagtail.documents.blocks.DocumentChooserBlock(),
                                 ),
-                                ("title", wagtail.core.blocks.TextBlock(label="titre")),
+                                ("title", wagtail.blocks.TextBlock(label="titre")),
                             ]
                         ),
                     ),

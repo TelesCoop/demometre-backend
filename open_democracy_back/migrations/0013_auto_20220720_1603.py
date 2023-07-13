@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import wagtail.core.fields
+import wagtail.fields
 
 
 class Migration(migrations.Migration):
@@ -50,9 +50,9 @@ class Migration(migrations.Migration):
                 ('initiator_name_question', models.CharField(default='', max_length=255, verbose_name="Enoncé de la question sur le nom de l'initateur qui sera affiché publiquement")),
                 ('initiator_name_description', models.TextField(blank=True, default='', verbose_name="Description de la question sur le nom de l'initateur qui sera affiché publiquement")),
                 ('representativity_title', models.TextField(default='', help_text="Correspond à la partie où seront posées les questions sur les seuils d'acceptabilité de la représentativité", verbose_name="Titre - page des seuils d'acceptabilité de la représentativité")),
-                ('representativity_description', wagtail.core.fields.RichTextField(blank=True, default='', help_text='Permet à la personne de mieux comprendre les questions sur les représentativités, et lui donne des éléments de réponse', verbose_name="Description - page des seuils d'acceptabilité de la représentativité")),
+                ('representativity_description', wagtail.fields.RichTextField(blank=True, default='', help_text='Permet à la personne de mieux comprendre les questions sur les représentativités, et lui donne des éléments de réponse', verbose_name="Description - page des seuils d'acceptabilité de la représentativité")),
                 ('initialization_validation_title', models.CharField(default='', help_text="S'affichera une fois l'initialisation de l'évaluation terminée", max_length=255, verbose_name='Titre - page de validation')),
-                ('initialization_validation_description', wagtail.core.fields.RichTextField(blank=True, default='', verbose_name='Description - page de validation')),
+                ('initialization_validation_description', wagtail.fields.RichTextField(blank=True, default='', verbose_name='Description - page de validation')),
             ],
             options={
                 'verbose_name': "Lancement d'une évaluation",

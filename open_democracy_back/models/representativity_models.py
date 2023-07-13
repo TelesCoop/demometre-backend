@@ -4,7 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
-from wagtail.core.fields import RichTextField
+from wagtail.fields import RichTextField
 from open_democracy_back.models.assessment_models import Assessment
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (

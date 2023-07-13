@@ -1,19 +1,16 @@
 from django import forms
-from django.utils import timezone
 from django.db import models
-from my_auth.models import User
+from django.utils import timezone
 from model_utils.models import TimeStampedModel
-from modelcluster.models import ClusterableModel
 from modelcluster.fields import ParentalKey
-from wagtail.admin.edit_handlers import InlinePanel, FieldPanel
-from wagtail.snippets.edit_handlers import SnippetChooserPanel
-from wagtail.documents.edit_handlers import DocumentChooserPanel
+from modelcluster.models import ClusterableModel
+from wagtail.admin.panels import InlinePanel, FieldPanel
 from wagtail.documents.models import Document
-
-from wagtail.core.models import Orderable
+from wagtail.models import Orderable
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
+from my_auth.models import User
 from open_democracy_back.models.participation_models import Response
 from open_democracy_back.utils import InitiatorType, LocalityType, ManagedAssessmentType
 
@@ -137,7 +134,7 @@ class MunicipalityOrderByEPCI(Orderable):
         Municipality, on_delete=models.CASCADE, verbose_name="Commune"
     )
     panels = [
-        SnippetChooserPanel("municipality"),
+        FieldPanel("municipality"),
     ]
 
 
@@ -176,7 +173,7 @@ class AssessmentType(models.Model):
         FieldPanel("for_what", widget=forms.Textarea),
         FieldPanel("results", widget=forms.Textarea),
         FieldPanel("price", widget=forms.Textarea),
-        DocumentChooserPanel("pdf"),
+        FieldPanel("pdf"),
     ]
 
     def __str__(self):
@@ -290,8 +287,8 @@ class Assessment(TimeStampedModel, ClusterableModel):
         FieldPanel("experts"),
         FieldPanel("royalty_payed"),
         FieldPanel("locality_type"),
-        SnippetChooserPanel("municipality"),
-        SnippetChooserPanel("epci"),
+        FieldPanel("municipality"),
+        FieldPanel("epci"),
         FieldPanel("initiated_by_user"),
         FieldPanel("initiator_type"),
         FieldPanel("initialized_to_the_name_of"),

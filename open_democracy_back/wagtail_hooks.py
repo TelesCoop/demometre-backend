@@ -9,7 +9,7 @@ from wagtail.contrib.modeladmin.options import (
 )
 from wagtail.contrib.modeladmin.helpers import PermissionHelper
 
-from wagtail.core import hooks
+from wagtail import hooks
 
 from wagtail.snippets import widgets as wagtailsnippets_widgets
 

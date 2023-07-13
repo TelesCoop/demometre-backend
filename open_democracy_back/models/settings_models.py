@@ -1,8 +1,7 @@
 from django.db import models
+from wagtail.admin.panels import FieldPanel
 from wagtail.contrib.settings.models import BaseSetting, register_setting
 from wagtail.documents.models import Document
-from wagtail.documents.edit_handlers import DocumentChooserPanel
-from wagtail.admin.edit_handlers import PageChooserPanel
 
 
 @register_setting
@@ -57,11 +56,11 @@ class RGPDSettings(BaseSetting):
     )
 
     panels = [
-        DocumentChooserPanel("legal_mention"),
-        DocumentChooserPanel("terms_of_use"),
-        DocumentChooserPanel("terms_of_sale"),
-        DocumentChooserPanel("confidentiality_policy"),
-        DocumentChooserPanel("content_license"),
+        FieldPanel("legal_mention"),
+        FieldPanel("terms_of_use"),
+        FieldPanel("terms_of_sale"),
+        FieldPanel("confidentiality_policy"),
+        FieldPanel("content_license"),
     ]
 
     class Meta:
@@ -83,5 +82,5 @@ class ImportantPagesSettings(BaseSetting):
     )
 
     panels = [
-        PageChooserPanel("faq_page"),
+        FieldPanel("faq_page"),
     ]

@@ -1,10 +1,9 @@
 import datetime
 
-from django.db import models
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
-from wagtail.admin.edit_handlers import FieldPanel, MultiFieldPanel
-from wagtail.images.edit_handlers import ImageChooserPanel
+from django.db import models
+from wagtail.admin.panels import MultiFieldPanel, FieldPanel
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
@@ -37,7 +36,7 @@ class Feedback(index.Indexed, models.Model):
 
     panels = [
         FieldPanel("person_name"),
-        ImageChooserPanel("picture"),
+        FieldPanel("picture"),
         FieldPanel("person_context"),
         FieldPanel("quote", widget=forms.Textarea),
         FieldPanel("external_link"),
@@ -83,7 +82,7 @@ class Article(index.Indexed, models.Model):
 
     panels = [
         FieldPanel("title", widget=forms.Textarea),
-        ImageChooserPanel("image"),
+        FieldPanel("image"),
         FieldPanel("publication_date"),
         FieldPanel("short_description", widget=forms.Textarea),
         FieldPanel("external_link"),
@@ -140,7 +139,7 @@ class Partner(index.Indexed, models.Model):
         FieldPanel("name"),
         MultiFieldPanel(
             [
-                ImageChooserPanel("logo_image"),
+                FieldPanel("logo_image"),
                 FieldPanel("height"),
             ],
             heading="Logo du partenaire",
@@ -175,7 +174,7 @@ class Person(index.Indexed, models.Model):
     )
 
     panels = [
-        ImageChooserPanel("image"),
+        FieldPanel("image"),
         FieldPanel("name"),
         FieldPanel("job_title"),
     ]

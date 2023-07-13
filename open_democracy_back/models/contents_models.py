@@ -1,13 +1,16 @@
 import datetime
 
 from django import forms
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from wagtail.admin.panels import MultiFieldPanel, FieldPanel
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils.text import slugify
+from wagtail.admin.panels import FieldPanel, MultiFieldPanel
+from wagtail.fields import StreamField
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
 from open_democracy_back.models.questionnaire_and_profiling_models import Pillar
+from open_democracy_back.models.utils import BODY_FIELD_PARAMS
 
 
 @register_snippet
@@ -60,23 +63,39 @@ class Feedback(index.Indexed, models.Model):
 class Article(index.Indexed, models.Model):
     image = models.ForeignKey(
         "wagtailimages.Image",
-        verbose_name="Image",
+        verbose_name="Image principale",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="+",
     )
     title = models.CharField(max_length=128, verbose_name="Title")
+    slug = models.CharField(max_length=150, blank=True, null=True)
     publication_date = models.DateTimeField(
         verbose_name="Date de publication",
         default=datetime.datetime.now,
         help_text="Permet de trier l'ordre d'affichage des articles de blog",
     )
     short_description = models.CharField(
-        max_length=1024, blank=True, null=True, verbose_name="Description courte"
+        max_length=1024,
+        blank=True,
+        null=True,
+        verbose_name="Description courte",
+        help_text="Ce texte apparait sur la miniature",
+    )
+    content = StreamField(
+        BODY_FIELD_PARAMS,
+        blank=True,
+        verbose_name="Contenu",
+        help_text="Corps de l'article",
+        use_json_field=True,
     )
     external_link = models.CharField(
-        verbose_name="Lien externe", blank=True, null=True, max_length=300
+        verbose_name="Lien externe",
+        blank=True,
+        null=True,
+        max_length=300,
+        help_text="Si ce champ est rempli, le corps de l'article sera ignoré",
     )
     pillars = models.ManyToManyField(
         Pillar, related_name="%(class)ss", blank=True, verbose_name="Piliers concernés"
@@ -85,8 +104,11 @@ class Article(index.Indexed, models.Model):
     panels = [
         FieldPanel("title", widget=forms.Textarea),
         FieldPanel("image"),
+        FieldPanel("title"),
+        FieldPanel("image"),
         FieldPanel("publication_date"),
         FieldPanel("short_description", widget=forms.Textarea),
+        FieldPanel("content"),
         FieldPanel("external_link"),
         FieldPanel("pillars", widget=forms.CheckboxSelectMultiple),
     ]
@@ -96,6 +118,11 @@ class Article(index.Indexed, models.Model):
             "title",
         ),
     ]
+
+    def save(self, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(**kwargs)
 
     def __str__(self):
         return self.title

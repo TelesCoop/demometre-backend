@@ -17,12 +17,6 @@ def rich_text_block(additional_field, required):
 
 
 SIMPLE_RICH_TEXT_FIELD_FEATURE = ["bold", "italic", "link"]
-COLOR_CHOICES = (
-    ("blue-light", "Bleue"),
-    ("secondary-light", "Rose"),
-    ("white", "Blanche"),
-    ("", "Sans couleur"),
-)
 
 BODY_FIELD_PARAMS = [
     rich_text_block(["h2"], True),

@@ -114,10 +114,9 @@ class Article(index.Indexed, models.Model):
     ]
 
     def save(self, **kwargs):
-        super().save(**kwargs)
         if not self.slug:
             self.slug = slugify(self.title)
-            super().save()
+        super().save(**kwargs)
 
     def __str__(self):
         return self.title

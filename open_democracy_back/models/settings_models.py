@@ -1,11 +1,11 @@
 from django.db import models
 from wagtail.admin.panels import FieldPanel
-from wagtail.contrib.settings.models import BaseSetting, register_setting
+from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
 from wagtail.documents.models import Document
 
 
 @register_setting
-class StructureSettings(BaseSetting):
+class StructureSettings(BaseSiteSetting):
     email = models.EmailField(verbose_name="Adresse mail de contact", blank=True)
 
     class Meta:
@@ -13,7 +13,7 @@ class StructureSettings(BaseSetting):
 
 
 @register_setting
-class RGPDSettings(BaseSetting):
+class RGPDSettings(BaseSiteSetting):
     legal_mention = models.ForeignKey(
         Document,
         blank=True,
@@ -68,7 +68,7 @@ class RGPDSettings(BaseSetting):
 
 
 @register_setting
-class ImportantPagesSettings(BaseSetting):
+class ImportantPagesSettings(BaseSiteSetting):
     class Meta:
         verbose_name = "Pages importantes"
 

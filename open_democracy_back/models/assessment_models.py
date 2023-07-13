@@ -21,7 +21,9 @@ class Region(index.Indexed, models.Model):
     name = models.CharField(max_length=64, verbose_name="Nom")
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -41,7 +43,9 @@ class Department(index.Indexed, models.Model):
     )
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -73,7 +77,9 @@ class Municipality(index.Indexed, ClusterableModel):
     ]
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -115,7 +121,9 @@ class EPCI(index.Indexed, ClusterableModel):
     ]
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):

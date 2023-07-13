@@ -44,7 +44,9 @@ class Feedback(index.Indexed, models.Model):
     ]
 
     search_fields = [
-        index.SearchField("person_name", partial_match=True),
+        index.SearchField(
+            "person_name",
+        ),
     ]
 
     def __str__(self):
@@ -90,7 +92,9 @@ class Article(index.Indexed, models.Model):
     ]
 
     search_fields = [
-        index.SearchField("title", partial_match=True),
+        index.SearchField(
+            "title",
+        ),
     ]
 
     def __str__(self):
@@ -148,7 +152,9 @@ class Partner(index.Indexed, models.Model):
     ]
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -180,7 +186,9 @@ class Person(index.Indexed, models.Model):
     ]
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):

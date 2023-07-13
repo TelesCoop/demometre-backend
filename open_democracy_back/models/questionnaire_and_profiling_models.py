@@ -186,7 +186,9 @@ class Marker(index.Indexed, ScoreFields):
     ] + ScoreFields.panels
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -271,6 +273,7 @@ class Criteria(index.Indexed, ClusterableModel):
         ],
         blank=True,
         verbose_name="Explicatif du critère (sources, exemples, obligations légales ...)",
+        use_json_field=True,
     )
 
     panels = [
@@ -283,7 +286,11 @@ class Criteria(index.Indexed, ClusterableModel):
         FieldPanel("explanatory"),
     ]
 
-    search_fields = [index.SearchField("name", partial_match=True)]
+    search_fields = [
+        index.SearchField(
+            "name",
+        )
+    ]
 
     def __str__(self):
         return f"{self.concatenated_code}: {self.name}"
@@ -494,8 +501,12 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         return "profiling" if self.profiling_question else "questionnaire"
 
     search_fields = [
-        index.SearchField("question_statement", partial_match=True),
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "question_statement",
+        ),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     principal_panels = [

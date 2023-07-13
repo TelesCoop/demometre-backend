@@ -40,7 +40,9 @@ class RepresentativityCriteria(index.Indexed, models.Model):
     )
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):

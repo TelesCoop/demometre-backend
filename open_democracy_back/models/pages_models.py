@@ -180,6 +180,7 @@ class UsagePage(Page):
         ],
         blank=True,
         verbose_name="Etapes d'utilisation",
+        use_json_field=True,
     )
 
     participate_block_title = models.CharField(
@@ -239,6 +240,7 @@ class UsagePage(Page):
         blank=True,
         verbose_name="Descriptif des différents types d'évaluation",
         help_text="Pour modifier le descriptif de chaque type d'évaluation il faut directement aller dans le type d'évaluation correspondant",
+        use_json_field=True,
     )
 
     content_panels = Page.content_panels + [
@@ -508,6 +510,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Texte",
+        use_json_field=True,
     )
 
     objective_block_title = models.CharField(
@@ -538,6 +541,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Les objectifs",
+        use_json_field=True,
     )
 
     impact_block_title = models.CharField(
@@ -562,6 +566,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Les impacts",
+        use_json_field=True,
     )
 
     who_block_title = models.CharField(
@@ -617,6 +622,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Membres du Comité - contenu",
+        use_json_field=True,
     )
 
     who_partner_sub_block_title = models.CharField(
@@ -642,6 +648,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Partenaires - contenu",
+        use_json_field=True,
     )
 
     how_block_title = models.CharField(
@@ -695,6 +702,7 @@ class ProjectPage(Page):
         ],
         blank=True,
         verbose_name="Contenu",
+        use_json_field=True,
     )
 
     content_panels = Page.content_panels + [

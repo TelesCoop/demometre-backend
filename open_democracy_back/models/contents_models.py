@@ -90,7 +90,7 @@ class Article(index.Indexed, models.Model):
         help_text="Corps de l'article",
         use_json_field=True,
     )
-    external_link = models.CharField(
+    external_link = models.URLField(
         verbose_name="Lien externe",
         blank=True,
         null=True,
@@ -102,8 +102,6 @@ class Article(index.Indexed, models.Model):
     )
 
     panels = [
-        FieldPanel("title", widget=forms.Textarea),
-        FieldPanel("image"),
         FieldPanel("title"),
         FieldPanel("image"),
         FieldPanel("publication_date"),

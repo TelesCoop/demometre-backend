@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from open_democracy_back.models.contents_models import (
     Article,
     BlogPost,
@@ -6,6 +7,12 @@ from open_democracy_back.models.contents_models import (
     Partner,
     Person,
     Resource,
+)
+from open_democracy_back.serializers.block_serializers import (
+    SerializerStreamField,
+    DocumentSerializer,
+    RichTextSerializer,
+    ImageSerializer,
 )
 
 
@@ -34,7 +41,9 @@ class FeedbackSerializer(serializers.ModelSerializer):
 ARTICLE_FIELDS = [
     "id",
     "title",
+    "slug",
     "publication_date",
+    "content",
     "short_description",
     "image_url",
     "external_link",
@@ -44,6 +53,13 @@ ARTICLE_FIELDS = [
 
 class ArticleSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
+    content = SerializerStreamField(
+        serializers={
+            "image": ImageSerializer,
+            "pdf": DocumentSerializer,
+            "rich_text": RichTextSerializer,
+        }
+    )
 
     @staticmethod
     def get_image_url(obj: Article):

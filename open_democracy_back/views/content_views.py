@@ -1,4 +1,7 @@
 from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from open_democracy_back.models.contents_models import (
     BlogPost,
     Feedback,
@@ -31,6 +34,11 @@ class BlogPostView(
 ):
     serializer_class = BlogPostSerializer
     queryset = BlogPost.objects.all()
+
+    @action(detail=False, methods=["GET"], url_path="by-slug/(?P<slug>.*)")
+    def by_slug(self, request, slug=None):
+        instance = BlogPost.objects.get(slug=slug)
+        return Response(self.get_serializer_class()(instance).data)
 
 
 class ResourceView(

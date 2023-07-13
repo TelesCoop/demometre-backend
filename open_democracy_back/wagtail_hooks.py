@@ -118,10 +118,7 @@ def snippet_listing_buttons(snippet, user, next_url=None):
 
 @hooks.register("insert_editor_js", order=100)
 def editor_js():
-    js_files = [
-        "js/questions.js",
-        "js/assessments.js",
-    ]
+    js_files = []
     js_includes = format_html_join(
         "\n",
         '<script type="module" src="{0}"></script>',
@@ -264,6 +261,7 @@ class QuestionnaireQuestionModelAdmin(ModelAdmin):
         "criteria__marker__pillar__name",
     )
     ordering = ("concatenated_code",)
+    form_view_extra_js = ["js/questions.js"]
 
 
 class SurveyAdminGroup(ModelAdminGroup):
@@ -302,6 +300,7 @@ class ProfilingQuestionModelAdmin(ModelAdmin):
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
     search_fields = ("name", "question_statement")
+    form_view_extra_js = ["js/questions.js"]
 
 
 class ProfilingAdminGroup(ModelAdminGroup):
@@ -355,6 +354,7 @@ class AssessmentModelAdmin(ModelAdmin):
     menu_icon = "date"
     add_to_settings_menu = False
     search_fields = ("municipality__name", "epci__name")
+    form_view_extra_js = ["js/assessments.js"]
 
 
 class ParticipationModelAdmin(ModelAdmin):

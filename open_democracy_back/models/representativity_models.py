@@ -159,7 +159,6 @@ class AssessmentRepresentativity(models.Model):
 
     @property
     def acceptability_threshold_considered(self):
-
         if self.acceptability_threshold and (
             self.acceptability_threshold > self.representativity_criteria.min_rate
         ):

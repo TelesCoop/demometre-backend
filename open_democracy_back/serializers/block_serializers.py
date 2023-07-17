@@ -1,6 +1,6 @@
 # most of the content comes from https://gist.github.com/thclark/100d6aa6d0995984589b983f896002d4
 from rest_framework.fields import Field
-from wagtail.core.blocks import StreamBlock, ListBlock, StructBlock
+from wagtail.blocks import StreamBlock, ListBlock, StructBlock
 from rest_framework import serializers
 
 

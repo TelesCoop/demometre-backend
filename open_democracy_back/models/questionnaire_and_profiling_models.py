@@ -1,27 +1,24 @@
+from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django import forms
 from django.db.models import Q
 from django.db.models.signals import pre_save
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
 from taggit.models import TagBase
-from wagtail.admin.edit_handlers import (
-    FieldPanel,
+from wagtail import blocks
+from wagtail.admin.panels import (
     InlinePanel,
     FieldRowPanel,
     MultiFieldPanel,
-    StreamFieldPanel,
     HelpPanel,
+    FieldPanel,
 )
-from wagtail.core import blocks
-from wagtail.core.fields import RichTextField, StreamField
-
-from wagtail.core.models import TranslatableMixin, Orderable
+from wagtail.fields import RichTextField, StreamField
+from wagtail.models import TranslatableMixin, Orderable
 from wagtail.search import index
-from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.snippets.models import register_snippet
 
 from open_democracy_back.utils import (
@@ -189,7 +186,9 @@ class Marker(index.Indexed, ScoreFields):
     ] + ScoreFields.panels
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -214,7 +213,7 @@ class MarkerOrderByRole(Orderable):
     )
     marker = models.ForeignKey(Marker, on_delete=models.CASCADE)
     panels = [
-        SnippetChooserPanel("marker"),
+        FieldPanel("marker"),
     ]
 
 
@@ -274,6 +273,7 @@ class Criteria(index.Indexed, ClusterableModel):
         ],
         blank=True,
         verbose_name="Explicatif du critère (sources, exemples, obligations légales ...)",
+        use_json_field=True,
     )
 
     panels = [
@@ -283,10 +283,14 @@ class Criteria(index.Indexed, ClusterableModel):
         FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
         FieldPanel("description"),
         InlinePanel("related_definition_ordered", label="Définitions"),
-        StreamFieldPanel("explanatory"),
+        FieldPanel("explanatory"),
     ]
 
-    search_fields = [index.SearchField("name", partial_match=True)]
+    search_fields = [
+        index.SearchField(
+            "name",
+        )
+    ]
 
     def __str__(self):
         return f"{self.concatenated_code}: {self.name}"
@@ -327,7 +331,7 @@ class CriteriaDefinition(Orderable):
     )
     definition = models.ForeignKey(Definition, on_delete=models.CASCADE)
     panels = [
-        SnippetChooserPanel("definition"),
+        FieldPanel("definition"),
     ]
 
 
@@ -497,8 +501,12 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         return "profiling" if self.profiling_question else "questionnaire"
 
     search_fields = [
-        index.SearchField("question_statement", partial_match=True),
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "question_statement",
+        ),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     principal_panels = [
@@ -531,7 +539,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     ]
 
     explanation_panels = [
-        SnippetChooserPanel("allows_to_explain"),
+        FieldPanel("allows_to_explain"),
         FieldPanel("comments"),
     ]
 

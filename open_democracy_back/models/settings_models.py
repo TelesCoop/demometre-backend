@@ -1,12 +1,11 @@
 from django.db import models
-from wagtail.contrib.settings.models import BaseSetting, register_setting
+from wagtail.admin.panels import FieldPanel
+from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
 from wagtail.documents.models import Document
-from wagtail.documents.edit_handlers import DocumentChooserPanel
-from wagtail.admin.edit_handlers import PageChooserPanel
 
 
 @register_setting
-class StructureSettings(BaseSetting):
+class StructureSettings(BaseSiteSetting):
     email = models.EmailField(verbose_name="Adresse mail de contact", blank=True)
 
     class Meta:
@@ -14,7 +13,7 @@ class StructureSettings(BaseSetting):
 
 
 @register_setting
-class RGPDSettings(BaseSetting):
+class RGPDSettings(BaseSiteSetting):
     legal_mention = models.ForeignKey(
         Document,
         blank=True,
@@ -57,11 +56,11 @@ class RGPDSettings(BaseSetting):
     )
 
     panels = [
-        DocumentChooserPanel("legal_mention"),
-        DocumentChooserPanel("terms_of_use"),
-        DocumentChooserPanel("terms_of_sale"),
-        DocumentChooserPanel("confidentiality_policy"),
-        DocumentChooserPanel("content_license"),
+        FieldPanel("legal_mention"),
+        FieldPanel("terms_of_use"),
+        FieldPanel("terms_of_sale"),
+        FieldPanel("confidentiality_policy"),
+        FieldPanel("content_license"),
     ]
 
     class Meta:
@@ -69,7 +68,7 @@ class RGPDSettings(BaseSetting):
 
 
 @register_setting
-class ImportantPagesSettings(BaseSetting):
+class ImportantPagesSettings(BaseSiteSetting):
     class Meta:
         verbose_name = "Pages importantes"
 
@@ -83,5 +82,5 @@ class ImportantPagesSettings(BaseSetting):
     )
 
     panels = [
-        PageChooserPanel("faq_page"),
+        FieldPanel("faq_page"),
     ]

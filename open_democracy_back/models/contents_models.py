@@ -1,12 +1,11 @@
 import datetime
 
-from django.db import models
 from django import forms
+from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.text import slugify
-from wagtail.admin.edit_handlers import FieldPanel, MultiFieldPanel
-from wagtail.core.fields import StreamField
-from wagtail.images.edit_handlers import ImageChooserPanel
+from wagtail.admin.panels import FieldPanel, MultiFieldPanel
+from wagtail.fields import StreamField
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
@@ -40,7 +39,7 @@ class Feedback(index.Indexed, models.Model):
 
     panels = [
         FieldPanel("person_name"),
-        ImageChooserPanel("picture"),
+        FieldPanel("picture"),
         FieldPanel("person_context"),
         FieldPanel("quote", widget=forms.Textarea),
         FieldPanel("external_link"),
@@ -48,7 +47,9 @@ class Feedback(index.Indexed, models.Model):
     ]
 
     search_fields = [
-        index.SearchField("person_name", partial_match=True),
+        index.SearchField(
+            "person_name",
+        ),
     ]
 
     def __str__(self):
@@ -87,8 +88,9 @@ class Article(index.Indexed, models.Model):
         blank=True,
         verbose_name="Contenu",
         help_text="Corps de l'article",
+        use_json_field=True,
     )
-    external_link = models.CharField(
+    external_link = models.URLField(
         verbose_name="Lien externe",
         blank=True,
         null=True,
@@ -101,7 +103,7 @@ class Article(index.Indexed, models.Model):
 
     panels = [
         FieldPanel("title"),
-        ImageChooserPanel("image"),
+        FieldPanel("image"),
         FieldPanel("publication_date"),
         FieldPanel("short_description", widget=forms.Textarea),
         FieldPanel("content"),
@@ -110,7 +112,9 @@ class Article(index.Indexed, models.Model):
     ]
 
     search_fields = [
-        index.SearchField("title", partial_match=True),
+        index.SearchField(
+            "title",
+        ),
     ]
 
     def save(self, **kwargs):
@@ -164,7 +168,7 @@ class Partner(index.Indexed, models.Model):
         FieldPanel("name"),
         MultiFieldPanel(
             [
-                ImageChooserPanel("logo_image"),
+                FieldPanel("logo_image"),
                 FieldPanel("height"),
             ],
             heading="Logo du partenaire",
@@ -173,7 +177,9 @@ class Partner(index.Indexed, models.Model):
     ]
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -199,13 +205,15 @@ class Person(index.Indexed, models.Model):
     )
 
     panels = [
-        ImageChooserPanel("image"),
+        FieldPanel("image"),
         FieldPanel("name"),
         FieldPanel("job_title"),
     ]
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):

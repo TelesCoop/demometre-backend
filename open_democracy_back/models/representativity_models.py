@@ -4,7 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
-from wagtail.core.fields import RichTextField
+from wagtail.fields import RichTextField
 from open_democracy_back.models.assessment_models import Assessment
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
@@ -40,7 +40,9 @@ class RepresentativityCriteria(index.Indexed, models.Model):
     )
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -157,7 +159,6 @@ class AssessmentRepresentativity(models.Model):
 
     @property
     def acceptability_threshold_considered(self):
-
         if self.acceptability_threshold and (
             self.acceptability_threshold > self.representativity_criteria.min_rate
         ):

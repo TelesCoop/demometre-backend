@@ -1,20 +1,10 @@
-// Drawer questions: display the answer rules for the corresponding question types
-if (
-    (window.location.href).indexOf('question/add') != -1
-    || (window.location.href).indexOf('question/edit') != -1
-    || (window.location.href).indexOf('question/create') != -1) {
+window.addEventListener('load', function (event) {
     const typeQuestionOptions = document.getElementById("id_type");
-    var rulesForResponseChoiceQuestions = document.querySelector("#id_response_choices-FORMS").closest(".object")
-    var rulesForMultipleChoiceQuestion = document.querySelector("#id_max_multiple_choices").closest(".object")
-    var rulesForClosedWithScaleQuestion = document.querySelector("#id_categories-ADD").closest(".object")
-    var rulesForNumberQuestion = document.querySelector(".number-question-panel") || document.createElement("div");
-    var rulesForPercentageQuestion;
-    try {
-        rulesForPercentageQuestion = document.querySelector("#id_percentage_ranges-TOTAL_FORMS").closest(".object")
-    } catch {
-        rulesForPercentageQuestion = document.createElement("div");
-    }
-
+    var rulesForResponseChoiceQuestions = document.getElementById("panel-choix_de_reponses_possibles-section")
+    var rulesForMultipleChoiceQuestion = document.getElementById("panel-max_multiple_choices-section")
+    var rulesForClosedWithScaleQuestion = document.getElementById("panel-categories_pour_une_question_fermee_a_echelle-section")
+    var rulesForNumberQuestion = document.getElementById("panel-parametrage_dune_question_de_nombre-section") || document.createElement("div");
+    var rulesForPercentageQuestion = document.getElementById("panel-score_associe_aux_reponses_dune_question_de_pourcentage-section") || document.createElement("div");
 
 
     function responseRules(questionType) {
@@ -68,4 +58,4 @@ if (
     typeQuestionOptions.addEventListener("change", function () {
         responseRules(typeQuestionOptions.value)
     });
-}
+});

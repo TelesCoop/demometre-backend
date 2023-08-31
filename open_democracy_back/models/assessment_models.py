@@ -201,25 +201,23 @@ class Assessment(TimeStampedModel, ClusterableModel):
         on_delete=models.SET_NULL,
         verbose_name="Type d'évaluation",
     )
-    locality_type = models.CharField(
-        max_length=32,
-        choices=LocalityType.choices,
-        default=LocalityType.MUNICIPALITY,
-        verbose_name="Type de localité",
-    )
-    municipality = models.ForeignKey(
-        Municipality,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        verbose_name="Commune",
-    )
+    conditions_of_sale_consent = models.BooleanField(default=False)
+    end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
     epci = models.ForeignKey(
         EPCI,
+        unique=True,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
         verbose_name="Intercommunalité",
+    )
+    experts = models.ManyToManyField(
+        User,
+        blank=True,
+        verbose_name="Experts",
+        related_name="assessments",
+        limit_choices_to={"groups__name": "Experts"},
+        help_text="Pour ajouter un expert à la liste il faut créer / modifier l'utilisateur correspondant, aller dans l'onglet rôles et cocher la case Experts",
     )
     initiated_by_user = models.ForeignKey(
         User,
@@ -250,21 +248,25 @@ class Assessment(TimeStampedModel, ClusterableModel):
         verbose_name="Date d'initialisation",
         help_text="Si il n'y a pas de date d'initialisation, c'est que le début de l'évaluation n'a pas été confirmée",
     )
-    conditions_of_sale_consent = models.BooleanField(default=False)
     is_initialization_questions_completed = models.BooleanField(default=False)
     last_participation_date = models.DateTimeField(
         default=timezone.now, verbose_name="Date de dernière participation"
     )
-    end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
-
-    experts = models.ManyToManyField(
-        User,
-        blank=True,
-        verbose_name="Experts",
-        related_name="assessments",
-        limit_choices_to={"groups__name": "Experts"},
-        help_text="Pour ajouter un expert à la liste il faut créer / modifier l'utilisateur correspondant, aller dans l'onglet rôles et cocher la case Experts",
+    locality_type = models.CharField(
+        max_length=32,
+        choices=LocalityType.choices,
+        default=LocalityType.MUNICIPALITY,
+        verbose_name="Type de localité",
     )
+    municipality = models.ForeignKey(
+        Municipality,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Commune",
+        unique=True,
+    )
+    name = models.CharField(max_length=80, blank=True, null=True)
     royalty_payed = models.BooleanField(default=False, verbose_name="Redevance payée")
 
     @property
@@ -289,6 +291,13 @@ class Assessment(TimeStampedModel, ClusterableModel):
             return self.municipality.name
         if self.locality_type == LocalityType.INTERCOMMUNALITY:
             return self.epci.name
+
+    @property
+    def code(self):
+        if self.locality_type == LocalityType.MUNICIPALITY:
+            return self.municipality.code
+        if self.locality_type == LocalityType.INTERCOMMUNALITY:
+            return self.epci.code
 
     panels = [
         FieldPanel("assessment_type"),

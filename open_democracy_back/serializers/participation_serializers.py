@@ -86,9 +86,8 @@ class ParticipationSerializer(serializers.ModelSerializer):
             "is_profiling_questions_completed",
             "is_pillar_questions_completed",
             "profile_ids",
-            "is_current",
         ]
-        read_only_fields = ["is_profiling_questions_completed", "is_current"]
+        read_only_fields = ["is_profiling_questions_completed"]
 
 
 class ClosedWithScaleCategoryResponseSerializer(serializers.ModelSerializer):

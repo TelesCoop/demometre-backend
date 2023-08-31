@@ -1,9 +1,31 @@
 # Site de Démocratie Ouverte
 
+## Vocabulaire
+
+- Assessment : une évaluation, il y en a une par ville. Elles peuvent être de trois
+types (AssessmentType) : Diagnostic rapide, Evaluation participative, Evaluation avec
+expert
+- Participation : une participation d'un utilisateur à une évaluation. Toutes les
+réponses sont liées à une participation.
+- ParticipationResponse : la réponse d'un utilisateur à une question. Comprend donc un
+couple (réponse, participation).
+- AssessmentResponse : une réponse à une question objective, qui est donc unique pour
+une évaluation
+- Question, Response : Question, Réponse, qui sont questions du questionnaires et les
+réponses possibles globales aux questionnaires
+  - une Question a un booléen `profiling_question` pour indiquer si c'est une question
+  de profilage
+  - QuestionnaireQuestion : ??
+  - ProfilingQuestion : pourquoi à la fois ce modèle là et le booléen
+  `profiling_question` ?
+  - ResponseChoice : une réponse possible à une question
+- Score : `associated_score` (pour l'affichage) entre 1 et 4 et `linearized_score`
+(pour le calcul) entre 0 et 1.
+
 ## Configuration du site
 
-La configuration se fait depuis l'interface d'aministration, accessible à cette adresse :
-http://xxx/admin/.
+La configuration se fait depuis l'interface d'aministration, accessible à l'adresse :
+`/admin/`.
 
 ### Pages
 

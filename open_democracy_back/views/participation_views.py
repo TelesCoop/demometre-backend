@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 import operator
 
-from django.db import transaction
 from django.utils import timezone
 from django.db.models import QuerySet
 from rest_framework import mixins, viewsets, status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response as RestResponse
@@ -152,51 +152,16 @@ class ParticipationView(
             assessment_id=request.data.get("assessment_id"),
         )
 
-    def perform_create(self, serializer):
-        with transaction.atomic():
-            Participation.objects.filter_available(
-                self.request.user.id,
-                timezone.now(),
-            ).update(is_current=False)
-            serializer.save()
-
-
-class CurrentParticipationView(SerializerContext, APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self) -> QuerySet:
-        return Participation.objects.filter_available(
-            self.request.user.id,
-            timezone.now(),
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="by-assessment/(?P<assessment_id>.*)",
+    )
+    def by_assessment(self, request, assessment_id=None):
+        instance = Participation.objects.get(
+            assessment__id=assessment_id, user=request.user
         )
-
-    def get(self, request):
-        queryset = self.get_queryset()
-        instance = queryset.filter_current().first()
-        if not instance:
-            instance = queryset.first()
-        if instance:
-            instance.is_current = True
-            instance.save()
-        serializer = ParticipationSerializer(
-            instance, context=self.get_serializer_context()
-        )
-        return RestResponse(serializer.data)
-
-    def post(self, request):
-        instance = self.get_queryset().get(id=request.data["id"])
-
-        Participation.objects.filter_available(
-            self.request.user.id,
-            timezone.now(),
-        ).update(is_current=False)
-        instance.is_current = True
-        instance.save()
-
-        serializer = ParticipationSerializer(
-            instance, context=self.get_serializer_context()
-        )
-        return RestResponse(serializer.data)
+        return RestResponse(self.get_serializer_class()(instance).data)
 
 
 class ParticipationResponseView(UpdateOrCreateModelMixin, viewsets.GenericViewSet):
@@ -224,22 +189,21 @@ class ParticipationResponseView(UpdateOrCreateModelMixin, viewsets.GenericViewSe
             question_id=request.data.get("question_id"),
         )
 
-
-class CurrentParticipationResponseView(mixins.ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [IsAuthenticated]
-    serializer_class = ParticipationResponseSerializer
-
-    def get_queryset(self):
-        query = ParticipationResponse.objects.filter(
-            participation__in=Participation.objects.filter_current_available(
-                self.request.user.id, timezone.now()
-            )
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="by-assessment/(?P<assessment_id>.*)",
+    )
+    def by_assessment(self, request, assessment_id=None):
+        participation = Participation.objects.get(
+            assessment_id=assessment_id, user=request.user
         )
+        query = ParticipationResponse.objects.filter(participation=participation)
         context = self.request.query_params.get("context")
         if context:
             is_profiling_question = context == "profiling"
             query = query.filter(question__profiling_question=is_profiling_question)
-        return query
+        return RestResponse(self.get_serializer_class()(query, many=True).data)
 
 
 class CompletedQuestionsParticipationView(SerializerContext, APIView):

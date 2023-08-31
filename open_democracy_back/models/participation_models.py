@@ -20,12 +20,6 @@ class ParticipationQuerySet(models.QuerySet):
             assessment__initialization_date__lte=date,
         )
 
-    def filter_current(self):
-        return self.filter(is_current=True)
-
-    def filter_current_available(self, user_id, date):
-        return self.filter_available(user_id, date).filter_current()
-
 
 class Participation(models.Model):
     participant = models.ForeignKey(
@@ -43,7 +37,6 @@ class Participation(models.Model):
         null=True,
     )
 
-    is_current = models.BooleanField(default=True)
     assessment = models.ForeignKey(
         "open_democracy_back.Assessment",
         on_delete=models.CASCADE,

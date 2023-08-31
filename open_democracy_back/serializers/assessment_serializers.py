@@ -1,3 +1,5 @@
+import datetime
+
 from rest_framework import serializers
 
 from open_democracy_back.exceptions import ErrorCode
@@ -103,42 +105,80 @@ class AssessmentTypeSerializer(serializers.ModelSerializer):
 
 
 class AssessmentSerializer(serializers.ModelSerializer):
-    epci = EpciSerializer(many=False, read_only=True)
-    municipality = MunicipalitySerializer(many=False, read_only=True)
-    participation_nb = serializers.SerializerMethodField()
-    initiated_by_user = UserSerializer(read_only=True)
-    representativities = AssessmentRepresentativityCriteriaSerializer(
-        many=True, read_only=True
-    )
-    experts = UserSerializer(many=True, read_only=True)
     assessment_type = serializers.CharField(
         read_only=True, source="assessment_type.assessment_type"
     )
+    epci = EpciSerializer(many=False, read_only=True)
+    experts = UserSerializer(many=True, read_only=True)
+    initiated_by_user = UserSerializer(read_only=True)
+    is_current = serializers.SerializerMethodField()
+    municipality = MunicipalitySerializer(many=False, read_only=True)
+    name = serializers.SerializerMethodField()
+    participation_count = serializers.SerializerMethodField()
+    representativities = AssessmentRepresentativityCriteriaSerializer(
+        many=True, read_only=True
+    )
+    role = serializers.SerializerMethodField()
+    workshop_count = serializers.SerializerMethodField()
+
+    def get_name(self, obj: Assessment):
+        if obj.name:
+            return obj.name
+        return obj.collectivity_name
+
+    def get_is_current(self, obj: Assessment):
+        if not obj.end_date:
+            return True
+        return datetime.date.today() <= obj.end_date
+
+    def get_role(self, obj: Assessment):
+        if not (request := self.context.get("request", {})):
+            return None
+        user = request.user
+        if user.is_anonymous:
+            return None
+        if obj.initiated_by_user == user:
+            return "initiator"
+        if obj.experts.filter(pk=user.pk).exists():
+            return "expert"
+        if Participation.objects.filter(assessment=obj, user=user).exists():
+            return "participant"
+        return ""
 
     @staticmethod
-    def get_participation_nb(obj: Assessment):
+    def get_participation_count(obj: Assessment):
         return obj.participations.filter(user__is_unknown_user=False).count()
+
+    def get_workshop_count(self, obj: Assessment):
+        return obj.workshops.count()
 
     class Meta:
         model = Assessment
         fields = [
-            "id",
             "assessment_type",
             "conditions_of_sale_consent",
-            "locality_type",
+            "code",
+            "collectivity_name",
+            "created",
+            "end_date",
+            "epci",
+            "experts",
+            "id",
+            "initialization_date",
+            "initialized_to_the_name_of",
             "initiated_by_user",
             "initiator_type",
             "initiator_usage_consent",
-            "initialized_to_the_name_of",
-            "initialization_date",
+            "is_current",
             "is_initialization_questions_completed",
-            "end_date",
+            "locality_type",
             "municipality",
-            "epci",
-            "participation_nb",
-            "representativities",
+            "name",
+            "participation_count",
             "published_results",
-            "experts",
+            "representativities",
+            "role",
+            "workshop_count",
         ]
         read_only_fields = fields
 

@@ -116,17 +116,6 @@ class AssessmentsView(
             ).data,
         )
 
-    @action(detail=False, methods=["GET"])
-    def current(self, request):
-        # TODO change request
-        current_assessment = Assessment.objects.filter(
-            participations__in=Participation.objects(self.request.user, timezone.now()),
-        ).first()
-        serializer = AssessmentSerializer(
-            current_assessment, context=self.get_serializer_context()
-        )
-        return RestResponse(serializer.data)
-
     @permission_classes([IsAuthenticated])
     @action(detail=True, methods=["POST"], url_path="initialization")
     def initialize_assessment(self, request, pk):
@@ -140,22 +129,6 @@ class AssessmentsView(
                     detail="The assessment is already initiated",
                     code=ErrorCode.ASSESSMENT_ALREADY_INITIATED.value,
                 )
-
-            # # Check if email user correspond to the initiator
-            # email_only_letters = re.sub(r"[^a-z]", "", user.email)
-            # initiator_name_only_letters = re.sub(
-            #     r"[^a-z]",
-            #     "",
-            #     assessment.collectivity_name
-            #     if initialize_data["initiator_type"] == InitiatorType.COLLECTIVITY
-            #     else initialize_data["initiator_name"],
-            # )
-            # if initiator_name_only_letters not in email_only_letters:
-            #     raise ValidationFieldError(
-            #         "initiator_name",
-            #         detail="The email is not corresponding to the assessment initiator",
-            #         code=ErrorCode.EMAIL_NOT_CORRESPONDING_ASSESSMENT.value,
-            #     )
 
             assessment.initiated_by_user = request.user
             assessment.initialization_date = date.today()
@@ -284,18 +257,15 @@ class AssessmentResponseView(
             question_id=request.data.get("question_id"),
         )
 
-
-class CurrentAssessmentResponseView(mixins.ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [IsAuthenticated]
-    serializer_class = AssessmentResponseSerializer
-
-    def get_queryset(self):
-        # TODO change request
-        return AssessmentResponse.objects.filter(
-            assessment__participations__in=Participation.objects.filter_available(
-                self.request.user, timezone.now()
-            ),
-        )
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="by-assessment/(?P<assessment_id>.*)",
+    )
+    def by_assessment(self, request, assessment_id=None):
+        assessment = Assessment.objects.get(assessment_id=assessment_id)
+        query = assessment.responses.all()
+        return RestResponse(self.get_serializer_class()(query, many=True).data)
 
 
 class ExpertView(mixins.ListModelMixin, viewsets.GenericViewSet):

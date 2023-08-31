@@ -43,7 +43,6 @@ from .views.assessment_views import (
     ExpertView,
     ZipCodeLocalitiesView,
     AssessmentScoreView,
-    CurrentAssessmentResponseView,
     get_chart_data,
 )
 from .views.profiling_views import (
@@ -107,11 +106,6 @@ router.register(
     r"participation-responses",
     ParticipationResponseView,
     basename="ParticipationResponse",
-)
-router.register(
-    r"assessment-responses/current",
-    CurrentAssessmentResponseView,
-    basename="CurrentAssessmentResponse",
 )
 router.register(
     r"assessment-responses", AssessmentResponseView, basename="AssessmentResponse"

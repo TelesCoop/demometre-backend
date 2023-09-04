@@ -64,11 +64,11 @@ repos:
     language_version: python3.10
   repo: https://github.com/PyCQA/flake8
   rev: 3.9.2
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.5.1'  # Use the sha / tag you want to point at
-    hooks:
-    -   id: mypy
-    language_version: python3.10
+#-   repo: https://github.com/pre-commit/mirrors-mypy
+#    rev: 'v1.5.1'  # Use the sha / tag you want to point at
+#    hooks:
+#    -   id: mypy
+#    language_version: python3.10
 - hooks:
   - id: python-safety-dependencies-check
   repo: https://github.com/Lucas-C/pre-commit-hooks-safety

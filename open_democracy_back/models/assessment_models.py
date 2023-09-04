@@ -11,7 +11,9 @@ from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
 from my_auth.models import User
+from open_democracy_back.constants import ASSESSMENT_DOCUMENT_CATEGORIES_CHOICES
 from open_democracy_back.models.participation_models import Response
+from open_democracy_back.models.utils import FrontendRichText
 from open_democracy_back.utils import InitiatorType, LocalityType, ManagedAssessmentType
 
 
@@ -266,8 +268,16 @@ class Assessment(TimeStampedModel, ClusterableModel):
         verbose_name="Commune",
         unique=True,
     )
-    name = models.CharField(max_length=80, blank=True, null=True)
+    name = models.CharField(verbose_name="nom", max_length=80, blank=True, null=True)
     royalty_payed = models.BooleanField(default=False, verbose_name="Redevance payée")
+
+    # details
+    context = FrontendRichText(verbose_name="contexte", blank=True, default="")
+    objectives = FrontendRichText(verbose_name="objectifs", blank=True, default="")
+    stakeholders = FrontendRichText(
+        verbose_name="parties prenantes", blank=True, default=""
+    )
+    calendar = FrontendRichText(verbose_name="calendrier", blank=True, default="")
 
     @property
     def published_results(self):
@@ -300,6 +310,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
             return self.epci.code
 
     panels = [
+        FieldPanel("name"),
         FieldPanel("assessment_type"),
         FieldPanel("experts"),
         FieldPanel("royalty_payed"),
@@ -311,10 +322,20 @@ class Assessment(TimeStampedModel, ClusterableModel):
         FieldPanel("initialized_to_the_name_of"),
         FieldPanel("initialization_date"),
         FieldPanel("end_date"),
+        FieldPanel("context"),
+        FieldPanel("objectives"),
+        FieldPanel("stakeholders"),
+        FieldPanel("calendar"),
+        InlinePanel("documents", label="documents"),
     ]
 
     def __str__(self):
         return f"{self.get_locality_type_display()} {self.municipality if self.locality_type == LocalityType.MUNICIPALITY else self.epci}"
+
+    def save(self, *args, **kwargs):
+        if not self.name:
+            self.name = self.collectivity_name
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Évaluation"
@@ -343,3 +364,20 @@ class AssessmentResponse(Response):
 
     class Meta:
         unique_together = ["assessment", "question"]
+
+
+class AssessmentDocument(TimeStampedModel):
+    assessment = ParentalKey(
+        Assessment, on_delete=models.CASCADE, related_name="documents"
+    )
+    category = models.CharField(
+        max_length=20, choices=ASSESSMENT_DOCUMENT_CATEGORIES_CHOICES
+    )
+    file = models.FileField()
+    name = models.CharField(max_length=80)
+
+    panels = [
+        FieldPanel("category"),
+        FieldPanel("file"),
+        FieldPanel("name"),
+    ]

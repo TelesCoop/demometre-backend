@@ -147,6 +147,11 @@ class AssessmentFactory(factory.django.DjangoModelFactory):
     initialized_to_the_name_of: str = factory.Faker("name")
     initialization_date = factory.lazy_attribute(lambda o: datetime.date.today())
 
+    calendar: str = factory.Faker("paragraph")
+    context: str = factory.Faker("paragraph")
+    objectives: str = factory.Faker("paragraph")
+    stakeholders: str = factory.Faker("paragraph")
+
     @factory.post_generation
     def set_assessment_type(self, create, extracted, **kwargs):
         if create:

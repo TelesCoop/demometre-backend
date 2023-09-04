@@ -1,4 +1,6 @@
 from rest_framework.permissions import BasePermission
+
+from open_democracy_back.models import AssessmentDocument, Assessment
 from open_democracy_back.models.animator_models import Workshop
 
 
@@ -17,3 +19,39 @@ class IsWorkshopExpert(BasePermission):
         )
         is_expert = bool(Workshop.objects.get(id=workshop_id).animator == request.user)
         return bool(is_authenticated and is_expert)
+
+
+class HasWriteAccessOnAssessment(BasePermission):
+    """
+    Only allow read/write access to AssessmentDocuments to those who have write access
+    on the assessment.
+    """
+
+    def has_object_permission(self, request, view, obj: AssessmentDocument):
+        from open_democracy_back.serializers.assessment_serializers import (
+            get_assessment_role,
+            has_details_access,
+        )
+
+        user = request.user
+        role = get_assessment_role(obj.assessment, user)
+        return has_details_access(role)
+
+
+class HasAssessmentWriteAccessForUpdate(BasePermission):
+    """
+    Only allow read/write access to AssessmentDocuments to those who have write access
+    on the assessment.
+    """
+
+    def has_object_permission(self, request, view, obj: Assessment):
+        if request.method != "PATCH":
+            return True
+        from open_democracy_back.serializers.assessment_serializers import (
+            get_assessment_role,
+            has_details_access,
+        )
+
+        user = request.user
+        role = get_assessment_role(obj, user)
+        return has_details_access(role)

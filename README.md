@@ -11,8 +11,8 @@ réponses sont liées à une participation.
 couple (réponse, participation).
 - AssessmentResponse : une réponse à une question objective, qui est donc unique pour
 une évaluation
-- Question, Response : Question, Réponse, qui sont questions du questionnaires et les
-réponses possibles globales aux questionnaires
+- Question, Response : Question, Réponse, qui sont les questions du questionnaires et
+les réponses possibles pour chaque question
   - une Question a un booléen `profiling_question` pour indiquer si c'est une question
   de profilage
   - QuestionnaireQuestion : ??

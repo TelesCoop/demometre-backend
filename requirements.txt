@@ -1,3 +1,4 @@
+bleach==6.0.0
 Django>=3.2,<3.3
 django-anymail[mailgun]==8.5
 django-cors-headers==3.5.0

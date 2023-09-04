@@ -5,8 +5,6 @@ from rest_framework import serializers
 from my_auth.models import User
 from open_democracy_back.exceptions import ErrorCode
 from open_democracy_back.models import Participation, AssessmentDocument
-from open_democracy_back.models.questionnaire_and_profiling_models import Question
-
 from open_democracy_back.models.assessment_models import (
     EPCI,
     Assessment,
@@ -14,6 +12,7 @@ from open_democracy_back.models.assessment_models import (
     AssessmentType,
     Municipality,
 )
+from open_democracy_back.models.questionnaire_and_profiling_models import Question
 from open_democracy_back.serializers.participation_serializers import (
     OPTIONAL_RESPONSE_FIELDS,
     RESPONSE_FIELDS,
@@ -23,6 +22,7 @@ from open_democracy_back.serializers.representativity_serializers import (
     AssessmentRepresentativityCriteriaSerializer,
 )
 from open_democracy_back.serializers.user_serializers import UserSerializer
+from open_democracy_back.serializers.utils import Base64FileField
 from open_democracy_back.utils import LocalityType
 
 
@@ -122,17 +122,21 @@ def has_details_access(assessment_role):
 
 
 class AssessmentDocumentSerializer(serializers.ModelSerializer):
+    file = Base64FileField()
+
     class Meta:
         model = AssessmentDocument
         fields = [
             "assessment",
-            "created",
             "category",
+            "created",
             "file",
             "id",
             "name",
         ]
-        read_only_fields = ["created"]
+        read_only_fields = [
+            "created",
+        ]
 
 
 class AssessmentSerializer(serializers.ModelSerializer):

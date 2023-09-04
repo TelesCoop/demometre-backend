@@ -371,10 +371,12 @@ class AssessmentDocument(TimeStampedModel):
         Assessment, on_delete=models.CASCADE, related_name="documents"
     )
     category = models.CharField(
-        max_length=20, choices=ASSESSMENT_DOCUMENT_CATEGORIES_CHOICES
+        verbose_name="catégorie",
+        max_length=20,
+        choices=ASSESSMENT_DOCUMENT_CATEGORIES_CHOICES,
     )
-    file = models.FileField()
-    name = models.CharField(max_length=80)
+    file = models.FileField(verbose_name="fichier")
+    name = models.CharField(verbose_name="nom", max_length=80)
 
     panels = [
         FieldPanel("category"),

@@ -44,6 +44,7 @@ from .views.assessment_views import (
     ZipCodeLocalitiesView,
     AssessmentScoreView,
     get_chart_data,
+    AssessmentDocumentView,
 )
 from .views.profiling_views import (
     ProfilingQuestionView,
@@ -122,6 +123,9 @@ router.register(r"workshops", WorkshopView, basename="Workshop")
 router.register(r"full-workshops", FullWorkshopView, basename="FullWorkshop")
 router.register(r"experts", ExpertView, basename="Workshop")
 router.register(r"assessments", AssessmentsView, basename="assessments")
+router.register(
+    r"assessment-documents", AssessmentDocumentView, basename="assessment-documents"
+)
 
 
 urlpatterns = [

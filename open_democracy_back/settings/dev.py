@@ -22,3 +22,15 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "no-reply@telescoop.fr"
 
 INSTALLED_APPS.append("django_extensions")  # noqa: F405
+
+# disable migrations for tests so that it's faster
+# class DisableMigrations(object):
+#     def __contains__(self, item):
+#         return True
+#
+#     def __getitem__(self, item):
+#         return None
+#
+#
+# if "test" in sys.argv[1:] or "jenkins" in sys.argv[1:]:
+#     MIGRATION_MODULES = DisableMigrations()

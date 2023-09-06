@@ -2,10 +2,9 @@ import datetime
 
 from rest_framework import serializers
 
+from my_auth.models import User
 from open_democracy_back.exceptions import ErrorCode
-from open_democracy_back.models import Participation
-from open_democracy_back.models.questionnaire_and_profiling_models import Question
-
+from open_democracy_back.models import Participation, AssessmentDocument
 from open_democracy_back.models.assessment_models import (
     EPCI,
     Assessment,
@@ -13,6 +12,7 @@ from open_democracy_back.models.assessment_models import (
     AssessmentType,
     Municipality,
 )
+from open_democracy_back.models.questionnaire_and_profiling_models import Question
 from open_democracy_back.serializers.participation_serializers import (
     OPTIONAL_RESPONSE_FIELDS,
     RESPONSE_FIELDS,
@@ -22,6 +22,7 @@ from open_democracy_back.serializers.representativity_serializers import (
     AssessmentRepresentativityCriteriaSerializer,
 )
 from open_democracy_back.serializers.user_serializers import UserSerializer
+from open_democracy_back.serializers.utils import Base64FileField
 from open_democracy_back.utils import LocalityType
 
 
@@ -104,46 +105,72 @@ class AssessmentTypeSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+def get_assessment_role(assessment: Assessment, user: User):
+    if user.is_anonymous:
+        return {"role": None}
+    if assessment.initiated_by_user == user:
+        return "initiator"
+    if assessment.experts.filter(pk=user.pk).exists():
+        return "expert"
+    if Participation.objects.filter(assessment=assessment, user=user).exists():
+        return "participant"
+    return ""
+
+
+def has_details_access(assessment_role):
+    return assessment_role in ["expert", "initiator"]
+
+
+class AssessmentDocumentSerializer(serializers.ModelSerializer):
+    file = Base64FileField()
+
+    class Meta:
+        model = AssessmentDocument
+        fields = [
+            "assessment",
+            "category",
+            "created",
+            "file",
+            "id",
+            "name",
+        ]
+        read_only_fields = [
+            "created",
+        ]
+
+
 class AssessmentSerializer(serializers.ModelSerializer):
     assessment_type = serializers.CharField(
         read_only=True, source="assessment_type.assessment_type"
     )
+    documents = AssessmentDocumentSerializer(many=True)
     epci = EpciSerializer(many=False, read_only=True)
     experts = UserSerializer(many=True, read_only=True)
     initiated_by_user = UserSerializer(read_only=True)
     is_current = serializers.SerializerMethodField()
     municipality = MunicipalitySerializer(many=False, read_only=True)
-    name = serializers.SerializerMethodField()
     participation_count = serializers.SerializerMethodField()
     representativities = AssessmentRepresentativityCriteriaSerializer(
         many=True, read_only=True
     )
-    role = serializers.SerializerMethodField()
+    details = serializers.SerializerMethodField()
     workshop_count = serializers.SerializerMethodField()
-
-    def get_name(self, obj: Assessment):
-        if obj.name:
-            return obj.name
-        return obj.collectivity_name
 
     def get_is_current(self, obj: Assessment):
         if not obj.end_date:
             return True
         return datetime.date.today() <= obj.end_date
 
-    def get_role(self, obj: Assessment):
+    def get_details(self, obj: Assessment):
         if not (request := self.context.get("request", {})):
-            return None
+            return {"role": None}
         user = request.user
-        if user.is_anonymous:
-            return None
-        if obj.initiated_by_user == user:
-            return "initiator"
-        if obj.experts.filter(pk=user.pk).exists():
-            return "expert"
-        if Participation.objects.filter(assessment=obj, user=user).exists():
-            return "participant"
-        return ""
+        role = get_assessment_role(obj, user)
+        detail_access = has_details_access(role)
+        to_return = {"role": role, "has_detail_access": detail_access}
+        if not detail_access:
+            return to_return
+        return to_return
 
     @staticmethod
     def get_participation_count(obj: Assessment):
@@ -159,7 +186,11 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "conditions_of_sale_consent",
             "code",
             "collectivity_name",
+            "calendar",
+            "context",
             "created",
+            "details",
+            "documents",
             "end_date",
             "epci",
             "experts",
@@ -173,14 +204,29 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "is_initialization_questions_completed",
             "locality_type",
             "municipality",
+            "objectives",
             "name",
             "participation_count",
             "published_results",
             "representativities",
-            "role",
+            "stakeholders",
             "workshop_count",
         ]
-        read_only_fields = fields
+        read_only_fields = [
+            field
+            for field in fields
+            if field
+            not in ["name", "context", "calendar", "objectives", "stakeholders"]
+        ]
+
+
+class AssessmentNoDetailSerializer(AssessmentSerializer):
+    class Meta(AssessmentSerializer.Meta):
+        fields = [
+            field
+            for field in AssessmentSerializer.Meta.fields
+            if field not in ["context", "calendar", "objectives", "stakeholders"]
+        ]
 
 
 class AssessmentResponseSerializer(ResponseSerializer):

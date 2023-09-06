@@ -8,23 +8,23 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import mixins, viewsets, status
-from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.response import Response as RestResponse
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, action
 from rest_framework.exceptions import APIException
-from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.response import Response as RestResponse
+from rest_framework.views import APIView
+
 from my_auth.models import User
 from my_auth.serializers import UserSerializer
-
 from open_democracy_back.chart_data import CHART_DATA_FN_BY_QUESTION_TYPE
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
-
 from open_democracy_back.models import (
     Assessment,
     Participation,
     Question,
+    AssessmentDocument,
 )
 from open_democracy_back.models.assessment_models import (
     EPCI,
@@ -38,6 +38,10 @@ from open_democracy_back.models.representativity_models import (
     AssessmentRepresentativity,
     RepresentativityCriteria,
 )
+from open_democracy_back.permissions import (
+    HasWriteAccessOnAssessment,
+    HasAssessmentWriteAccessForUpdate,
+)
 from open_democracy_back.scoring import (
     get_scores_by_assessment_pk,
 )
@@ -46,6 +50,10 @@ from open_democracy_back.serializers.assessment_serializers import (
     AssessmentSerializer,
     EpciSerializer,
     MunicipalitySerializer,
+    AssessmentDocumentSerializer,
+    get_assessment_role,
+    has_details_access,
+    AssessmentNoDetailSerializer,
 )
 from open_democracy_back.utils import ManagedAssessmentType
 
@@ -63,17 +71,25 @@ def consent_condition_of_sales(assessment, conditions_of_sale_consent):
         )
 
 
-# TODO : update existing assessment
-# @api_view(["PATCH"])
-# @permission_classes([IsAuthenticated])
-# def update_assessment(request, pk):
-
-
 class AssessmentsView(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
 ):
     serializer_class = AssessmentSerializer
     queryset = Assessment.objects.all()
+    permission_classes = [IsAuthenticated, HasAssessmentWriteAccessForUpdate]
+
+    def get_serializer_class(self):
+        obj: Assessment = self.get_object()
+        user = self.request.user
+        role = get_assessment_role(obj, user)
+        detail_access = has_details_access(role)
+        if detail_access:
+            return AssessmentSerializer
+        else:
+            return AssessmentNoDetailSerializer
 
     @action(detail=False, methods=["GET"])
     def mine(self, request):
@@ -116,8 +132,12 @@ class AssessmentsView(
             ).data,
         )
 
-    @permission_classes([IsAuthenticated])
-    @action(detail=True, methods=["POST"], url_path="initialization")
+    @action(
+        detail=True,
+        methods=["POST"],
+        url_path="initialization",
+        permission_classes=[IsAuthenticated],
+    )
     def initialize_assessment(self, request, pk):
         with transaction.atomic():
             initialize_data = request.data
@@ -337,3 +357,15 @@ def get_chart_data(request, assessment_id, question_id):
             "data": data,
         },
     )
+
+
+class AssessmentDocumentView(
+    viewsets.GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+):
+    permission_classes = [IsAuthenticated, HasWriteAccessOnAssessment]
+    serializer_class = AssessmentDocumentSerializer
+    queryset = AssessmentDocument.objects.all()

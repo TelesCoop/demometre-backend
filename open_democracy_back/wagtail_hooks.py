@@ -29,6 +29,7 @@ from open_democracy_back.models import (
     Department,
     Municipality,
     EPCI,
+    AssessmentDocument,
 )
 
 from wagtail.contrib.modeladmin.helpers import ButtonHelper
@@ -355,6 +356,13 @@ class AssessmentModelAdmin(ModelAdmin):
     add_to_settings_menu = False
     search_fields = ("municipality__name", "epci__name")
     form_view_extra_js = ["js/assessments.js"]
+
+
+class AssessmentDocumentModelAdmin(ModelAdmin):
+    model = AssessmentDocument
+    menu_label = "Document d'évaluation"
+    menu_icon = "doc-full"
+    add_to_settings_menu = False
 
 
 class ParticipationModelAdmin(ModelAdmin):

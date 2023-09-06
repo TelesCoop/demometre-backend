@@ -157,11 +157,15 @@ class AssessmentSerializer(serializers.ModelSerializer):
     workshop_count = serializers.SerializerMethodField()
 
     def get_is_current(self, obj: Assessment):
+        """Returns a boolean indicating if the assessment is ongoing."""
         if not obj.end_date:
             return True
         return datetime.date.today() <= obj.end_date
 
     def get_details(self, obj: Assessment):
+        """
+        Only show details (such as context and payment) when user has details access.
+        """
         if not (request := self.context.get("request", {})):
             return {"role": None}
         user = request.user
@@ -170,13 +174,22 @@ class AssessmentSerializer(serializers.ModelSerializer):
         to_return = {"role": role, "has_detail_access": detail_access}
         if not detail_access:
             return to_return
+        if payment := obj.payment.first():
+            to_return["payment_date"] = payment.created
+            to_return["payment_amount"] = payment.amount
+            to_return["payment_author"] = payment.author.email
+        else:
+            to_return["payment_date"] = None
+            to_return["payment_amount"] = None
+            to_return["payment_author"] = None
         return to_return
 
     @staticmethod
     def get_participation_count(obj: Assessment):
         return obj.participations.filter(user__is_unknown_user=False).count()
 
-    def get_workshop_count(self, obj: Assessment):
+    @staticmethod
+    def get_workshop_count(obj: Assessment):
         return obj.workshops.count()
 
     class Meta:

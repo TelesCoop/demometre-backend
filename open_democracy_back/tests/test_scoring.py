@@ -164,7 +164,7 @@ class TestScoring(TestCase):
         assessment = AssessmentFactory()
         value = mean(
             [
-                response.linearized_score
+                response.unique_choice_response.linearized_score
                 for response in [
                     ParticipationResponseFactory(
                         unique_choice_response=response_1,

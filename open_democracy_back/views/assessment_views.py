@@ -94,9 +94,13 @@ class AssessmentsView(
     @action(detail=False, methods=["GET"])
     def mine(self, request):
         assessments = Assessment.objects.filter(
-            participations__in=Participation.objects.filter_available(
-                self.request.user, timezone.now()
-            ),
+            Q(
+                participations__in=Participation.objects.filter_available(
+                    self.request.user, timezone.now()
+                )
+            )
+            | Q(initiated_by_user=self.request.user)
+            | Q(experts=self.request.user),
         )
         return RestResponse(
             status=200,

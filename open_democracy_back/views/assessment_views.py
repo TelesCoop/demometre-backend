@@ -101,7 +101,7 @@ class AssessmentsView(
             )
             | Q(initiated_by_user=self.request.user)
             | Q(experts=self.request.user),
-        )
+        ).distinct()
         return RestResponse(
             status=200,
             data=self.serializer_class(

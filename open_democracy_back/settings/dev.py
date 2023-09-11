@@ -1,5 +1,7 @@
 from .base import *  # noqa: F401,F403
 
+import sys
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -23,14 +25,18 @@ DEFAULT_FROM_EMAIL = "no-reply@telescoop.fr"
 
 INSTALLED_APPS.append("django_extensions")  # noqa: F405
 
-# disable migrations for tests so that it's faster
-# class DisableMigrations(object):
-#     def __contains__(self, item):
-#         return True
-#
-#     def __getitem__(self, item):
-#         return None
-#
-#
-# if "test" in sys.argv[1:] or "jenkins" in sys.argv[1:]:
-#     MIGRATION_MODULES = DisableMigrations()
+
+class DisableMigrations(object):
+    """Disable migrations for tests so that it's faster"""
+
+    def __contains__(self, item):
+        return True
+
+    def __getitem__(self, item):
+        return None
+
+
+if "test" in sys.argv[1:] or "jenkins" in sys.argv[1:]:
+    MIGRATION_MODULES = DisableMigrations()
+    # add test runner to add a Locale, otherwise tests crash
+    TEST_RUNNER = "open_democracy_back.tests.runner_with_base_objects.MyTestRunner"

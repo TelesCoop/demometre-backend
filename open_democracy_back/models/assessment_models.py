@@ -327,6 +327,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         FieldPanel("stakeholders"),
         FieldPanel("calendar"),
         InlinePanel("documents", label="documents"),
+        InlinePanel("payment", label="paiement"),
     ]
 
     def __str__(self):
@@ -383,3 +384,28 @@ class AssessmentDocument(TimeStampedModel):
         FieldPanel("file"),
         FieldPanel("name"),
     ]
+
+
+class AssessmentPayment(TimeStampedModel):
+    assessment = ParentalKey(
+        Assessment, on_delete=models.CASCADE, unique=True, related_name="payment"
+    )
+    author = models.ForeignKey(
+        User,
+        verbose_name="auteur du paiement",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    amount = models.FloatField(verbose_name="amount")
+
+    panels = [
+        FieldPanel("amount"),
+        FieldPanel("author"),
+    ]
+
+    def __str__(self):
+        return (
+            f"assessment id {self.assessment.pk}, amount {self.amount},"
+            f"by {self.author.email}"
+        )

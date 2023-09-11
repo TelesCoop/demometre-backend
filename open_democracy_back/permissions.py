@@ -11,6 +11,8 @@ class IsWorkshopExpert(BasePermission):
 
     def has_permission(self, request, view):
         is_authenticated = bool(request.user and request.user.is_authenticated)
+        if not is_authenticated:
+            return False
         workshop_id = (
             request.data.get("workshop_id")
             or request.query_params.get("workshop_id")
@@ -18,7 +20,7 @@ class IsWorkshopExpert(BasePermission):
             or view.kwargs.get("pk", None)
         )
         is_expert = bool(Workshop.objects.get(id=workshop_id).animator == request.user)
-        return bool(is_authenticated and is_expert)
+        return is_expert
 
 
 class HasWriteAccessOnAssessment(BasePermission):

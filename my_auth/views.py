@@ -179,3 +179,17 @@ def front_end_create_unknown_user(request):
     login(request, user)
 
     return Response(status=201, data=AuthSerializer(user).data)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def edit_user(request):
+    user = request.user
+    data = dict(request.data)
+    data["user"] = user
+    if username := data.get("username"):
+        user.username = username
+    if email := data.get("email"):
+        user.email = email
+    user.save()
+    return Response(status=200, data=AuthSerializer(user).data)

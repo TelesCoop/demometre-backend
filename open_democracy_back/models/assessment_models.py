@@ -1,5 +1,6 @@
 from django import forms
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
@@ -194,6 +195,13 @@ class AssessmentType(models.Model):
         verbose_name_plural = "Types d'évaluation"
 
 
+class AssessmentQueryset(models.QuerySet):
+    def filter_has_details(self, user_id):
+        return self.filter(
+            Q(initiated_by_user_id=user_id) | Q(experts__id=user_id)
+        ).distinct()
+
+
 @register_snippet
 class Assessment(TimeStampedModel, ClusterableModel):
     assessment_type = models.ForeignKey(
@@ -207,7 +215,6 @@ class Assessment(TimeStampedModel, ClusterableModel):
     end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
     epci = models.ForeignKey(
         EPCI,
-        unique=True,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
@@ -266,7 +273,6 @@ class Assessment(TimeStampedModel, ClusterableModel):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name="Commune",
-        unique=True,
     )
     name = models.CharField(verbose_name="nom", max_length=80, blank=True, null=True)
     royalty_payed = models.BooleanField(default=False, verbose_name="Redevance payée")
@@ -278,6 +284,8 @@ class Assessment(TimeStampedModel, ClusterableModel):
         verbose_name="parties prenantes", blank=True, default=""
     )
     calendar = FrontendRichText(verbose_name="calendrier", blank=True, default="")
+
+    objects = AssessmentQueryset.as_manager()
 
     @property
     def published_results(self):
@@ -397,7 +405,7 @@ class AssessmentPayment(TimeStampedModel):
         blank=True,
         null=True,
     )
-    amount = models.FloatField(verbose_name="amount")
+    amount = models.FloatField(verbose_name="montant")
 
     panels = [
         FieldPanel("amount"),

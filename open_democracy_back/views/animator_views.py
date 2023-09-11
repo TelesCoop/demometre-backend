@@ -1,14 +1,16 @@
 import re
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import mixins, viewsets, status
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response as RestResponse
 from rest_framework.exceptions import APIException
 from my_auth.models import User
 from open_democracy_back.exceptions import ErrorCode
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
+from open_democracy_back.models import Assessment
 
 from open_democracy_back.models.animator_models import Participant, Workshop
 from open_democracy_back.models.participation_models import (
@@ -29,19 +31,41 @@ class WorkshopView(
     mixins.ListModelMixin,
     UpdateOrCreateModelMixin,
     mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = WorkshopSerializer
 
     def get_queryset(self) -> QuerySet:
         return Workshop.objects.filter(
-            animator_id=self.request.user.id,
-            assessment__royalty_payed=True,
+            Q(animator_id=self.request.user.id),
+            Q(
+                assessment__in=Assessment.objects.filter_has_details(
+                    self.request.user.id
+                )
+            ),
         )
 
     def get_or_update_object(self, request):
         return self.get_queryset().get(
             id=request.data.get("id"),
+        )
+
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="by-assessment/(?P<assessment_id>.*)",
+    )
+    def for_assessment(self, request, assessment_id):
+        assessments = Assessment.objects.filter_has_details(request.user.id).filter(
+            pk=assessment_id
+        )
+        workshops = Workshop.objects.filter(assessment__in=assessments)
+        return RestResponse(
+            status=200,
+            data=self.serializer_class(
+                workshops, many=True, context=self.get_serializer_context()
+            ).data,
         )
 
 
@@ -58,17 +82,21 @@ class FullWorkshopView(
 
 
 class WorkshopParticipationView(
+    mixins.DestroyModelMixin,
     mixins.CreateModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsWorkshopExpert]
     serializer_class = WorkshopParticipationWithProfilingResponsesSerializer
 
     def get_queryset(self) -> QuerySet:
-        return Participation.objects.filter(
-            workshop__animator_id=self.request.user.id,
-            workshop_id=self.request.data["workshop_id"],
+        qs = Participation.objects.filter(
+            Q(workshop__animator_id=self.request.user.id)
+            | Q(workshop__assessment__experts__id=self.request.user.id)
+            | Q(workshop__assessment__initiated_by_user_id=self.request.user.id)
         )
+        if self.action == "create":
+            return qs.filter(workshop_id=self.request.data["workshop_id"])
+        return qs
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():
@@ -85,7 +113,7 @@ class WorkshopParticipationView(
                 participant.email = email
                 participant.save()
             except ObjectDoesNotExist:
-                # Raise error when we already have this participant email in this workshop
+                # raise when we already have this participant email in this workshop
                 if (
                     email
                     and self.get_queryset().filter(participant__email=email).exists()

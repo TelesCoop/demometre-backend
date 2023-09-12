@@ -54,14 +54,15 @@ class WorkshopParticipationWithProfilingResponsesSerializer(
     class Meta:
         model = Participation
         fields = [
-            "id",
-            "participant_id",
-            "participant_email",
-            "participant_name",
             "assessment_id",
-            "workshop_id",
-            "role_id",
+            "id",
+            "medium",
+            "participant_email",
+            "participant_id",
+            "participant_name",
             "responses",
+            "role_id",
+            "workshop_id",
         ]
         optional_fields = ["participant_id"]
 
@@ -78,14 +79,26 @@ class WorkshopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workshop
         fields = [
-            "id",
-            "name",
             "animator",
             "assessment_id",
-            "date",
             "closed",
+            "comments",
+            "context",
+            "course",
+            "date",
+            "demometre_suggestions",
+            "id",
+            "improvement_observations",
+            "name",
+            "objectives",
             "participation_ids",
+            "participations",
+            "place",
+            "platform_suggestions",
+            "result_observations",
+            "type",
         ]
+        read_only_fields = ["participations"]
 
 
 class FullWorkshopSerializer(WorkshopSerializer):

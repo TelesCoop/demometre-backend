@@ -176,6 +176,10 @@ urlpatterns = [
         WorkshopParticipationView.as_view({"post": "create"}),
     ),
     path(
+        "workshops/participation/<int:pk>/",
+        WorkshopParticipationView.as_view({"delete": "destroy"}),
+    ),
+    path(
         "workshops/<int:workshop_pk>/participation/<int:participation_pk>/response/",
         WorkshopParticipationResponseView.as_view({"post": "create"}),
     ),

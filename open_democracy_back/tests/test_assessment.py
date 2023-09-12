@@ -115,3 +115,23 @@ class TestAssessmentsEdits(TestCase):
         data = self.client.get(url).json()
         self.assertEqual(data["details"]["hasDetailAccess"], False)
         self.assertFalse("context" in data)
+
+    @authenticate
+    def test_assessments_mine(self):
+        """
+        Test assessments/mine returns assessments I participated in, for which I'm
+        expert and that I initiated.
+        """
+        url = reverse("assessments-mine")
+        pks = set()
+        pks.add(AssessmentFactory.create(initiated_by_user=authenticate.user).pk)
+        assessment = AssessmentFactory.create()
+        assessment.experts.add(authenticate.user)
+        pks.add(assessment.pk)
+        assessment = AssessmentFactory.create()
+        ParticipationFactory.create(user=authenticate.user, assessment=assessment)
+        pks.add(assessment.pk)
+        # user has no link to this assessment, it should not appear in pks
+        AssessmentFactory.create()
+        pks_mine = {assessment["id"] for assessment in self.client.get(url).json()}
+        self.assertSetEqual(pks, pks_mine)

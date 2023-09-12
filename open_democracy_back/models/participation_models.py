@@ -49,6 +49,12 @@ class Participation(models.Model):
         null=True,
         related_name="participations",
     )
+    medium = models.CharField(
+        verbose_name="Support de réponse",
+        choices=[("online", "en ligne"), ("paper", "papier")],
+        max_length=6,
+        default="online",
+    )
     profiles = models.ManyToManyField(ProfileType, related_name="participations")
     consent = models.BooleanField(default=False)
     is_profiling_questions_completed = models.BooleanField(default=False)

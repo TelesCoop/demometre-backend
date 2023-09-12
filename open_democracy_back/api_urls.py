@@ -130,7 +130,7 @@ router.register(
 
 urlpatterns = [
     path(
-        "localites/by-zip-code/<int:zip_code>/",
+        "localites/by-zip-code/<str:zip_code>/",
         ZipCodeLocalitiesView.as_view({"get": "list"}),
     ),
     path("assessments/by-locality/", AssessmentsView.as_view({"get": "get_or_create"})),

@@ -79,7 +79,7 @@ class AssessmentsView(
 ):
     serializer_class = AssessmentSerializer
     queryset = Assessment.objects.all()
-    permission_classes = [IsAuthenticated, HasAssessmentWriteAccessForUpdate]
+    permission_classes = [HasAssessmentWriteAccessForUpdate]
 
     def get_serializer_class(self):
         obj: Assessment = self.get_object()
@@ -244,7 +244,7 @@ class ZipCodeLocalitiesView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class_municipality = MunicipalitySerializer
     serializer_class_epci = EpciSerializer
 
-    def list(self, request, zip_code):
+    def list(self, request, zip_code: str):
         municipalities = self.serializer_class_municipality(
             Municipality.objects.filter(zip_codes__code=zip_code).distinct(), many=True
         )

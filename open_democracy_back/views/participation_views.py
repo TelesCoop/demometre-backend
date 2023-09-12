@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.db.models import QuerySet
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response as RestResponse
@@ -158,9 +159,12 @@ class ParticipationView(
         url_path="by-assessment/(?P<assessment_id>.*)",
     )
     def by_assessment(self, request, assessment_id=None):
-        instance = Participation.objects.get(
-            assessment__id=assessment_id, user=request.user
-        )
+        try:
+            instance = Participation.objects.get(
+                assessment__id=assessment_id, user=request.user
+            )
+        except Participation.DoesNotExist:
+            raise NotFound()
         return RestResponse(self.get_serializer_class()(instance).data)
 
 
@@ -195,9 +199,12 @@ class ParticipationResponseView(UpdateOrCreateModelMixin, viewsets.GenericViewSe
         url_path="by-assessment/(?P<assessment_id>.*)",
     )
     def by_assessment(self, request, assessment_id=None):
-        participation = Participation.objects.get(
-            assessment_id=assessment_id, user=request.user
-        )
+        try:
+            participation = Participation.objects.get(
+                assessment_id=assessment_id, user=request.user
+            )
+        except Participation.DoesNotExist:
+            raise NotFound()
         query = ParticipationResponse.objects.filter(participation=participation)
         context = self.request.query_params.get("context")
         if context:

@@ -91,8 +91,11 @@ class WorkshopParticipationView(
     def get_queryset(self) -> QuerySet:
         qs = Participation.objects.filter(
             Q(workshop__animator_id=self.request.user.id)
-            | Q(workshop__assessment__experts__id=self.request.user.id)
-            | Q(workshop__assessment__initiated_by_user_id=self.request.user.id)
+            | Q(
+                workshop__assessment__in=Assessment.objects.filter_has_details(
+                    self.request.user.id
+                )
+            )
         )
         if self.action == "create":
             return qs.filter(workshop_id=self.request.data["workshop_id"])

@@ -1,5 +1,7 @@
+import datetime
 import os
 
+from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 from django.conf import settings
@@ -135,3 +137,51 @@ class TestAssessmentsEdits(TestCase):
         AssessmentFactory.create()
         pks_mine = {assessment["id"] for assessment in self.client.get(url).json()}
         self.assertSetEqual(pks, pks_mine)
+
+    @authenticate
+    def test_experts(self):
+        assessment = AssessmentFactory.create(initiated_by_user=authenticate.user)
+        url = reverse("assessments-detail", args=[assessment.pk])
+        experts_url = reverse("experts-list")
+
+        self.assertListEqual(self.client.get(experts_url).json(), [])
+
+        # create an expert
+        expert = UserFactory.create()
+        experts_group, _ = Group.objects.get_or_create(name="Experts")
+        expert.groups.add(experts_group)
+        # check it's listed as expert
+        self.assertEqual(len(self.client.get(experts_url).json()), 1)
+
+        # add it to the statement with a patch
+        self.assertEqual(
+            self.client.patch(
+                url,
+                {"experts": [expert.pk]},
+                content_type="application/json",
+            ).json()["experts"],
+            [2],
+        )
+
+        # remove it with another patch
+        self.assertEqual(
+            self.client.patch(
+                url,
+                {"experts": []},
+                content_type="application/json",
+            ).json()["experts"],
+            [],
+        )
+
+    @authenticate
+    def test_can_close_assessment(self):
+        assessment = AssessmentFactory.create(initiated_by_user=authenticate.user)
+        url = reverse("assessments-detail", args=[assessment.pk])
+        self.assertEqual(assessment.end_date, None)
+        today = datetime.date.today().isoformat()
+        res = self.client.patch(
+            url,
+            {"end_date": today},
+            content_type="application/json",
+        )
+        self.assertEqual(res.json()["endDate"], today)

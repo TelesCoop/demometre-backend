@@ -1,5 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
+from rest_framework.generics import ListAPIView
+
 from open_democracy_back.views.animator_views import (
     CloseWorkshopView,
     FullWorkshopView,
@@ -34,6 +36,8 @@ from open_democracy_back.views.setting_views import (
     RGPDSettingsView,
     StructureSettingsView,
 )
+from .models import Training
+from .serializers.training_serializers import TrainingSerializer
 
 from .views.assessment_views import (
     AssessmentAddExpertView,
@@ -121,7 +125,7 @@ router.register(
 )
 router.register(r"workshops", WorkshopView, basename="Workshop")
 router.register(r"full-workshops", FullWorkshopView, basename="FullWorkshop")
-router.register(r"experts", ExpertView, basename="Workshop")
+router.register(r"experts", ExpertView, basename="experts")
 router.register(r"assessments", AssessmentsView, basename="assessments")
 router.register(
     r"assessment-documents", AssessmentDocumentView, basename="assessment-documents"
@@ -186,5 +190,12 @@ urlpatterns = [
     path(
         "workshops/<int:workshop_pk>/closed/",
         CloseWorkshopView.as_view(),
+    ),
+    path(
+        "trainings/",
+        ListAPIView.as_view(
+            queryset=Training.objects.all(), serializer_class=TrainingSerializer
+        ),
+        name="traning-list",
     ),
 ]

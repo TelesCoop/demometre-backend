@@ -54,6 +54,7 @@ from open_democracy_back.serializers.assessment_serializers import (
     get_assessment_role,
     has_details_access,
     AssessmentNoDetailSerializer,
+    AssessmentSerializerForUpdate,
 )
 from open_democracy_back.utils import ManagedAssessmentType
 
@@ -87,6 +88,8 @@ class AssessmentsView(
         role = get_assessment_role(obj, user)
         detail_access = has_details_access(role)
         if detail_access:
+            if self.action == "partial_update":
+                return AssessmentSerializerForUpdate
             return AssessmentSerializer
         else:
             return AssessmentNoDetailSerializer
@@ -96,7 +99,7 @@ class AssessmentsView(
         assessments = Assessment.objects.filter(
             Q(
                 participations__in=Participation.objects.filter_available(
-                    self.request.user, timezone.now()
+                    self.request.user.id, timezone.now()
                 )
             )
             | Q(initiated_by_user=self.request.user)

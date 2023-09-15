@@ -30,6 +30,7 @@ from open_democracy_back.models import (
     Municipality,
     EPCI,
     AssessmentDocument,
+    Training,
 )
 
 from wagtail.contrib.modeladmin.helpers import ButtonHelper
@@ -431,6 +432,14 @@ class LocalityAdminGroup(ModelAdminGroup):
         CommuneModelAdmin,
         EPCIModelAdmin,
     )
+
+
+@modeladmin_register
+class TrainingAdmin(ModelAdmin):
+    model = Training
+    menu_order = 213
+    menu_icon = "group"
+    search_fields = ("name",)
 
 
 # class UserAdmin(ModelAdmin):

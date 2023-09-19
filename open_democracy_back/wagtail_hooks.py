@@ -13,6 +13,7 @@ from wagtail import hooks
 
 from wagtail.snippets import widgets as wagtailsnippets_widgets
 
+from my_auth.models import User
 from open_democracy_back.models import (
     Assessment,
     Criteria,
@@ -132,6 +133,9 @@ def editor_js():
 
 class CanNotEditPermissionHelper(PermissionHelper):
     def user_can_edit_obj(self, user, obj):
+        return False
+
+    def user_can_create(self, user):
         return False
 
 
@@ -442,25 +446,25 @@ class TrainingAdmin(ModelAdmin):
     search_fields = ("name",)
 
 
-# class UserAdmin(ModelAdmin):
-#     model = User
-#     menu_label = "Administrateurs"
-#     menu_icon = "user"
-#     menu_order = 200
-#     add_to_settings_menu = True
-#     exclude_from_explorer = True
-#     list_display = (
-#         "username",
-#         "email",
-#         "last_login",
-#     )
-#     search_fields = "username"
-#     permission_helper_class = CanNotEditPermissionHelper
+class ExpertsAdmin(ModelAdmin):
+    model = User
+    menu_label = "Experts"
+    menu_icon = "user"
+    menu_order = 205
+    add_to_settings_menu = True
+    exclude_from_explorer = True
+    list_display = (
+        "username",
+        "email",
+        "last_login",
+    )
+    search_fields = ("username", "email")
+    permission_helper_class = CanNotEditPermissionHelper
 
-#     def get_queryset(self, request):
-#         qs = super().get_queryset(request)
-#         # Only show admin user
-#         return qs.filter(is_superuser=True)
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Only show admin user
+        return qs.filter(groups__name="Experts")
 
 
 modeladmin_register(ContentAdminGroup)
@@ -471,7 +475,7 @@ modeladmin_register(ProfilingAdminGroup)
 modeladmin_register(RepresentativityModelAdmin)
 modeladmin_register(LocalityAdminGroup)
 modeladmin_register(AssessmentAdminGroup)
-# modeladmin_register(UserAdmin)
+modeladmin_register(ExpertsAdmin)
 
 
 @hooks.register("register_admin_urls")

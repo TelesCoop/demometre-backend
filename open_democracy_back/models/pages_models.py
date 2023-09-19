@@ -243,6 +243,20 @@ class UsagePage(Page):
         use_json_field=True,
     )
 
+    # trainings
+    training_block_title = models.CharField(
+        verbose_name="Titre de la section formation",
+        max_length=100,
+        blank=True,
+        default="Formations certifiantes",
+    )
+    training_block_intro = RichTextField(
+        default="Démocratie Ouverte vous propose des formations pour accompagner des évaluations DémoMètre et/ou animer des ateliers d’évaluations.",
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Intro de la section formation",
+        blank=True,
+    )
+
     content_panels = Page.content_panels + [
         FieldPanel("tag_line"),
         FieldPanel("introduction"),
@@ -276,6 +290,13 @@ class UsagePage(Page):
                 FieldPanel("start_assessment_block_data", classname="full"),
             ],
             heading="Lancer une nouvelle évaluation",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("training_block_title"),
+                FieldPanel("training_block_intro"),
+            ],
+            heading="Formations",
         ),
     ]
 

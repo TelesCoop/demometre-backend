@@ -3,6 +3,8 @@ from my_auth.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+
     class Meta:
         model = User
         fields = ("id", "first_name", "last_name", "username", "email")

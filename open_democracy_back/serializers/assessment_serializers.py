@@ -21,7 +21,9 @@ from open_democracy_back.serializers.participation_serializers import (
 from open_democracy_back.serializers.representativity_serializers import (
     AssessmentRepresentativityCriteriaSerializer,
 )
-from open_democracy_back.serializers.user_serializers import UserSerializer
+from open_democracy_back.serializers.user_serializers import (
+    UserSerializer,
+)
 from open_democracy_back.serializers.utils import Base64FileField
 from open_democracy_back.utils import LocalityType
 
@@ -160,7 +162,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
         """Returns a boolean indicating if the assessment is ongoing."""
         if not obj.end_date:
             return True
-        return datetime.date.today() <= obj.end_date
+        return datetime.date.today() < obj.end_date
 
     def get_details(self, obj: Assessment):
         """
@@ -191,6 +193,14 @@ class AssessmentSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_workshop_count(obj: Assessment):
         return obj.workshops.count()
+
+    def update(self, instance: Assessment, validated_data):
+        """Custom update so that we can update the experts."""
+        experts = []
+        if "experts" in validated_data.keys():
+            experts = validated_data.pop("experts")
+            instance.experts.set(experts)
+        return super().update(instance, validated_data)
 
     class Meta:
         model = Assessment
@@ -229,8 +239,22 @@ class AssessmentSerializer(serializers.ModelSerializer):
             field
             for field in fields
             if field
-            not in ["name", "context", "calendar", "objectives", "stakeholders"]
+            not in [
+                "calendar",
+                "context",
+                "end_date",
+                "experts",
+                "name",
+                "objectives",
+                "stakeholders",
+            ]
         ]
+
+
+class AssessmentSerializerForUpdate(AssessmentSerializer):
+    experts = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=False, queryset=User.objects.filter(groups__name="Experts")
+    )
 
 
 class AssessmentNoDetailSerializer(AssessmentSerializer):

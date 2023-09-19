@@ -114,6 +114,8 @@ class WorkshopParticipationView(
                 participant = participation.participant
                 participant.name = name
                 participant.email = email
+                if medium := request.data.get("medium"):
+                    participation.medium = medium
                 participant.save()
             except ObjectDoesNotExist:
                 # raise when we already have this participant email in this workshop

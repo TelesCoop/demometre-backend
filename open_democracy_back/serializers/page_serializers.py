@@ -260,11 +260,13 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
                 )
                 ids.append(objective.value["svg"].id)
         for how in obj.how_block_data:
-            if how.block.name == "cards":
-                for card in how.value:
-                    if card["svg"].id not in ids:
-                        svgs.append({"id": card["svg"].id, "url": card["svg"].file.url})
-                        ids.append(card["svg"].id)
+            if how.block.name in ["cards", "step"]:
+                for element in how.value:
+                    if element["svg"].id not in ids:
+                        svgs.append(
+                            {"id": element["svg"].id, "url": element["svg"].file.url}
+                        )
+                        ids.append(element["svg"].id)
         return svgs
 
     @staticmethod

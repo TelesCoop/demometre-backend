@@ -4,6 +4,8 @@ from datetime import datetime
 
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
 from django.contrib.auth import authenticate, login, logout
+from django.db import IntegrityError
+
 from my_auth.models import User
 
 from django.http import HttpResponse
@@ -191,5 +193,10 @@ def edit_user(request):
         user.username = username
     if email := data.get("email"):
         user.email = email
-    user.save()
+    try:
+        user.save()
+    except IntegrityError:
+        return Response(
+            status=403, data={"error": "Le nom d'utilisateur doit être unique"}
+        )
     return Response(status=200, data=AuthSerializer(user).data)

@@ -117,7 +117,6 @@ class AssessmentsView(
         assessments = Assessment.objects.filter(
             initialization_date__lte=timezone.now(),
             experts__in=[self.request.user],
-            royalty_payed=True,
         ).exclude(end_date__lt=timezone.now())
         return RestResponse(
             status=200,

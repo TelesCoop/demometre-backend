@@ -23,7 +23,7 @@ DATABASES = {
 
 ROLLBAR = {
     "access_token": config.getstr("bugs.rollbar_access_token"),  # noqa: F405
-    "environment": "production",
+    "environment": config.getstr("environment.environment", "production"),  # noqa: F405
     "root": BASE_DIR,  # noqa: F405
 }
 

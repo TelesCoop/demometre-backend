@@ -275,7 +275,6 @@ class Assessment(TimeStampedModel, ClusterableModel):
         verbose_name="Commune",
     )
     name = models.CharField(verbose_name="nom", max_length=80, blank=True, null=True)
-    royalty_payed = models.BooleanField(default=False, verbose_name="Redevance payée")
 
     # details
     context = FrontendRichText(verbose_name="contexte", blank=True, default="")
@@ -321,7 +320,6 @@ class Assessment(TimeStampedModel, ClusterableModel):
         FieldPanel("name"),
         FieldPanel("assessment_type"),
         FieldPanel("experts"),
-        FieldPanel("royalty_payed"),
         FieldPanel("locality_type"),
         FieldPanel("municipality"),
         FieldPanel("epci"),

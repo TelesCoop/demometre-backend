@@ -173,7 +173,6 @@ class ParticipationResponseView(UpdateOrCreateModelMixin, viewsets.GenericViewSe
     serializer_class = ParticipationResponseSerializer
 
     def get_queryset(self):
-        # TODO check if it create error to save non-current participation response
         query = ParticipationResponse.objects.filter(
             participation__in=Participation.objects.filter_available(
                 self.request.user.id, timezone.now()

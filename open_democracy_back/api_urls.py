@@ -137,7 +137,11 @@ urlpatterns = [
         "localites/by-zip-code/<str:zip_code>/",
         ZipCodeLocalitiesView.as_view({"get": "list"}),
     ),
-    path("assessments/by-locality/", AssessmentsView.as_view({"get": "get_or_create"})),
+    path(
+        "assessments/by-locality/",
+        AssessmentsView.as_view({"get": "get_or_create"}),
+        name="create-assessment",
+    ),
     path(
         "questionnaire-structure/", QuestionnaireStructureView.as_view({"get": "list"})
     ),

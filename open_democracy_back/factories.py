@@ -27,7 +27,12 @@ from open_democracy_back.models import (
     ClosedWithScaleCategoryResponse,
     NumberRange,
 )
-from open_democracy_back.utils import QuestionObjectivity, QuestionMethod, InitiatorType
+from open_democracy_back.utils import (
+    QuestionObjectivity,
+    QuestionMethod,
+    InitiatorType,
+    ManagedAssessmentType,
+)
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -159,6 +164,18 @@ class AssessmentFactory(factory.django.DjangoModelFactory):
                 self.assessment_type = AssessmentType.objects.first()
             else:
                 self.assessment_type = extracted
+
+
+class AssessmentTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AssessmentType
+
+    assessment_type = ManagedAssessmentType.PARTICIPATIVE
+    for_who = factory.Faker("text")
+    what = factory.Faker("text")
+    for_what = factory.Faker("text")
+    results = factory.Faker("text")
+    price = factory.Faker("random_int")
 
 
 class ParticipationFactory(factory.django.DjangoModelFactory):

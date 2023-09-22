@@ -215,7 +215,6 @@ class AssessmentsView(
             user_id = request.user.id
         locality_id = request.GET.get("locality_id")
         locality_type = request.GET.get("locality_type")
-        assessment = None
         assessments_usable = Assessment.objects.all().exclude(
             Q(assessment_type__assessment_type=ManagedAssessmentType.QUICK)
             & ~Q(initiated_by_user_id=user_id)
@@ -230,7 +229,6 @@ class AssessmentsView(
             assessment, _ = assessments_usable.get_or_create(
                 locality_type=locality_type, epci=epci
             )
-
         else:
             logger.error("locality_type received not correct")
             raise ValidationFieldError(

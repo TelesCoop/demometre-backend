@@ -96,15 +96,18 @@ class AssessmentsView(
 
     @action(detail=False, methods=["GET"])
     def mine(self, request):
-        assessments = Assessment.objects.filter(
-            Q(
-                participations__in=Participation.objects.filter_available(
-                    self.request.user.id, timezone.now()
+        if request.user.is_anonymous:
+            assessments = []
+        else:
+            assessments = Assessment.objects.filter(
+                Q(
+                    participations__in=Participation.objects.filter_available(
+                        self.request.user.id, timezone.now()
+                    )
                 )
-            )
-            | Q(initiated_by_user=self.request.user)
-            | Q(experts=self.request.user),
-        ).distinct()
+                | Q(initiated_by_user=self.request.user)
+                | Q(experts=self.request.user),
+            ).distinct()
         return RestResponse(
             status=200,
             data=self.serializer_class(
@@ -287,7 +290,7 @@ class AssessmentResponseView(
         url_path="by-assessment/(?P<assessment_id>.*)",
     )
     def by_assessment(self, request, assessment_id=None):
-        assessment = Assessment.objects.get(assessment_id=assessment_id)
+        assessment = Assessment.objects.get(pk=assessment_id)
         query = assessment.responses.all()
         return RestResponse(self.get_serializer_class()(query, many=True).data)
 

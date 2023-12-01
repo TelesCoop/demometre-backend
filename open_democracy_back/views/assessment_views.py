@@ -16,7 +16,6 @@ from rest_framework.response import Response as RestResponse
 from rest_framework.views import APIView
 
 from my_auth.models import User
-from my_auth.serializers import UserSerializer
 from open_democracy_back.chart_data import CHART_DATA_FN_BY_QUESTION_TYPE
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
@@ -56,6 +55,7 @@ from open_democracy_back.serializers.assessment_serializers import (
     AssessmentNoDetailSerializer,
     AssessmentSerializerForUpdate,
 )
+from open_democracy_back.serializers.user_serializers import UserSerializer
 from open_democracy_back.utils import ManagedAssessmentType
 
 logger = logging.getLogger(__name__)

@@ -245,6 +245,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
                 "end_date",
                 "experts",
                 "name",
+                "initialized_to_the_name_of",
                 "objectives",
                 "stakeholders",
             ]

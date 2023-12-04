@@ -134,6 +134,7 @@ class WorkshopParticipationView(
                     participant_id=participant.id,
                     workshop_id=request.data["workshop_id"],
                     assessment_id=request.data["assessment_id"],
+                    medium=request.data.get("medium"),
                 )[0]
 
             # 2 - Update role of participant

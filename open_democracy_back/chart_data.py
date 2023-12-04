@@ -74,14 +74,10 @@ def get_chart_data_of_choice_question(question, assessment_id, choice_type):
         base_count = f"{choice_type}_assessmentresponses"
         role_count = base_count
         base_queryset = get_chart_data_objective_queryset(assessment_id, base_count)
-        root_queryset = get_chart_data_objective_queryset(assessment_id)
-        model = AssessmentResponse
     else:
         base_count = f"{choice_type}_participationresponses"
         role_count = f"{base_count}__participation__role__name"
         base_queryset = get_chart_data_subjective_queryset(assessment_id, base_count)
-        root_queryset = get_chart_data_subjective_queryset(assessment_id)
-        model = ParticipationResponse
 
     response_choices = ResponseChoice.objects.filter(question_id=question.id).annotate(
         count=Count(base_count, filter=Q(**base_queryset)),
@@ -102,9 +98,12 @@ def get_chart_data_of_choice_question(question, assessment_id, choice_type):
             "value": response_choice.count_by_role,
         }
 
-    data["count"] = model.objects.filter(
-        **root_queryset, question_id=question.id
-    ).count()
+    # count is not the number of answers, because an answer can count multiple times
+    # if answered for multiple profiles
+    count = 0
+    for pk, details in data["value"].items():
+        count += details["value"]
+    data["count"] = count
     return data
 
 

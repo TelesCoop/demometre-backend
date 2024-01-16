@@ -9,10 +9,11 @@ from wagtail.contrib.modeladmin.options import (
 )
 from wagtail.contrib.modeladmin.helpers import PermissionHelper
 
-from wagtail.core import hooks
+from wagtail import hooks
 
 from wagtail.snippets import widgets as wagtailsnippets_widgets
 
+from my_auth.models import User
 from open_democracy_back.models import (
     Assessment,
     Criteria,
@@ -29,6 +30,8 @@ from open_democracy_back.models import (
     Department,
     Municipality,
     EPCI,
+    AssessmentDocument,
+    Training,
 )
 
 from wagtail.contrib.modeladmin.helpers import ButtonHelper
@@ -118,10 +121,7 @@ def snippet_listing_buttons(snippet, user, next_url=None):
 
 @hooks.register("insert_editor_js", order=100)
 def editor_js():
-    js_files = [
-        "js/questions.js",
-        "js/assessments.js",
-    ]
+    js_files = []
     js_includes = format_html_join(
         "\n",
         '<script type="module" src="{0}"></script>',
@@ -133,6 +133,9 @@ def editor_js():
 
 class CanNotEditPermissionHelper(PermissionHelper):
     def user_can_edit_obj(self, user, obj):
+        return False
+
+    def user_can_create(self, user):
         return False
 
 
@@ -264,6 +267,7 @@ class QuestionnaireQuestionModelAdmin(ModelAdmin):
         "criteria__marker__pillar__name",
     )
     ordering = ("concatenated_code",)
+    form_view_extra_js = ["js/questions.js"]
 
 
 class SurveyAdminGroup(ModelAdminGroup):
@@ -302,6 +306,7 @@ class ProfilingQuestionModelAdmin(ModelAdmin):
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
     search_fields = ("name", "question_statement")
+    form_view_extra_js = ["js/questions.js"]
 
 
 class ProfilingAdminGroup(ModelAdminGroup):
@@ -355,6 +360,14 @@ class AssessmentModelAdmin(ModelAdmin):
     menu_icon = "date"
     add_to_settings_menu = False
     search_fields = ("municipality__name", "epci__name")
+    form_view_extra_js = ["js/assessments.js"]
+
+
+class AssessmentDocumentModelAdmin(ModelAdmin):
+    model = AssessmentDocument
+    menu_label = "Document d'évaluation"
+    menu_icon = "doc-full"
+    add_to_settings_menu = False
 
 
 class ParticipationModelAdmin(ModelAdmin):
@@ -425,25 +438,33 @@ class LocalityAdminGroup(ModelAdminGroup):
     )
 
 
-# class UserAdmin(ModelAdmin):
-#     model = User
-#     menu_label = "Administrateurs"
-#     menu_icon = "user"
-#     menu_order = 200
-#     add_to_settings_menu = True
-#     exclude_from_explorer = True
-#     list_display = (
-#         "username",
-#         "email",
-#         "last_login",
-#     )
-#     search_fields = "username"
-#     permission_helper_class = CanNotEditPermissionHelper
+@modeladmin_register
+class TrainingAdmin(ModelAdmin):
+    model = Training
+    menu_order = 213
+    menu_icon = "group"
+    search_fields = ("name",)
 
-#     def get_queryset(self, request):
-#         qs = super().get_queryset(request)
-#         # Only show admin user
-#         return qs.filter(is_superuser=True)
+
+class ExpertsAdmin(ModelAdmin):
+    model = User
+    menu_label = "Experts"
+    menu_icon = "user"
+    menu_order = 205
+    add_to_settings_menu = True
+    exclude_from_explorer = True
+    list_display = (
+        "username",
+        "email",
+        "last_login",
+    )
+    search_fields = ("username", "email")
+    permission_helper_class = CanNotEditPermissionHelper
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Only show admin user
+        return qs.filter(groups__name="Experts")
 
 
 modeladmin_register(ContentAdminGroup)
@@ -454,7 +475,7 @@ modeladmin_register(ProfilingAdminGroup)
 modeladmin_register(RepresentativityModelAdmin)
 modeladmin_register(LocalityAdminGroup)
 modeladmin_register(AssessmentAdminGroup)
-# modeladmin_register(UserAdmin)
+modeladmin_register(ExpertsAdmin)
 
 
 @hooks.register("register_admin_urls")

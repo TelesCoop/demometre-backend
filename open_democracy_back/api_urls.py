@@ -1,5 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
+from rest_framework.generics import ListAPIView
+
 from open_democracy_back.views.animator_views import (
     CloseWorkshopView,
     FullWorkshopView,
@@ -25,8 +27,6 @@ from open_democracy_back.views.participation_views import (
     ParticipationResponseView,
     ParticipationView,
     CompletedQuestionsParticipationView,
-    CurrentParticipationView,
-    CurrentParticipationResponseView,
 )
 from open_democracy_back.views.representativity_views import (
     RepresentativityCriteriaView,
@@ -36,22 +36,19 @@ from open_democracy_back.views.setting_views import (
     RGPDSettingsView,
     StructureSettingsView,
 )
+from .models import Training
+from .serializers.training_serializers import TrainingSerializer
 
 from .views.assessment_views import (
-    AnimatorAssessmentsView,
     AssessmentAddExpertView,
     AssessmentResponseView,
-    AssessmentView,
     AssessmentsView,
     CompletedQuestionsInitializationView,
     ExpertView,
-    PublishedAssessmentsView,
     ZipCodeLocalitiesView,
-    initialize_assessment,
     AssessmentScoreView,
-    CurrentAssessmentView,
-    CurrentAssessmentResponseView,
     get_chart_data,
+    AssessmentDocumentView,
 )
 from .views.profiling_views import (
     ProfilingQuestionView,
@@ -111,19 +108,9 @@ router.register(r"resources", ResourceView, basename="Resources")
 
 router.register(r"participations", ParticipationView, basename="Participation")
 router.register(
-    r"participation-responses/current",
-    CurrentParticipationResponseView,
-    basename="CurrentParticipationResponse",
-)
-router.register(
     r"participation-responses",
     ParticipationResponseView,
     basename="ParticipationResponse",
-)
-router.register(
-    r"assessment-responses/current",
-    CurrentAssessmentResponseView,
-    basename="CurrentAssessmentResponse",
 )
 router.register(
     r"assessment-responses", AssessmentResponseView, basename="AssessmentResponse"
@@ -138,21 +125,23 @@ router.register(
 )
 router.register(r"workshops", WorkshopView, basename="Workshop")
 router.register(r"full-workshops", FullWorkshopView, basename="FullWorkshop")
-router.register(r"experts", ExpertView, basename="Workshop")
+router.register(r"experts", ExpertView, basename="experts")
+router.register(r"assessments", AssessmentsView, basename="assessments")
+router.register(
+    r"assessment-documents", AssessmentDocumentView, basename="assessment-documents"
+)
 
 
 urlpatterns = [
     path(
-        "localites/by-zip-code/<int:zip_code>/",
+        "localites/by-zip-code/<str:zip_code>/",
         ZipCodeLocalitiesView.as_view({"get": "list"}),
     ),
-    path("assessments/", AssessmentsView.as_view({"get": "list"})),
-    path("assessments/by-animator/", AnimatorAssessmentsView.as_view({"get": "list"})),
-    path("assessments/by-locality/", AssessmentsView.as_view({"get": "get_or_create"})),
-    path("assessments/current/", CurrentAssessmentView.as_view()),
-    path("assessments/<int:pk>/", AssessmentView.as_view({"get": "retrieve"})),
-    path("assessments/<int:pk>/initialization/", initialize_assessment),
-    path("assessments/published/", PublishedAssessmentsView.as_view({"get": "list"})),
+    path(
+        "assessments/by-locality/",
+        AssessmentsView.as_view({"get": "get_or_create"}),
+        name="create-assessment",
+    ),
     path(
         "questionnaire-structure/", QuestionnaireStructureView.as_view({"get": "list"})
     ),
@@ -165,10 +154,6 @@ urlpatterns = [
     path("definitions/", DefinitionView.as_view({"get": "list"})),
     path("definitions/<int:pk>/", DefinitionView.as_view({"get": "retrieve"})),
     path("roles/", RoleView.as_view({"get": "list"})),
-    path(
-        "participations/current/",
-        CurrentParticipationView.as_view(),
-    ),
     path("", include(router.urls)),
     path(
         "representativity-criterias/",
@@ -199,11 +184,22 @@ urlpatterns = [
         WorkshopParticipationView.as_view({"post": "create"}),
     ),
     path(
+        "workshops/participation/<int:pk>/",
+        WorkshopParticipationView.as_view({"delete": "destroy"}),
+    ),
+    path(
         "workshops/<int:workshop_pk>/participation/<int:participation_pk>/response/",
         WorkshopParticipationResponseView.as_view({"post": "create"}),
     ),
     path(
         "workshops/<int:workshop_pk>/closed/",
         CloseWorkshopView.as_view(),
+    ),
+    path(
+        "trainings/",
+        ListAPIView.as_view(
+            queryset=Training.objects.all(), serializer_class=TrainingSerializer
+        ),
+        name="traning-list",
     ),
 ]

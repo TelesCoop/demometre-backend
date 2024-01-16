@@ -26,6 +26,7 @@ RESPONSE_FIELDS = [
     "multiple_choice_response_ids",
     "boolean_response",
     "percentage_response",
+    "number_response",
     "closed_with_scale_response_categories",
 ]
 OPTIONAL_RESPONSE_FIELDS = [
@@ -85,9 +86,8 @@ class ParticipationSerializer(serializers.ModelSerializer):
             "is_profiling_questions_completed",
             "is_pillar_questions_completed",
             "profile_ids",
-            "is_current",
         ]
-        read_only_fields = ["is_profiling_questions_completed", "is_current"]
+        read_only_fields = ["is_profiling_questions_completed"]
 
 
 class ClosedWithScaleCategoryResponseSerializer(serializers.ModelSerializer):

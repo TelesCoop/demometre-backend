@@ -52,6 +52,27 @@ class QuestionType(models.TextChoices):
     CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
     BOOLEAN = "boolean", "Binaire oui / non"
     PERCENTAGE = "percentage", "Pourcentage"
+    NUMBER = "number", "Nombre"
+
+
+class QuestionObjectivity(models.TextChoices):
+    OBJECTIVE = "objective", "Objective"
+    SUBJECTIVE = "subjective", "Subjective"
+
+
+class QuestionMethod(models.TextChoices):
+    QUANTITATIVE = "quantitative", "Quantitative"
+    QUALITATIVE = "qualitative", "Qualitative"
+
+
+QUESTION_TYPE_WITH_SCORE = [
+    QuestionType.BOOLEAN,
+    QuestionType.UNIQUE_CHOICE,
+    QuestionType.MULTIPLE_CHOICE,
+    QuestionType.PERCENTAGE,
+    QuestionType.NUMBER,
+    QuestionType.CLOSED_WITH_SCALE,
+]
 
 
 class SerializerContext:

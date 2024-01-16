@@ -1,14 +1,16 @@
 import re
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import mixins, viewsets, status
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response as RestResponse
 from rest_framework.exceptions import APIException
 from my_auth.models import User
 from open_democracy_back.exceptions import ErrorCode
 from open_democracy_back.mixins.update_or_create_mixin import UpdateOrCreateModelMixin
+from open_democracy_back.models import Assessment
 
 from open_democracy_back.models.animator_models import Participant, Workshop
 from open_democracy_back.models.participation_models import (
@@ -29,19 +31,41 @@ class WorkshopView(
     mixins.ListModelMixin,
     UpdateOrCreateModelMixin,
     mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = WorkshopSerializer
 
     def get_queryset(self) -> QuerySet:
         return Workshop.objects.filter(
-            animator_id=self.request.user.id,
-            assessment__royalty_payed=True,
+            Q(animator_id=self.request.user.id),
+            Q(
+                assessment__in=Assessment.objects.filter_has_details(
+                    self.request.user.id
+                )
+            ),
         )
 
     def get_or_update_object(self, request):
         return self.get_queryset().get(
             id=request.data.get("id"),
+        )
+
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="by-assessment/(?P<assessment_id>.*)",
+    )
+    def for_assessment(self, request, assessment_id):
+        assessments = Assessment.objects.filter_has_details(request.user.id).filter(
+            pk=assessment_id
+        )
+        workshops = Workshop.objects.filter(assessment__in=assessments)
+        return RestResponse(
+            status=200,
+            data=self.serializer_class(
+                workshops, many=True, context=self.get_serializer_context()
+            ).data,
         )
 
 
@@ -58,49 +82,69 @@ class FullWorkshopView(
 
 
 class WorkshopParticipationView(
-    mixins.ListModelMixin,
-    UpdateOrCreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.CreateModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsWorkshopExpert]
     serializer_class = WorkshopParticipationWithProfilingResponsesSerializer
 
-    def get_queryset(self, workshop_pk) -> QuerySet:
-        return Participation.objects.filter(
-            workshop__animator_id=self.request.user.id, workshop_id=workshop_pk
+    def get_queryset(self) -> QuerySet:
+        qs = Participation.objects.filter(
+            Q(workshop__animator_id=self.request.user.id)
+            | Q(
+                workshop__assessment__in=Assessment.objects.filter_has_details(
+                    self.request.user.id
+                )
+            )
         )
+        if self.action == "create":
+            return qs.filter(workshop_id=self.request.data["workshop_id"])
+        return qs
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():
             # Create or update a workshop participation with all its profiling responses
 
             # 1 - Retrieve Participant if exists or create new one
-            email = request.data["participant_email"]
+            email = request.data["participant_email"] or None
             name = request.data["participant_name"]
             try:
-                if "id" in request.data.keys():
-                    participationId = request.data["id"]
-                    participant = Participation.objects.get(
-                        id=participationId
-                    ).participant
-                else:
-                    participant = Participant.objects.get(name=name)
+                participation_id = request.data.get("id")
+                participation = self.get_queryset().get(id=participation_id)
+                participant = participation.participant
                 participant.name = name
                 participant.email = email
+                if medium := request.data.get("medium"):
+                    participation.medium = medium
                 participant.save()
             except ObjectDoesNotExist:
-                participant = Participant.objects.create(name=name, email=email)
-            # Add participant_id in data dict before create or update participation
-            request.data["participant_id"] = participant.id
+                # raise when we already have this participant email in this workshop
+                if (
+                    email
+                    and self.get_queryset().filter(participant__email=email).exists()
+                ):
+                    raise APIException(
+                        "Participant already exists for this workshop",
+                        code=ErrorCode.PARTICIPANT_ALREADY_EXISTS,
+                    )
+                participant, new = Participant.objects.filter(
+                    email__isnull=False
+                ).update_or_create(email=email, defaults={"name": name})
+                participation = Participation.objects.get_or_create(
+                    participant_id=participant.id,
+                    workshop_id=request.data["workshop_id"],
+                    assessment_id=request.data["assessment_id"],
+                    medium=request.data.get("medium"),
+                )[0]
 
-            # 2 - Pop responses from data before create or update participation (Otherwise serializer will reject it)
+            # 2 - Update role of participant
+            participation.role_id = request.data["role_id"]
+            participation.save()
+
+            # 3 - Pop responses from data before create or update participation (Otherwise serializer will reject it)
             responses_data = []
             if "responses" in request.data.keys():
                 responses_data = request.data.pop("responses")
-
-            # 3 - Create or update participation
-            response = super().create(request, *args, **kwargs)
-            participation = Participation.objects.get(id=response.data["id"])
 
             # 4 - Create or update all profiling responses of participation
             for item in responses_data:
@@ -118,16 +162,11 @@ class WorkshopParticipationView(
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
 
-            # 5 - Update htmlResponse data to respond with all participation responses data
-            response.data = WorkshopParticipationWithProfilingResponsesSerializer(
-                participation
-            ).data
-            return response
-
-    def get_or_update_object(self, request, workshop_pk):
-        return self.get_queryset(workshop_pk).get(
-            id=request.data.get("id"),
-        )
+            return RestResponse(
+                WorkshopParticipationWithProfilingResponsesSerializer(
+                    participation
+                ).data
+            )
 
 
 class WorkshopParticipationResponseView(

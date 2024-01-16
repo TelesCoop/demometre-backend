@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 import operator
 
-from django.db import transaction
 from django.utils import timezone
 from django.db.models import QuerySet
 from rest_framework import mixins, viewsets, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response as RestResponse
@@ -25,7 +26,7 @@ from open_democracy_back.serializers.participation_serializers import (
     ParticipationSerializer,
     ParticipationResponseSerializer,
 )
-from open_democracy_back.utils import SerializerContext
+from open_democracy_back.utils import SerializerContext, QuestionType
 
 NUMERICAL_OPERATOR_CONVERSION = {
     "<": operator.lt,
@@ -70,11 +71,19 @@ class PercentageStrategy(QuestionStrategy):
         )
 
 
+class NumberStrategy(QuestionStrategy):
+    def does_respect_rule(self, rule: ProfileDefinition, response: Response):
+        return NUMERICAL_OPERATOR_CONVERSION[rule.numerical_operator](
+            response.number_response, rule.float_value
+        )
+
+
 RULES_STRATEGY = {
-    "unique_choice": UniqueChoiceStrategy(),
-    "multiple_choice": MultipleChoiceStrategy(),
-    "boolean": BooleanStrategy(),
-    "percentage": PercentageStrategy(),
+    QuestionType.UNIQUE_CHOICE.value: UniqueChoiceStrategy(),  # type: ignore
+    QuestionType.MULTIPLE_CHOICE.value: MultipleChoiceStrategy(),  # type: ignore
+    QuestionType.BOOLEAN.value: BooleanStrategy(),  # type: ignore
+    QuestionType.PERCENTAGE.value: PercentageStrategy(),  # type: ignore
+    QuestionType.NUMBER.value: NumberStrategy(),  # type: ignore
 }
 
 
@@ -144,51 +153,19 @@ class ParticipationView(
             assessment_id=request.data.get("assessment_id"),
         )
 
-    def perform_create(self, serializer):
-        with transaction.atomic():
-            Participation.objects.filter_available(
-                self.request.user.id,
-                timezone.now(),
-            ).update(is_current=False)
-            serializer.save()
-
-
-class CurrentParticipationView(SerializerContext, APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self) -> QuerySet:
-        return Participation.objects.filter_available(
-            self.request.user.id,
-            timezone.now(),
-        )
-
-    def get(self, request):
-        queryset = self.get_queryset()
-        instance = queryset.filter_current().first()
-        if not instance:
-            instance = queryset.first()
-        if instance:
-            instance.is_current = True
-            instance.save()
-        serializer = ParticipationSerializer(
-            instance, context=self.get_serializer_context()
-        )
-        return RestResponse(serializer.data)
-
-    def post(self, request):
-        instance = self.get_queryset().get(id=request.data["id"])
-
-        Participation.objects.filter_available(
-            self.request.user.id,
-            timezone.now(),
-        ).update(is_current=False)
-        instance.is_current = True
-        instance.save()
-
-        serializer = ParticipationSerializer(
-            instance, context=self.get_serializer_context()
-        )
-        return RestResponse(serializer.data)
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="by-assessment/(?P<assessment_id>.*)",
+    )
+    def by_assessment(self, request, assessment_id=None):
+        try:
+            instance = Participation.objects.get(
+                assessment__id=assessment_id, user=request.user
+            )
+        except Participation.DoesNotExist:
+            raise NotFound()
+        return RestResponse(self.get_serializer_class()(instance).data)
 
 
 class ParticipationResponseView(UpdateOrCreateModelMixin, viewsets.GenericViewSet):
@@ -196,7 +173,6 @@ class ParticipationResponseView(UpdateOrCreateModelMixin, viewsets.GenericViewSe
     serializer_class = ParticipationResponseSerializer
 
     def get_queryset(self):
-        # TODO check if it create error to save non-current participation response
         query = ParticipationResponse.objects.filter(
             participation__in=Participation.objects.filter_available(
                 self.request.user.id, timezone.now()
@@ -216,22 +192,24 @@ class ParticipationResponseView(UpdateOrCreateModelMixin, viewsets.GenericViewSe
             question_id=request.data.get("question_id"),
         )
 
-
-class CurrentParticipationResponseView(mixins.ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [IsAuthenticated]
-    serializer_class = ParticipationResponseSerializer
-
-    def get_queryset(self):
-        query = ParticipationResponse.objects.filter(
-            participation__in=Participation.objects.filter_current_available(
-                self.request.user.id, timezone.now()
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="by-assessment/(?P<assessment_id>.*)",
+    )
+    def by_assessment(self, request, assessment_id=None):
+        try:
+            participation = Participation.objects.get(
+                assessment_id=assessment_id, user=request.user
             )
-        )
+        except Participation.DoesNotExist:
+            raise NotFound()
+        query = ParticipationResponse.objects.filter(participation=participation)
         context = self.request.query_params.get("context")
         if context:
             is_profiling_question = context == "profiling"
             query = query.filter(question__profiling_question=is_profiling_question)
-        return query
+        return RestResponse(self.get_serializer_class()(query, many=True).data)
 
 
 class CompletedQuestionsParticipationView(SerializerContext, APIView):

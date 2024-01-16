@@ -1,16 +1,25 @@
 from collections import defaultdict
-from typing import TypedDict, List, DefaultDict, Dict, Callable, Any
+from typing import TypedDict, List, DefaultDict, Dict, Callable, Any, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from django.db.models import Case, When, Value, IntegerField, Avg, FloatField, Max
+from django.db.models import (
+    Case,
+    When,
+    Value,
+    IntegerField,
+    Avg,
+    FloatField,
+    Max,
+)
 
 from open_democracy_back.models import (
     SCORE_MAP,
     ParticipationResponse,
     AssessmentResponse,
+    Question,
 )
-from open_democracy_back.utils import QuestionType
+from open_democracy_back.utils import QuestionType, QUESTION_TYPE_WITH_SCORE
 
 
 class QuestionScore(TypedDict):
@@ -141,63 +150,42 @@ def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
 
 
 def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
-    percentage_responses = (
+    average_values_of_questions = (
         queryset.filter(question__type=QuestionType.PERCENTAGE)
         .exclude(percentage_response=None)
-        .prefetch_related("question__percentage_ranges", "question__criteria__marker")
+        .values("question_id")
+        .annotate(avg_value=Avg("percentage_response"))
     )
+    question_ids = [item["question_id"] for item in average_values_of_questions]
+    questions = Question.objects.filter(id__in=question_ids).prefetch_related(
+        "criteria__marker", "percentage_ranges"
+    )
+    question_by_ids = {question.id: question for question in questions}
 
-    percentage_scores_dict: DefaultDict[str, QuestionScoreAverage] = defaultdict(
-        lambda: QuestionScoreAverage(
-            score=0,
-            count=0,
-            question__criteria_id=-1,
-            question__criteria__marker_id=-1,
-            question__criteria__marker__pillar_id=-1,
-        ),
-        {},
-    )
-    for response in percentage_responses:
+    result: List[QuestionScore] = []
+
+    for item in average_values_of_questions:
+        question = question_by_ids[item["question_id"]]
         score = None
-        for percentage_range in response.question.percentage_ranges.all():
+        for percentage_range in question.percentage_ranges.all():
             if (
                 percentage_range.lower_bound
-                <= response.percentage_response
+                <= item["avg_value"]
                 <= percentage_range.upper_bound
             ):
                 score = percentage_range.linearized_score
                 break
+
         if score is None:
             continue
 
-        percentage_scores_dict[response.question_id]["score"] += score
-        percentage_scores_dict[response.question_id]["count"] += 1
-        percentage_scores_dict[response.question_id][
-            "question__criteria_id"
-        ] = response.question.criteria_id
-        percentage_scores_dict[response.question_id][
-            "question__criteria__marker_id"
-        ] = response.question.criteria.marker_id
-        percentage_scores_dict[response.question_id][
-            "question__criteria__marker__pillar_id"
-        ] = response.question.criteria.marker.pillar_id
-
-    result: List[QuestionScore] = []
-    for key in percentage_scores_dict:
         result.append(
             QuestionScore(
-                question_id=key,
-                score=percentage_scores_dict[key]["score"]
-                / percentage_scores_dict[key]["count"],
-                question__criteria_id=percentage_scores_dict[key][
-                    "question__criteria_id"
-                ],
-                question__criteria__marker_id=percentage_scores_dict[key][
-                    "question__criteria__marker_id"
-                ],
-                question__criteria__marker__pillar_id=percentage_scores_dict[key][
-                    "question__criteria__marker__pillar_id"
-                ],
+                question_id=question.id,
+                score=score,
+                question__criteria_id=question.criteria_id,
+                question__criteria__marker_id=question.criteria.marker_id,
+                question__criteria__marker__pillar_id=question.criteria.marker.pillar_id,
             )
         )
     return result
@@ -268,12 +256,86 @@ def get_score_of_closed_with_scale_question(queryset) -> List[QuestionScore]:
     return result
 
 
+def get_lower_and_upper_bound(
+    lower_bound: Union[float, None], upper_bound: Union[float, None]
+) -> Tuple[float, float]:
+    if lower_bound is None:
+        lower_bound = float("-inf")
+    if upper_bound is None:
+        upper_bound = float("inf")
+    return lower_bound, upper_bound
+
+
+def get_score_of_number_question(queryset) -> List[QuestionScore]:
+    number_responses = (
+        queryset.filter(question__type=QuestionType.NUMBER)
+        .exclude(number_response=None)
+        .prefetch_related("question__number_ranges", "question__criteria__marker")
+    )
+
+    scores_dict: DefaultDict[str, QuestionScoreAverage] = defaultdict(
+        lambda: QuestionScoreAverage(
+            score=0,
+            count=0,
+            question__criteria_id=-1,
+            question__criteria__marker_id=-1,
+            question__criteria__marker__pillar_id=-1,
+        ),
+        {},
+    )
+    for response in number_responses:
+        score = None
+        # get the score of the first matching number range
+        for number_range in response.question.number_ranges.all():
+            lower_bound, upper_bound = get_lower_and_upper_bound(
+                number_range.lower_bound, number_range.upper_bound
+            )
+            if lower_bound <= response.number_response <= upper_bound:
+                score = number_range.linearized_score
+                break
+
+        # if no matching number range was found, skip this response
+        # TODO: maybe we should improve admin validations to avoid this case
+        if score is None:
+            continue
+
+        scores_dict[response.question_id]["score"] += score
+        scores_dict[response.question_id]["count"] += 1
+        scores_dict[response.question_id][
+            "question__criteria_id"
+        ] = response.question.criteria_id
+        scores_dict[response.question_id][
+            "question__criteria__marker_id"
+        ] = response.question.criteria.marker_id
+        scores_dict[response.question_id][
+            "question__criteria__marker__pillar_id"
+        ] = response.question.criteria.marker.pillar_id
+
+    result: List[QuestionScore] = []
+    for key in scores_dict:
+        result.append(
+            QuestionScore(
+                question_id=key,
+                score=scores_dict[key]["score"] / scores_dict[key]["count"],
+                question__criteria_id=scores_dict[key]["question__criteria_id"],
+                question__criteria__marker_id=scores_dict[key][
+                    "question__criteria__marker_id"
+                ],
+                question__criteria__marker__pillar_id=scores_dict[key][
+                    "question__criteria__marker__pillar_id"
+                ],
+            )
+        )
+    return result
+
+
 SCORES_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
     QuestionType.BOOLEAN.value: get_score_of_boolean_question,  # type: ignore
     QuestionType.UNIQUE_CHOICE.value: get_score_of_unique_choice_question,  # type: ignore
     QuestionType.MULTIPLE_CHOICE.value: get_score_of_multiple_choice_question,  # type: ignore
     QuestionType.PERCENTAGE.value: get_score_of_percentage_question,  # type: ignore
     QuestionType.CLOSED_WITH_SCALE.value: get_score_of_closed_with_scale_question,  # type: ignore
+    QuestionType.NUMBER.value: get_score_of_number_question,  # type: ignore
 }
 
 
@@ -311,20 +373,13 @@ def get_pillars_score_by_markers_score(
 
 def get_scores_by_assessment_pk(assessment_pk: int) -> Dict[str, Dict[str, float]]:
     # We ignore responses of question that have not criterias
-    participation_responses = (
-        ParticipationResponse.objects.filter(
-            participation__user__is_unknown_user=False,
-            participation__assessment_id=assessment_pk,
-            question__profiling_question=False,
-        )
-        .exclude(has_passed=True)
-        .exclude(question__criteria=None)
+    participation_responses = ParticipationResponse.objects.accounted_in_assessment(
+        assessment_pk
     )
 
-    assessment_responses = AssessmentResponse.objects.filter(
-        answered_by__is_unknown_user=False,
-        assessment_id=assessment_pk,
-    ).exclude(has_passed=True)
+    assessment_responses = AssessmentResponse.objects.accounted_in_assessment(
+        assessment_pk
+    )
 
     score_by_question_id: Dict[str, float] = {}
     df_dict: Dict[str, List[Any]] = {
@@ -335,16 +390,14 @@ def get_scores_by_assessment_pk(assessment_pk: int) -> Dict[str, Dict[str, float
         "score": [],
         "type": [],
     }
-    for question_type in [
-        QuestionType.BOOLEAN,
-        QuestionType.UNIQUE_CHOICE,
-        QuestionType.MULTIPLE_CHOICE,
-        QuestionType.PERCENTAGE,
-        QuestionType.CLOSED_WITH_SCALE,
-    ]:
-        question_type_scores = SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore
-            participation_responses
-        )
+    for question_type in QUESTION_TYPE_WITH_SCORE:
+        # Skip number question type because we don't want to consider in score until we have to handle subjective number question
+        if question_type == QuestionType.NUMBER:
+            question_type_scores = []
+        else:
+            question_type_scores = SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore
+                participation_responses
+            )
 
         question_type_scores.extend(
             SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore

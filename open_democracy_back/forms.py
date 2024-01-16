@@ -12,6 +12,7 @@ GENERIC_RULE_FIELD = [
     "response_choices",
     "numerical_operator",
     "numerical_value",
+    "float_value",
     "boolean_response",
 ]
 

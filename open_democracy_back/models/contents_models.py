@@ -1,14 +1,16 @@
 import datetime
 
-from django.db import models
 from django import forms
+from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-from wagtail.admin.edit_handlers import FieldPanel, MultiFieldPanel
-from wagtail.images.edit_handlers import ImageChooserPanel
+from django.utils.text import slugify
+from wagtail.admin.panels import FieldPanel, MultiFieldPanel
+from wagtail.fields import StreamField
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
 from open_democracy_back.models.questionnaire_and_profiling_models import Pillar
+from open_democracy_back.models.utils import BODY_FIELD_PARAMS
 
 
 @register_snippet
@@ -37,7 +39,7 @@ class Feedback(index.Indexed, models.Model):
 
     panels = [
         FieldPanel("person_name"),
-        ImageChooserPanel("picture"),
+        FieldPanel("picture"),
         FieldPanel("person_context"),
         FieldPanel("quote", widget=forms.Textarea),
         FieldPanel("external_link"),
@@ -45,7 +47,9 @@ class Feedback(index.Indexed, models.Model):
     ]
 
     search_fields = [
-        index.SearchField("person_name", partial_match=True),
+        index.SearchField(
+            "person_name",
+        ),
     ]
 
     def __str__(self):
@@ -59,40 +63,64 @@ class Feedback(index.Indexed, models.Model):
 class Article(index.Indexed, models.Model):
     image = models.ForeignKey(
         "wagtailimages.Image",
-        verbose_name="Image",
+        verbose_name="Image principale",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="+",
     )
     title = models.CharField(max_length=128, verbose_name="Title")
+    slug = models.CharField(max_length=150, blank=True, null=True)
     publication_date = models.DateTimeField(
         verbose_name="Date de publication",
         default=datetime.datetime.now,
         help_text="Permet de trier l'ordre d'affichage des articles de blog",
     )
     short_description = models.CharField(
-        max_length=1024, blank=True, null=True, verbose_name="Description courte"
+        max_length=1024,
+        blank=True,
+        null=True,
+        verbose_name="Description courte",
+        help_text="Ce texte apparait sur la miniature",
     )
-    external_link = models.CharField(
-        verbose_name="Lien externe", blank=True, null=True, max_length=300
+    content = StreamField(
+        BODY_FIELD_PARAMS,
+        blank=True,
+        verbose_name="Contenu",
+        help_text="Corps de l'article",
+        use_json_field=True,
+    )
+    external_link = models.URLField(
+        verbose_name="Lien externe",
+        blank=True,
+        null=True,
+        max_length=300,
+        help_text="Si ce champ est rempli, le corps de l'article sera ignoré",
     )
     pillars = models.ManyToManyField(
         Pillar, related_name="%(class)ss", blank=True, verbose_name="Piliers concernés"
     )
 
     panels = [
-        FieldPanel("title", widget=forms.Textarea),
-        ImageChooserPanel("image"),
+        FieldPanel("title"),
+        FieldPanel("image"),
         FieldPanel("publication_date"),
         FieldPanel("short_description", widget=forms.Textarea),
+        FieldPanel("content"),
         FieldPanel("external_link"),
         FieldPanel("pillars", widget=forms.CheckboxSelectMultiple),
     ]
 
     search_fields = [
-        index.SearchField("title", partial_match=True),
+        index.SearchField(
+            "title",
+        ),
     ]
+
+    def save(self, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(**kwargs)
 
     def __str__(self):
         return self.title
@@ -140,7 +168,7 @@ class Partner(index.Indexed, models.Model):
         FieldPanel("name"),
         MultiFieldPanel(
             [
-                ImageChooserPanel("logo_image"),
+                FieldPanel("logo_image"),
                 FieldPanel("height"),
             ],
             heading="Logo du partenaire",
@@ -149,7 +177,9 @@ class Partner(index.Indexed, models.Model):
     ]
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -175,13 +205,15 @@ class Person(index.Indexed, models.Model):
     )
 
     panels = [
-        ImageChooserPanel("image"),
+        FieldPanel("image"),
         FieldPanel("name"),
         FieldPanel("job_title"),
     ]
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):

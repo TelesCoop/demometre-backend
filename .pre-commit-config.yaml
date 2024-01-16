@@ -35,13 +35,13 @@ repos:
   rev: v4.0.1
 - hooks:
   - id: check-ast
-    language_version: python3.8
+    language_version: python3.10
   - id: check-builtin-literals
-    language_version: python3.8
+    language_version: python3.10
   - id: check-docstring-first
-    language_version: python3.8
+    language_version: python3.10
   - id: debug-statements
-    language_version: python3.8
+    language_version: python3.10
   - args:
     - --remove
     id: fix-encoding-pragma
@@ -54,24 +54,25 @@ repos:
   rev: v2.29.0
 - hooks:
   - id: black
-    language_version: python3.8
+    language_version: python3.10
   repo: https://github.com/ambv/black
   rev: 22.3.0
 - hooks:
   - args:
     - --config=.flake8
     id: flake8
-    language_version: python3.8
-  repo: https://gitlab.com/pycqa/flake8
+    language_version: python3.10
+  repo: https://github.com/PyCQA/flake8
   rev: 3.9.2
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v0.910-1'  # Use the sha / tag you want to point at
-    hooks:
-    -   id: mypy
+#-   repo: https://github.com/pre-commit/mirrors-mypy
+#    rev: 'v1.5.1'  # Use the sha / tag you want to point at
+#    hooks:
+#    -   id: mypy
+#    language_version: python3.10
 - hooks:
   - id: python-safety-dependencies-check
   repo: https://github.com/Lucas-C/pre-commit-hooks-safety
-  rev: v1.2.2
+  rev: v1.3.1
 - hooks:
   - id: beautysh
   repo: https://github.com/bemeurer/beautysh.git

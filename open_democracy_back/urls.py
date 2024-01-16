@@ -11,11 +11,12 @@ from .wagtail_api import api_router
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("api/cms/", api_router.urls),
-    path("api/auth/", include("my_auth.urls")),
+    path("api/auth/", include("my_auth.urls", namespace="auth")),
     path("api/", include("open_democracy_back.api_urls")),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
     path("backup/", include("telescoop_backup.urls")),
+    path("hijack/", include("hijack.urls")),
 ]
 
 

@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Dict, Callable
 
 from django.db.models import Count, Avg, Q, F
+from rest_framework.exceptions import ValidationError
 
 from open_democracy_back.models import (
     ResponseChoice,
@@ -73,14 +74,10 @@ def get_chart_data_of_choice_question(question, assessment_id, choice_type):
         base_count = f"{choice_type}_assessmentresponses"
         role_count = base_count
         base_queryset = get_chart_data_objective_queryset(assessment_id, base_count)
-        root_queryset = get_chart_data_objective_queryset(assessment_id)
-        model = AssessmentResponse
     else:
         base_count = f"{choice_type}_participationresponses"
         role_count = f"{base_count}__participation__role__name"
         base_queryset = get_chart_data_subjective_queryset(assessment_id, base_count)
-        root_queryset = get_chart_data_subjective_queryset(assessment_id)
-        model = ParticipationResponse
 
     response_choices = ResponseChoice.objects.filter(question_id=question.id).annotate(
         count=Count(base_count, filter=Q(**base_queryset)),
@@ -101,9 +98,12 @@ def get_chart_data_of_choice_question(question, assessment_id, choice_type):
             "value": response_choice.count_by_role,
         }
 
-    data["count"] = model.objects.filter(
-        **root_queryset, question_id=question.id
-    ).count()
+    # count is not the number of answers, because an answer can count multiple times
+    # if answered for multiple profiles
+    count = 0
+    for pk, details in data["value"].items():
+        count += details["value"]
+    data["count"] = count
     return data
 
 
@@ -205,10 +205,24 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
     return data
 
 
+def get_chart_data_of_number_question(question, assessment_id):
+    if question.objectivity != "objective":
+        raise ValidationError("Number question must be objective.")
+    base_queryset = get_chart_data_objective_queryset(assessment_id)
+    model = AssessmentResponse
+
+    result = model.objects.filter(**base_queryset).get(question_id=question.id)
+
+    return {
+        "value": result.number_response,
+    }
+
+
 CHART_DATA_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
     QuestionType.BOOLEAN.value: get_chart_data_of_boolean_question,  # type: ignore
     QuestionType.UNIQUE_CHOICE.value: get_chart_data_of_unique_choice_question,  # type: ignore
     QuestionType.MULTIPLE_CHOICE.value: get_chart_data_of_multiple_choice_question,  # type: ignore
     QuestionType.PERCENTAGE.value: get_chart_data_of_percentage_question,  # type: ignore
     QuestionType.CLOSED_WITH_SCALE.value: get_chart_data_of_closed_with_scale_question,  # type: ignore
+    QuestionType.NUMBER.value: get_chart_data_of_number_question,  # type: ignore
 }

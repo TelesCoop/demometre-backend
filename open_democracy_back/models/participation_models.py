@@ -20,12 +20,6 @@ class ParticipationQuerySet(models.QuerySet):
             assessment__initialization_date__lte=date,
         )
 
-    def filter_current(self):
-        return self.filter(is_current=True)
-
-    def filter_current_available(self, user_id, date):
-        return self.filter_available(user_id, date).filter_current()
-
 
 class Participation(models.Model):
     participant = models.ForeignKey(
@@ -43,7 +37,6 @@ class Participation(models.Model):
         null=True,
     )
 
-    is_current = models.BooleanField(default=True)
     assessment = models.ForeignKey(
         "open_democracy_back.Assessment",
         on_delete=models.CASCADE,
@@ -55,6 +48,12 @@ class Participation(models.Model):
         blank=True,
         null=True,
         related_name="participations",
+    )
+    medium = models.CharField(
+        verbose_name="Support de réponse",
+        choices=[("online", "en ligne"), ("paper", "papier")],
+        max_length=6,
+        default="online",
     )
     profiles = models.ManyToManyField(ProfileType, related_name="participations")
     consent = models.BooleanField(default=False)
@@ -117,9 +116,24 @@ class Response(models.Model):
     percentage_response = models.IntegerField(
         blank=True, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
+    number_response = models.FloatField(blank=True, null=True)
 
     class Meta:
         abstract = True
+
+
+class ParticipationResponseQuerySet(models.QuerySet):
+    def accounted_in_assessment(self, assessment_pk):
+        # filter responses to include only those from target assessment and ignore those from anonymous users and passed responses.
+        return (
+            self.filter(
+                participation__user__is_unknown_user=False,
+                participation__assessment_id=assessment_pk,
+                question__profiling_question=False,
+            )
+            .exclude(has_passed=True)
+            .exclude(question__criteria=None)
+        )
 
 
 # All subjective and profiling responses are participation responses
@@ -127,6 +141,8 @@ class ParticipationResponse(Response):
     participation = models.ForeignKey(
         Participation, on_delete=models.CASCADE, related_name="responses"
     )
+
+    objects = ParticipationResponseQuerySet.as_manager()
 
     class Meta:
         unique_together = ["participation", "question"]

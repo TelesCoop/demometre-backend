@@ -13,9 +13,11 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import getconf
+import sys
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
+IS_TEST = sys.argv[1:2] == ["test"]
 
 config = getconf.ConfigGetter(
     "demometre",
@@ -38,8 +40,6 @@ INSTALLED_APPS = [
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.contrib.settings",
-    "wagtail_localize",
-    "wagtail_localize.locales",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "wagtail.images",
     "wagtail.search",
     "wagtail.admin",
-    "wagtail.core",
+    "wagtail",
     "wagtail.api.v2",
     "wagtail.contrib.modeladmin",
     "modelcluster",
@@ -63,6 +63,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "anymail",
     "generic_chooser",
+    "hijack",
+    "hijack.contrib.admin",
 ]
 
 MIDDLEWARE = [
@@ -76,6 +78,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
+    "hijack.middleware.HijackUserMiddleware",
 ]
 
 ROOT_URLCONF = "open_democracy_back.urls"
@@ -224,3 +227,6 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = "my_auth.User"
+
+HIJACK_ALLOW_GET_REQUESTS = True
+LOGIN_REDIRECT_URL = "/"

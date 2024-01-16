@@ -201,6 +201,8 @@ class UsagePageSerializer(PageSerialiserWithLocale):
             "start_assessment_block_intro",
             "start_assessment_block_data",
             "assessment_types_details",
+            "training_block_title",
+            "training_block_intro",
         ]
         read_only_fields = fields
 

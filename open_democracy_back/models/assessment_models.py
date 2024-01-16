@@ -1,20 +1,20 @@
 from django import forms
-from django.utils import timezone
 from django.db import models
-from my_auth.models import User
+from django.db.models import Q
+from django.utils import timezone
 from model_utils.models import TimeStampedModel
-from modelcluster.models import ClusterableModel
 from modelcluster.fields import ParentalKey
-from wagtail.admin.edit_handlers import InlinePanel, FieldPanel
-from wagtail.snippets.edit_handlers import SnippetChooserPanel
-from wagtail.documents.edit_handlers import DocumentChooserPanel
+from modelcluster.models import ClusterableModel
+from wagtail.admin.panels import InlinePanel, FieldPanel
 from wagtail.documents.models import Document
-
-from wagtail.core.models import Orderable
+from wagtail.models import Orderable
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
+from my_auth.models import User
+from open_democracy_back.constants import ASSESSMENT_DOCUMENT_CATEGORIES_CHOICES
 from open_democracy_back.models.participation_models import Response
+from open_democracy_back.models.utils import FrontendRichText
 from open_democracy_back.utils import InitiatorType, LocalityType, ManagedAssessmentType
 
 
@@ -24,7 +24,9 @@ class Region(index.Indexed, models.Model):
     name = models.CharField(max_length=64, verbose_name="Nom")
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -44,7 +46,9 @@ class Department(index.Indexed, models.Model):
     )
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -76,7 +80,9 @@ class Municipality(index.Indexed, ClusterableModel):
     ]
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -118,7 +124,9 @@ class EPCI(index.Indexed, ClusterableModel):
     ]
 
     search_fields = [
-        index.SearchField("name", partial_match=True),
+        index.SearchField(
+            "name",
+        ),
     ]
 
     def __str__(self):
@@ -137,7 +145,7 @@ class MunicipalityOrderByEPCI(Orderable):
         Municipality, on_delete=models.CASCADE, verbose_name="Commune"
     )
     panels = [
-        SnippetChooserPanel("municipality"),
+        FieldPanel("municipality"),
     ]
 
 
@@ -176,7 +184,7 @@ class AssessmentType(models.Model):
         FieldPanel("for_what", widget=forms.Textarea),
         FieldPanel("results", widget=forms.Textarea),
         FieldPanel("price", widget=forms.Textarea),
-        DocumentChooserPanel("pdf"),
+        FieldPanel("pdf"),
     ]
 
     def __str__(self):
@@ -185,6 +193,13 @@ class AssessmentType(models.Model):
     class Meta:
         verbose_name = "Type d'évaluation"
         verbose_name_plural = "Types d'évaluation"
+
+
+class AssessmentQueryset(models.QuerySet):
+    def filter_has_details(self, user_id):
+        return self.filter(
+            Q(initiated_by_user_id=user_id) | Q(experts__id=user_id)
+        ).distinct()
 
 
 @register_snippet
@@ -196,25 +211,22 @@ class Assessment(TimeStampedModel, ClusterableModel):
         on_delete=models.SET_NULL,
         verbose_name="Type d'évaluation",
     )
-    locality_type = models.CharField(
-        max_length=32,
-        choices=LocalityType.choices,
-        default=LocalityType.MUNICIPALITY,
-        verbose_name="Type de localité",
-    )
-    municipality = models.ForeignKey(
-        Municipality,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        verbose_name="Commune",
-    )
+    conditions_of_sale_consent = models.BooleanField(default=False)
+    end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
     epci = models.ForeignKey(
         EPCI,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
         verbose_name="Intercommunalité",
+    )
+    experts = models.ManyToManyField(
+        User,
+        blank=True,
+        verbose_name="Experts",
+        related_name="assessments",
+        limit_choices_to={"groups__name": "Experts"},
+        help_text="Pour ajouter un expert à la liste il faut créer / modifier l'utilisateur correspondant, aller dans l'onglet rôles et cocher la case Experts",
     )
     initiated_by_user = models.ForeignKey(
         User,
@@ -226,6 +238,7 @@ class Assessment(TimeStampedModel, ClusterableModel):
         help_text="Si l'évaluation est initié au nom de la localité, quelqu'un peut tout de même être à la source",
     )
     initiator_type = models.CharField(
+        "type d'initilisateur",
         max_length=32,
         choices=InitiatorType.choices,
         blank=True,
@@ -244,22 +257,34 @@ class Assessment(TimeStampedModel, ClusterableModel):
         verbose_name="Date d'initialisation",
         help_text="Si il n'y a pas de date d'initialisation, c'est que le début de l'évaluation n'a pas été confirmée",
     )
-    conditions_of_sale_consent = models.BooleanField(default=False)
     is_initialization_questions_completed = models.BooleanField(default=False)
     last_participation_date = models.DateTimeField(
         default=timezone.now, verbose_name="Date de dernière participation"
     )
-    end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
-
-    experts = models.ManyToManyField(
-        User,
-        blank=True,
-        verbose_name="Experts",
-        related_name="assessments",
-        limit_choices_to={"groups__name": "Experts"},
-        help_text="Pour ajouter un expert à la liste il faut créer / modifier l'utilisateur correspondant, aller dans l'onglet rôles et cocher la case Experts",
+    locality_type = models.CharField(
+        max_length=32,
+        choices=LocalityType.choices,
+        default=LocalityType.MUNICIPALITY,
+        verbose_name="Type de localité",
     )
-    royalty_payed = models.BooleanField(default=False, verbose_name="Redevance payée")
+    municipality = models.ForeignKey(
+        Municipality,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Commune",
+    )
+    name = models.CharField(verbose_name="nom", max_length=80, blank=True, null=True)
+
+    # details
+    context = FrontendRichText(verbose_name="contexte", blank=True, default="")
+    objectives = FrontendRichText(verbose_name="objectifs", blank=True, default="")
+    stakeholders = FrontendRichText(
+        verbose_name="parties prenantes", blank=True, default=""
+    )
+    calendar = FrontendRichText(verbose_name="calendrier", blank=True, default="")
+
+    objects = AssessmentQueryset.as_manager()
 
     @property
     def published_results(self):
@@ -284,26 +309,53 @@ class Assessment(TimeStampedModel, ClusterableModel):
         if self.locality_type == LocalityType.INTERCOMMUNALITY:
             return self.epci.name
 
+    @property
+    def code(self):
+        if self.locality_type == LocalityType.MUNICIPALITY:
+            return self.municipality.code
+        if self.locality_type == LocalityType.INTERCOMMUNALITY:
+            return self.epci.code
+
     panels = [
+        FieldPanel("name"),
         FieldPanel("assessment_type"),
         FieldPanel("experts"),
-        FieldPanel("royalty_payed"),
         FieldPanel("locality_type"),
-        SnippetChooserPanel("municipality"),
-        SnippetChooserPanel("epci"),
+        FieldPanel("municipality"),
+        FieldPanel("epci"),
         FieldPanel("initiated_by_user"),
         FieldPanel("initiator_type"),
         FieldPanel("initialized_to_the_name_of"),
         FieldPanel("initialization_date"),
         FieldPanel("end_date"),
+        FieldPanel("context"),
+        FieldPanel("objectives"),
+        FieldPanel("stakeholders"),
+        FieldPanel("calendar"),
+        InlinePanel("documents", label="documents"),
+        InlinePanel("payment", label="paiement"),
     ]
 
     def __str__(self):
         return f"{self.get_locality_type_display()} {self.municipality if self.locality_type == LocalityType.MUNICIPALITY else self.epci}"
 
+    def save(self, *args, **kwargs):
+        if not self.name:
+            self.name = self.collectivity_name
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = "Évaluation"
         verbose_name_plural = "Évaluations"
+
+
+class AssessmentResponseQuerySet(models.QuerySet):
+    def accounted_in_assessment(self, assessment_pk):
+        # filter responses to include only those from target assessment and ignore those from anonymous users and passed responses
+        return self.filter(
+            answered_by__is_unknown_user=False,
+            assessment_id=assessment_pk,
+        ).exclude(has_passed=True)
 
 
 # All questionnaire objective responses are assessment responses
@@ -315,5 +367,51 @@ class AssessmentResponse(Response):
         User, on_delete=models.SET_NULL, related_name="assessment_responses", null=True
     )
 
+    objects = AssessmentResponseQuerySet.as_manager()
+
     class Meta:
         unique_together = ["assessment", "question"]
+
+
+class AssessmentDocument(TimeStampedModel):
+    assessment = ParentalKey(
+        Assessment, on_delete=models.CASCADE, related_name="documents"
+    )
+    category = models.CharField(
+        verbose_name="catégorie",
+        max_length=20,
+        choices=ASSESSMENT_DOCUMENT_CATEGORIES_CHOICES,
+    )
+    file = models.FileField(verbose_name="fichier")
+    name = models.CharField(verbose_name="nom", max_length=80)
+
+    panels = [
+        FieldPanel("category"),
+        FieldPanel("file"),
+        FieldPanel("name"),
+    ]
+
+
+class AssessmentPayment(TimeStampedModel):
+    assessment = ParentalKey(
+        Assessment, on_delete=models.CASCADE, unique=True, related_name="payment"
+    )
+    author = models.ForeignKey(
+        User,
+        verbose_name="auteur du paiement",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    amount = models.FloatField(verbose_name="montant")
+
+    panels = [
+        FieldPanel("amount"),
+        FieldPanel("author"),
+    ]
+
+    def __str__(self):
+        return (
+            f"assessment id {self.assessment.pk}, amount {self.amount},"
+            f"by {self.author.email}"
+        )

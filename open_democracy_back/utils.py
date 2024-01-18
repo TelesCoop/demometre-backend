@@ -81,3 +81,12 @@ class SerializerContext:
         Extra context provided to the serializer class.
         """
         return {"request": self.request, "format": self.format_kwarg, "view": self}
+
+
+def generate_randon_string_char_and_digits(length):
+    import random
+    import string
+
+    letters_and_digits = string.ascii_letters + string.digits
+    result_str = "".join(random.choice(letters_and_digits) for i in range(length))
+    return result_str

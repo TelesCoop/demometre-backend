@@ -26,12 +26,14 @@ from open_democracy_back.models import (
     Category,
     ClosedWithScaleCategoryResponse,
     NumberRange,
+    Survey,
 )
 from open_democracy_back.utils import (
     QuestionObjectivity,
     QuestionMethod,
     InitiatorType,
     ManagedAssessmentType,
+    QuestionType,
 )
 
 
@@ -53,6 +55,14 @@ class UserFactory(factory.django.DjangoModelFactory):
         self.save()
 
 
+class SurveyFactory(factory.django.DjangoModelFactory):
+    name: str = factory.Faker("name")
+    description: str = factory.Faker("text")
+
+    class Meta:
+        model = Survey
+
+
 class PillarFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Pillar
@@ -60,6 +70,7 @@ class PillarFactory(factory.django.DjangoModelFactory):
     code: str = factory.LazyAttribute(lambda a: str(random.randint(1, 20)))
     name: str = factory.Faker("name")
     description: str = factory.Faker("text")
+    survey = factory.SubFactory(SurveyFactory)
 
 
 class MarkerFactory(factory.django.DjangoModelFactory):
@@ -209,8 +220,8 @@ class NumberRangeFactory(ScoreFactory):
         model = NumberRange
 
     question = factory.SubFactory(QuestionFactory)
-    lower_bound: float = factory.Faker("random_float", min=0, max=100)
-    upper_bound: float = factory.Faker("random_float", min=0, max=100)
+    lower_bound: float = factory.LazyAttribute(lambda o: random.uniform(0.0, 100.0))
+    upper_bound: float = factory.LazyAttribute(lambda o: random.uniform(0.0, 100.0))
 
 
 class ResponseChoiceFactory(ScoreFactory):
@@ -271,3 +282,71 @@ class AssessmentResponseFactory(ResponseFactory):
 
     assessment = factory.SubFactory(AssessmentFactory)
     answered_by = factory.SubFactory(UserFactory)
+
+
+class ChoiceQuestionFactory(QuestionFactory):
+    @factory.post_generation
+    def response_choices(self, create, extracted, **kwargs):
+        if create:
+            if not extracted:
+                ResponseChoiceFactory.create_batch(4, question=self)
+            else:
+                self.response_choices.set(extracted)
+
+
+class UniqueChoiceQuestionFactory(ChoiceQuestionFactory):
+    type = QuestionType.UNIQUE_CHOICE
+
+
+class MultipleChoiceQuestionFactory(ChoiceQuestionFactory):
+    type = QuestionType.MULTIPLE_CHOICE
+
+
+class BooleanQuestionFactory(QuestionFactory):
+    type = QuestionType.BOOLEAN
+
+
+class PercentageQuestionFactory(QuestionFactory):
+    type = QuestionType.PERCENTAGE
+
+    @factory.post_generation
+    def percentage_ranges(self, create, extracted, **kwargs):
+        if create:
+            if not extracted:
+                PercentageRangeFactory.create_batch(4, question=self)
+            else:
+                self.percentage_ranges.set(extracted)
+
+
+class NumberQuestionFactory(QuestionFactory):
+    type = QuestionType.NUMBER
+
+    @factory.post_generation
+    def number_ranges(self, create, extracted, **kwargs):
+        if create:
+            if not extracted:
+                NumberRangeFactory.create_batch(4, question=self)
+            else:
+                self.number_ranges.set(extracted)
+
+
+class ClosedWithScaleQuestionFactory(ChoiceQuestionFactory):
+    type = QuestionType.CLOSED_WITH_SCALE
+
+    @factory.post_generation
+    def categories(self, create, extracted, **kwargs):
+        if create:
+            if not extracted:
+                CategoryFactory.create_batch(4, question=self)
+            else:
+                self.categories.set(extracted)
+
+
+ALL_FACTORY_QUESTION_CLASSES = [
+    UniqueChoiceQuestionFactory,
+    MultipleChoiceQuestionFactory,
+    BooleanQuestionFactory,
+    PercentageQuestionFactory,
+    NumberQuestionFactory,
+    ClosedWithScaleQuestionFactory,
+]

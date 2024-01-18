@@ -1,7 +1,13 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.forms import Textarea
 
-from open_democracy_back.models import QuestionRule, ProfileDefinition, ResponseChoice
+from open_democracy_back.models import (
+    QuestionRule,
+    ProfileDefinition,
+    ResponseChoice,
+    Survey,
+)
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteriaRule,
 )
@@ -74,3 +80,13 @@ class RepresentativityCriteriaRefiningForm(forms.ModelForm):
             "ignore_for_acceptability_threshold",
             "totally_ignore",
         ]
+
+
+class SurveyForm(forms.ModelForm):
+    class Meta:
+        model = Survey
+        fields = ["name", "description"]
+
+        widgets = {
+            "description": Textarea(attrs={"cols": 80, "rows": 20}),
+        }

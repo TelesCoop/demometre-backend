@@ -1,6 +1,10 @@
+from random import randint
+
+from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils.html import format_html_join
 from django.templatetags.static import static
+from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.menu import MenuItem
 from wagtail.contrib.modeladmin.options import (
     ModelAdmin,
@@ -32,6 +36,7 @@ from open_democracy_back.models import (
     EPCI,
     AssessmentDocument,
     Training,
+    Survey,
 )
 
 from wagtail.contrib.modeladmin.helpers import ButtonHelper
@@ -48,6 +53,7 @@ from open_democracy_back.models.participation_models import Participation
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
 )
+from open_democracy_back.utils import generate_randon_string_char_and_digits
 from open_democracy_back.views.custom_admin_views import anomaly
 from open_democracy_back.views.wagtail_rule_views import (
     question_intersection_operator_view,
@@ -57,6 +63,7 @@ from open_democracy_back.views.wagtail_rule_views import (
     profile_definition_view,
     ProfileDefinitionView,
     representativity_criteria_refining_view,
+    duplicates_survey_view,
 )
 
 
@@ -97,6 +104,36 @@ class RulesButtonHelper(ButtonHelper):
         return btns
 
 
+class SurveyButtonHelper(ButtonHelper):
+    # Define classes for our button, here we can set an icon for example
+    view_button_classnames = ["button-small", "icon", "icon-cogs"]
+
+    def view_button(self, obj):
+        # Define a label for our button
+        text = "Dupliquer le questionnaire"
+        url = "/admin/survey/" + str(obj.id) + "/duplicates/"
+        return {
+            "url": url,
+            "label": text,
+            "classname": self.finalise_classname(self.view_button_classnames),
+            "title": text,
+        }
+
+    def get_buttons_for_obj(
+        self, obj, exclude=None, classnames_add=None, classnames_exclude=None
+    ):
+        """
+        This function is used to gather all available buttons.
+        We append our custom button to the btns list.
+        """
+        btns = super().get_buttons_for_obj(
+            obj, exclude, classnames_add, classnames_exclude
+        )
+        if "view" not in (exclude or []):
+            btns.append(self.view_button(obj))
+        return btns
+
+
 @hooks.register("register_snippet_listing_buttons")
 def snippet_listing_buttons(snippet, user, next_url=None):
     if isinstance(snippet, Question):
@@ -115,6 +152,12 @@ def snippet_listing_buttons(snippet, user, next_url=None):
         yield wagtailsnippets_widgets.SnippetListingButton(
             "Affiner le critère de représentativité",
             "/admin/representativity-criteria/" + str(snippet.id) + "/rules/",
+            priority=10,
+        )
+    if isinstance(snippet, Survey):
+        yield wagtailsnippets_widgets.SnippetListingButton(
+            "Dupliquer le questionnaire",
+            "/admin/survey/" + str(snippet.id) + "/duplicates/",
             priority=10,
         )
 
@@ -211,8 +254,18 @@ class DefinitionsModelAdmin(ModelAdmin):
     search_fields = ("word",)
 
 
+class SurveyModelAdmin(ModelAdmin):
+    model = Survey
+    menu_label = "Questionnaire"
+    menu_icon = "folder-inverse"
+    add_to_settings_menu = False
+    search_fields = ("name",)
+    button_helper_class = SurveyButtonHelper
+
+
 class PillarModelAdmin(ModelAdmin):
     model = Pillar
+    list_filter = ["survey__name"]
     menu_label = "Pilier"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
@@ -275,6 +328,7 @@ class SurveyAdminGroup(ModelAdminGroup):
     menu_order = 206
     menu_icon = "list-ol"
     items = (
+        SurveyModelAdmin,
         PillarModelAdmin,
         MarkerModelAdmin,
         CriteriaModelAdmin,
@@ -519,6 +573,11 @@ def register_custom_admin_views():
         ),
         # Anomaly
         path("anomaly/", anomaly, name="anomaly"),
+        path(
+            "survey/<int:pk>/duplicates/",
+            duplicates_survey_view,
+            name="duplicates-survey",
+        ),
     ]
 
 

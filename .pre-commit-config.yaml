@@ -7,7 +7,7 @@ repos:
   - id: check-merge-conflict
   - id: forbid-new-submodules
   repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.5.0
 - hooks:
   - id: check-byte-order-marker
   - id: check-case-conflict
@@ -18,21 +18,21 @@ repos:
   - id: end-of-file-fixer
   - id: trailing-whitespace
   repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.5.0
 - hooks:
   - id: forbid-crlf
   - id: remove-crlf
   - id: forbid-tabs
   - id: remove-tabs
   repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.1.10
+  rev: v1.5.4
 - hooks:
   - id: check-json
   - args:
     - --autofix
     id: pretty-format-json
   repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.5.0
 - hooks:
   - id: check-ast
     language_version: python3.10
@@ -47,23 +47,23 @@ repos:
     id: fix-encoding-pragma
   - id: requirements-txt-fixer
   repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.5.0
 - hooks:
   - id: pyupgrade
   repo: https://github.com/asottile/pyupgrade
-  rev: v2.29.0
+  rev: v3.15.0
 - hooks:
   - id: black
     language_version: python3.10
   repo: https://github.com/ambv/black
-  rev: 22.3.0
+  rev: 23.12.1
 - hooks:
   - args:
     - --config=.flake8
     id: flake8
     language_version: python3.10
   repo: https://github.com/PyCQA/flake8
-  rev: 3.9.2
+  rev: 7.0.0
 #-   repo: https://github.com/pre-commit/mirrors-mypy
 #    rev: 'v1.5.1'  # Use the sha / tag you want to point at
 #    hooks:
@@ -72,7 +72,7 @@ repos:
 - hooks:
   - id: python-safety-dependencies-check
   repo: https://github.com/Lucas-C/pre-commit-hooks-safety
-  rev: v1.3.1
+  rev: v1.3.2
 - hooks:
   - id: beautysh
   repo: https://github.com/bemeurer/beautysh.git
@@ -80,23 +80,23 @@ repos:
 - hooks:
   - id: script-must-have-extension
   repo: https://github.com/jumanjihouse/pre-commit-hooks
-  rev: 2.1.5
+  rev: 3.0.0
 - hooks:
   - id: check-xml
   repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.5.0
 - hooks:
   - args:
     - '-d {rules: {line-length: {max: 999}}}'
     id: yamllint
   repo: https://github.com/adrienverge/yamllint.git
-  rev: v1.26.3
+  rev: v1.33.0
 - hooks:
   - id: check-yaml
   - id: sort-simple-yaml
   repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.5.0
 - hooks:
   - id: gitlab-ci-linter
   repo: https://gitlab.com/devopshq/gitlab-ci-linter
-  rev: v1.0.2
+  rev: v1.0.6

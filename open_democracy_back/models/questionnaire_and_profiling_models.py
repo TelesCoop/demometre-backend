@@ -172,6 +172,7 @@ class Pillar(models.Model):
     panels = [
         FieldPanel("code"),
         FieldPanel("description"),
+        FieldPanel("survey"),
     ]
 
     def __str__(self):

@@ -1,10 +1,6 @@
-from random import randint
-
-from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils.html import format_html_join
 from django.templatetags.static import static
-from wagtail.admin.action_menu import ActionMenuItem
 from wagtail.admin.menu import MenuItem
 from wagtail.contrib.modeladmin.options import (
     ModelAdmin,
@@ -53,7 +49,6 @@ from open_democracy_back.models.participation_models import Participation
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
 )
-from open_democracy_back.utils import generate_randon_string_char_and_digits
 from open_democracy_back.views.custom_admin_views import anomaly
 from open_democracy_back.views.wagtail_rule_views import (
     question_intersection_operator_view,
@@ -277,7 +272,10 @@ class MarkerModelAdmin(ModelAdmin):
     menu_label = "Marqueur"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_filter = ["pillar__name"]
+    list_filter = [
+        "pillar__survey__name",
+        "pillar__name",
+    ]
     search_fields = ("name", "concatenated_code", "pillar__name")
     ordering = ("concatenated_code",)
 
@@ -287,7 +285,7 @@ class CriteriaModelAdmin(ModelAdmin):
     menu_label = "Critère"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_filter = ["marker__pillar__name"]
+    list_filter = ["marker__pillar__survey__name", "marker__pillar__name"]
     search_fields = (
         "name",
         "concatenated_code",
@@ -305,6 +303,7 @@ class QuestionnaireQuestionModelAdmin(ModelAdmin):
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
     list_filter = [
+        "criteria__marker__pillar__survey__name",
         "criteria__marker__pillar__name",
         "objectivity",
         "roles",

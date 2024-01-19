@@ -6,6 +6,13 @@ import django.utils.timezone
 import model_utils.fields
 import wagtail.fields
 
+def add_default_survey(apps, _):
+    Survey = apps.get_model('open_democracy_back', 'Survey')
+    survey = Survey.objects.create(name='Questionnaire DémoMètre', description='Questionnaire historique du DémoMètre', is_active=True)
+    survey.save()
+
+    Pillar = apps.get_model('open_democracy_back', 'Pillar')
+    Pillar.objects.all().update(survey=survey)
 
 class Migration(migrations.Migration):
 
@@ -43,4 +50,5 @@ class Migration(migrations.Migration):
             name='survey',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='pillars', to='open_democracy_back.survey'),
         ),
+        migrations.RunPython(add_default_survey, migrations.RunPython.noop),
     ]

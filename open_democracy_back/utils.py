@@ -90,3 +90,10 @@ def generate_randon_string_char_and_digits(length):
     letters_and_digits = string.ascii_letters + string.digits
     result_str = "".join(random.choice(letters_and_digits) for i in range(length))
     return result_str
+
+
+class PillarName(models.TextChoices):
+    REPRESENTATION = "représentation", "Représentation"
+    TRANSPARENCY = "transparence", "Transparence"
+    PARTICIPATION = "participation", "Participation"
+    COOPERATION = "coopération", "Coopération"

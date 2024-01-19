@@ -26,6 +26,7 @@ from open_democracy_back.utils import (
     SIMPLE_RICH_TEXT_FIELD_FEATURE,
     BooleanOperator,
     QuestionType,
+    PillarName,
 )
 
 
@@ -142,7 +143,9 @@ class Survey(TimeStampedModel):
 
 @register_snippet
 class Pillar(models.Model):
-    name = models.CharField(verbose_name="Nom", max_length=125)
+    name = models.CharField(
+        verbose_name="Nom", max_length=125, choices=PillarName.choices
+    )
     code = models.CharField(
         verbose_name="Code",
         max_length=2,
@@ -171,6 +174,7 @@ class Pillar(models.Model):
 
     panels = [
         FieldPanel("code"),
+        FieldPanel("name"),
         FieldPanel("description"),
         FieldPanel("survey"),
     ]

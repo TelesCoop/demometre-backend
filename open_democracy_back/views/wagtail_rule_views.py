@@ -23,9 +23,6 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     ProfileDefinition,
     QuestionRule,
     Survey,
-    Criteria,
-    Marker,
-    Pillar,
 )
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
@@ -252,6 +249,16 @@ def duplicate_instance_and_set_foreign_key(
     return new_instance
 
 
+QUESTION_CHILDS_TO_DUPLICATE_BY_QUESTION_TYPE = {
+    QuestionType.UNIQUE_CHOICE.value: ["response_choices"],
+    QuestionType.MULTIPLE_CHOICE.value: ["response_choices"],
+    QuestionType.BOOLEAN.value: [],
+    QuestionType.PERCENTAGE.value: ["percentage_ranges"],
+    QuestionType.NUMBER.value: ["number_ranges"],
+    QuestionType.CLOSED_WITH_SCALE.value: ["response_choices", "categories"],
+}
+
+
 def duplicate_question(question_to_duplicate, criterion):
     if question_to_duplicate.profiling_question:
         return None
@@ -262,31 +269,12 @@ def duplicate_question(question_to_duplicate, criterion):
     )
     question_to_duplicate = Question.objects.get(id=duplicated_question_id)
 
-    if question_to_duplicate.type in [
-        QuestionType.UNIQUE_CHOICE,
-        QuestionType.MULTIPLE_CHOICE,
-    ]:
-        for response_choice in question_to_duplicate.response_choices.all():
-            duplicate_instance_and_set_foreign_key(
-                response_choice, "question", new_question
-            )
-    elif question_to_duplicate.type == QuestionType.PERCENTAGE:
-        for percentage_range in question_to_duplicate.percentage_ranges.all():
-            duplicate_instance_and_set_foreign_key(
-                percentage_range, "question", new_question
-            )
-    elif question_to_duplicate.type == QuestionType.NUMBER:
-        for number_range in question_to_duplicate.number_ranges.all():
-            duplicate_instance_and_set_foreign_key(
-                number_range, "question", new_question
-            )
-    elif question_to_duplicate.type == QuestionType.CLOSED_WITH_SCALE:
-        for response_choice in question_to_duplicate.response_choices.all():
-            duplicate_instance_and_set_foreign_key(
-                response_choice, "question", new_question
-            )
-        for category in question_to_duplicate.categories.all():
-            duplicate_instance_and_set_foreign_key(category, "question", new_question)
+    child_keys_to_duplicate = QUESTION_CHILDS_TO_DUPLICATE_BY_QUESTION_TYPE.get(
+        question_to_duplicate.type, []
+    )
+    for child_key in child_keys_to_duplicate:
+        for instance in getattr(question_to_duplicate, child_key).all():
+            duplicate_instance_and_set_foreign_key(instance, "question", new_question)
 
     return new_question
 
@@ -337,8 +325,8 @@ def duplicate_survey(data, survey_to_duplicate):
 def duplicates_survey_view(request, pk):
     survey_to_duplicate = Survey.objects.get(id=pk)
     if request.method == "POST":
-        new_survey = SurveyForm(request.POST)
-        duplicate_survey(new_survey.data, survey_to_duplicate)
+        survey_form = SurveyForm(request.POST)
+        new_survey = duplicate_survey(survey_form.data, survey_to_duplicate)
         return redirect(f"/admin/open_democracy_back/survey/edit/{new_survey.id}")
 
     return render(

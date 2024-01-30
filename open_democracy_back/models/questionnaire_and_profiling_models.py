@@ -543,6 +543,19 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("comments"),
     ]
 
+    RESPONSE_NAME_BY_QUESTION_TYPE = {
+        QuestionType.PERCENTAGE.value: "percentage_response",
+        QuestionType.NUMBER.value: "number_response",
+        QuestionType.BOOLEAN.value: "boolean_response",
+        QuestionType.UNIQUE_CHOICE.value: "unique_choice_response",
+        QuestionType.MULTIPLE_CHOICE.value: "multiple_choice_response",
+    }
+
+    RESPONSE_RANGES_BY_QUESTION_TYPE = {
+        QuestionType.PERCENTAGE.value: "percentage_ranges",
+        QuestionType.NUMBER.value: "number_ranges",
+    }
+
     def __str__(self):
         if self.profiling_question:
             return f"Profilage: {self.name}"

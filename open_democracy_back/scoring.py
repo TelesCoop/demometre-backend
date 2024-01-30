@@ -149,17 +149,27 @@ def get_score_of_multiple_choice_question(queryset) -> List[QuestionScore]:
     return result
 
 
-def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
-    average_values_of_questions = (
-        queryset.filter(question__type=QuestionType.PERCENTAGE)
-        .exclude(percentage_response=None)
+def get_interval_average_values(queryset, question_type) -> List[QuestionScoreAverage]:
+    response_name = Question.RESPONSE_NAME_BY_QUESTION_TYPE[question_type]
+    return (
+        queryset.exclude(**{response_name: None})
         .values("question_id")
-        .annotate(avg_value=Avg("percentage_response"))
+        .annotate(avg_value=Avg(response_name))
     )
+
+
+def get_score_of_interval_question(queryset, question_type) -> List[QuestionScore]:
+    response_ranges_name = Question.RESPONSE_RANGES_BY_QUESTION_TYPE[question_type]
+    average_values_of_questions = get_interval_average_values(
+        queryset.filter(question__type=question_type),
+        question_type,
+    )
+
     question_ids = [item["question_id"] for item in average_values_of_questions]
     questions = Question.objects.filter(id__in=question_ids).prefetch_related(
-        "criteria__marker", "percentage_ranges"
+        "criteria__marker", response_ranges_name
     )
+
     question_by_ids = {question.id: question for question in questions}
 
     result: List[QuestionScore] = []
@@ -167,13 +177,12 @@ def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
     for item in average_values_of_questions:
         question = question_by_ids[item["question_id"]]
         score = None
-        for percentage_range in question.percentage_ranges.all():
-            if (
-                percentage_range.lower_bound
-                <= item["avg_value"]
-                <= percentage_range.upper_bound
-            ):
-                score = percentage_range.linearized_score
+        for response_range in getattr(question, response_ranges_name).all():
+            lower_bound, upper_bound = get_lower_and_upper_bound(
+                response_range.lower_bound, response_range.upper_bound
+            )
+            if lower_bound <= item["avg_value"] <= upper_bound:
+                score = response_range.linearized_score
                 break
 
         if score is None:
@@ -189,6 +198,10 @@ def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
             )
         )
     return result
+
+
+def get_score_of_percentage_question(queryset) -> List[QuestionScore]:
+    return get_score_of_interval_question(queryset, QuestionType.PERCENTAGE.value)
 
 
 def get_score_of_closed_with_scale_question(queryset) -> List[QuestionScore]:
@@ -267,66 +280,7 @@ def get_lower_and_upper_bound(
 
 
 def get_score_of_number_question(queryset) -> List[QuestionScore]:
-    number_responses = (
-        queryset.filter(question__type=QuestionType.NUMBER)
-        .exclude(number_response=None)
-        .prefetch_related("question__number_ranges", "question__criteria__marker")
-    )
-
-    scores_dict: DefaultDict[str, QuestionScoreAverage] = defaultdict(
-        lambda: QuestionScoreAverage(
-            score=0,
-            count=0,
-            question__criteria_id=-1,
-            question__criteria__marker_id=-1,
-            question__criteria__marker__pillar_id=-1,
-        ),
-        {},
-    )
-    for response in number_responses:
-        score = None
-        # get the score of the first matching number range
-        for number_range in response.question.number_ranges.all():
-            lower_bound, upper_bound = get_lower_and_upper_bound(
-                number_range.lower_bound, number_range.upper_bound
-            )
-            if lower_bound <= response.number_response <= upper_bound:
-                score = number_range.linearized_score
-                break
-
-        # if no matching number range was found, skip this response
-        # TODO: maybe we should improve admin validations to avoid this case
-        if score is None:
-            continue
-
-        scores_dict[response.question_id]["score"] += score
-        scores_dict[response.question_id]["count"] += 1
-        scores_dict[response.question_id][
-            "question__criteria_id"
-        ] = response.question.criteria_id
-        scores_dict[response.question_id][
-            "question__criteria__marker_id"
-        ] = response.question.criteria.marker_id
-        scores_dict[response.question_id][
-            "question__criteria__marker__pillar_id"
-        ] = response.question.criteria.marker.pillar_id
-
-    result: List[QuestionScore] = []
-    for key in scores_dict:
-        result.append(
-            QuestionScore(
-                question_id=key,
-                score=scores_dict[key]["score"] / scores_dict[key]["count"],
-                question__criteria_id=scores_dict[key]["question__criteria_id"],
-                question__criteria__marker_id=scores_dict[key][
-                    "question__criteria__marker_id"
-                ],
-                question__criteria__marker__pillar_id=scores_dict[key][
-                    "question__criteria__marker__pillar_id"
-                ],
-            )
-        )
-    return result
+    return get_score_of_interval_question(queryset, QuestionType.NUMBER.value)
 
 
 SCORES_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
@@ -391,13 +345,9 @@ def get_scores_by_assessment_pk(assessment_pk: int) -> Dict[str, Dict[str, float
         "type": [],
     }
     for question_type in QUESTION_TYPE_WITH_SCORE:
-        # Skip number question type because we don't want to consider in score until we have to handle subjective number question
-        if question_type == QuestionType.NUMBER:
-            question_type_scores = []
-        else:
-            question_type_scores = SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore
-                participation_responses
-            )
+        question_type_scores = SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore
+            participation_responses
+        )
 
         question_type_scores.extend(
             SCORES_FN_BY_QUESTION_TYPE[question_type.value](  # type: ignore

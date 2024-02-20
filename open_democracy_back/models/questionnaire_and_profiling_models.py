@@ -26,6 +26,7 @@ from open_democracy_back.utils import (
     SIMPLE_RICH_TEXT_FIELD_FEATURE,
     BooleanOperator,
     QuestionType,
+    PillarName,
 )
 
 
@@ -119,8 +120,32 @@ class ScoreFields(models.Model):
 
 
 @register_snippet
+class Survey(TimeStampedModel):
+    name = models.CharField(max_length=255, verbose_name="Nom", unique=True)
+    description = RichTextField(
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+        help_text="Description du questionnaire",
+        max_length=1024,
+        default="",
+    )
+    is_active = models.BooleanField(default=False, verbose_name="Actif")
+    panels = [
+        FieldPanel("name"),
+        FieldPanel("description"),
+        FieldPanel("is_active"),
+    ]
+
+    def __str__(self):
+        return self.name
+
+
+@register_snippet
 class Pillar(models.Model):
-    name = models.CharField(verbose_name="Nom", max_length=125)
+    name = models.CharField(
+        verbose_name="Nom", max_length=125, choices=PillarName.choices
+    )
     code = models.CharField(
         verbose_name="Code",
         max_length=2,
@@ -140,9 +165,18 @@ class Pillar(models.Model):
         help_text="Description pour le référentiel",
     )
 
+    survey = models.ForeignKey(
+        Survey,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="pillars",
+    )
+
     panels = [
         FieldPanel("code"),
+        FieldPanel("name"),
         FieldPanel("description"),
+        FieldPanel("survey"),
     ]
 
     def __str__(self):

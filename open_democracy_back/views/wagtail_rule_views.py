@@ -1,11 +1,12 @@
 import json
 from collections import defaultdict
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from open_democracy_back.forms import (
     ProfileDefinitionForm,
     QuestionRuleForm,
     RepresentativityCriteriaRefiningForm,
+    SurveyForm,
 )
 from django.db.models import Q
 from django.views.generic.edit import BaseDeleteView
@@ -21,6 +22,7 @@ from open_democracy_back.models import (
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     ProfileDefinition,
     QuestionRule,
+    Survey,
 )
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
@@ -233,6 +235,106 @@ def representativity_criteria_refining_view(request, pk):
         {
             "data": data,
             "rule_forms": rule_forms,
+        },
+    )
+
+
+def duplicate_instance_and_set_foreign_key(
+    instance_to_duplicate, foreign_key_name, new_foreign_key
+):
+    new_instance = instance_to_duplicate
+    new_instance.id = None
+    setattr(new_instance, foreign_key_name, new_foreign_key)
+    new_instance.save()
+    return new_instance
+
+
+QUESTION_CHILDS_TO_DUPLICATE_BY_QUESTION_TYPE = {
+    QuestionType.UNIQUE_CHOICE.value: ["response_choices"],
+    QuestionType.MULTIPLE_CHOICE.value: ["response_choices"],
+    QuestionType.BOOLEAN.value: [],
+    QuestionType.PERCENTAGE.value: ["percentage_ranges"],
+    QuestionType.NUMBER.value: ["number_ranges"],
+    QuestionType.CLOSED_WITH_SCALE.value: ["response_choices", "categories"],
+}
+
+
+def duplicate_question(question_to_duplicate, criterion):
+    if question_to_duplicate.profiling_question:
+        return None
+
+    duplicated_question_id = question_to_duplicate.id
+    new_question = duplicate_instance_and_set_foreign_key(
+        question_to_duplicate, "criteria", criterion
+    )
+    question_to_duplicate = Question.objects.get(id=duplicated_question_id)
+
+    child_keys_to_duplicate = QUESTION_CHILDS_TO_DUPLICATE_BY_QUESTION_TYPE.get(
+        question_to_duplicate.type, []
+    )
+    for child_key in child_keys_to_duplicate:
+        for instance in getattr(question_to_duplicate, child_key).all():
+            duplicate_instance_and_set_foreign_key(instance, "question", new_question)
+
+    return new_question
+
+
+def duplicate_criterion(criterion_to_duplicate, marker):
+    questions = list(criterion_to_duplicate.questions.all())
+    new_criterion = duplicate_instance_and_set_foreign_key(
+        criterion_to_duplicate, "marker", marker
+    )
+
+    for question in questions:
+        duplicate_question(question, new_criterion)
+
+
+def duplicate_marker(marker_to_duplicate, pillar):
+    criteria = list(marker_to_duplicate.criterias.all())
+    new_marker = duplicate_instance_and_set_foreign_key(
+        marker_to_duplicate, "pillar", pillar
+    )
+
+    for criterion in criteria:
+        duplicate_criterion(criterion, new_marker)
+
+
+def duplicate_pillar(pillar_to_duplicate, survey):
+    markers = list(pillar_to_duplicate.markers.all())
+    new_pillar = duplicate_instance_and_set_foreign_key(
+        pillar_to_duplicate, "survey", survey
+    )
+
+    for marker in markers:
+        duplicate_marker(marker, new_pillar)
+
+
+def duplicate_survey(data, survey_to_duplicate):
+    pillars = survey_to_duplicate.pillars.all()
+
+    survey = Survey.objects.create(
+        name=data["name"],
+        description=data["description"],
+    )
+    for pillar in pillars:
+        duplicate_pillar(pillar, survey)
+
+    return survey
+
+
+def duplicates_survey_view(request, pk):
+    survey_to_duplicate = Survey.objects.get(id=pk)
+    if request.method == "POST":
+        survey_form = SurveyForm(request.POST)
+        new_survey = duplicate_survey(survey_form.data, survey_to_duplicate)
+        return redirect(f"/admin/open_democracy_back/survey/edit/{new_survey.id}")
+
+    return render(
+        request,
+        "admin/duplicates_survey.html",
+        {
+            "survey": survey_to_duplicate,
+            "form": SurveyForm(),
         },
     )
 

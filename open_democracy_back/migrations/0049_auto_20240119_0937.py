@@ -9,7 +9,6 @@ import wagtail.fields
 def add_default_survey(apps, _):
     Survey = apps.get_model('open_democracy_back', 'Survey')
     survey = Survey.objects.create(name='Questionnaire DémoMètre', description='Questionnaire historique du DémoMètre', is_active=True)
-    survey.save()
 
     Pillar = apps.get_model('open_democracy_back', 'Pillar')
     Pillar.objects.all().update(survey=survey)

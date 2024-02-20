@@ -1,8 +1,7 @@
 from collections import defaultdict
 from typing import Dict, Callable
 
-from django.db.models import Count, Avg, Q, F
-from rest_framework.exceptions import ValidationError
+from django.db.models import Count, Q, F
 
 from open_democracy_back.models import (
     ResponseChoice,
@@ -11,8 +10,8 @@ from open_democracy_back.models import (
     AssessmentResponse,
     ParticipationResponse,
     Question,
-    PercentageRange,
 )
+from open_democracy_back.scoring import get_interval_average_values
 from open_democracy_back.utils import QuestionType
 
 
@@ -115,34 +114,6 @@ def get_chart_data_of_multiple_choice_question(question, assessment_id):
     return get_chart_data_of_choice_question(question, assessment_id, "multiple_choice")
 
 
-def get_chart_data_of_percentage_question(question, assessment_id):
-    if question.objectivity == "objective":
-        base_queryset = get_chart_data_objective_queryset(assessment_id)
-        model = AssessmentResponse
-    else:
-        base_queryset = get_chart_data_subjective_queryset(assessment_id)
-        model = ParticipationResponse
-    result = model.objects.filter(**base_queryset, question_id=question.id).aggregate(
-        count=Count("id"), value=Avg("percentage_response")
-    )
-
-    return {
-        "value": {"label": "Pourcentage moyen", "value": result["value"]},
-        "count": result["count"],
-        "ranges": [
-            {
-                "id": percentage_range.id,
-                "score": percentage_range.associated_score,
-                "lower_bound": percentage_range.lower_bound,
-                "upper_bound": percentage_range.upper_bound,
-            }
-            for percentage_range in PercentageRange.objects.filter(
-                question_id=question.id
-            )
-        ],
-    }
-
-
 def get_chart_data_of_closed_with_scale_question(question, assessment_id):
     if question.objectivity == "objective":
         base_count = "assessment_response"
@@ -205,16 +176,44 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
     return data
 
 
-def get_chart_data_of_number_question(question, assessment_id):
-    if question.objectivity != "objective":
-        raise ValidationError("Number question must be objective.")
-    base_queryset = get_chart_data_objective_queryset(assessment_id)
-    model = AssessmentResponse
+LABEL_BY_QUESTION_TYPE = {
+    QuestionType.PERCENTAGE.value: "Pourcentage moyen",
+    QuestionType.NUMBER.value: "Valeure moyenne",
+}
 
-    result = model.objects.filter(**base_queryset).get(question_id=question.id)
+
+def get_chart_data_of_interval_question(question, assessment_id):
+    label = LABEL_BY_QUESTION_TYPE[question.type]
+    response_ranges_name = Question.RESPONSE_RANGES_BY_QUESTION_TYPE[question.type]
+
+    if question.objectivity == "objective":
+        base_queryset = get_chart_data_objective_queryset(assessment_id)
+        model = AssessmentResponse
+    else:
+        base_queryset = get_chart_data_subjective_queryset(assessment_id)
+        model = ParticipationResponse
+
+    result = (
+        get_interval_average_values(
+            model.objects.filter(**base_queryset, question_id=question.id),
+            question.type,
+        )
+        .annotate(count=Count("id"))
+        .get()
+    )
 
     return {
-        "value": result.number_response,
+        "value": {"label": label, "value": result["avg_value"]},
+        "count": result["count"],
+        "ranges": [
+            {
+                "id": response_range.id,
+                "score": response_range.associated_score,
+                "lower_bound": response_range.lower_bound,
+                "upper_bound": response_range.upper_bound,
+            }
+            for response_range in getattr(question, response_ranges_name).all()
+        ],
     }
 
 
@@ -222,7 +221,7 @@ CHART_DATA_FN_BY_QUESTION_TYPE: Dict[str, Callable] = {
     QuestionType.BOOLEAN.value: get_chart_data_of_boolean_question,  # type: ignore
     QuestionType.UNIQUE_CHOICE.value: get_chart_data_of_unique_choice_question,  # type: ignore
     QuestionType.MULTIPLE_CHOICE.value: get_chart_data_of_multiple_choice_question,  # type: ignore
-    QuestionType.PERCENTAGE.value: get_chart_data_of_percentage_question,  # type: ignore
+    QuestionType.PERCENTAGE.value: get_chart_data_of_interval_question,  # type: ignore
     QuestionType.CLOSED_WITH_SCALE.value: get_chart_data_of_closed_with_scale_question,  # type: ignore
-    QuestionType.NUMBER.value: get_chart_data_of_number_question,  # type: ignore
+    QuestionType.NUMBER.value: get_chart_data_of_interval_question,  # type: ignore
 }

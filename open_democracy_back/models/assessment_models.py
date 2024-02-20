@@ -7,7 +7,6 @@ from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
 from wagtail.admin.panels import InlinePanel, FieldPanel
 from wagtail.documents.models import Document
-from wagtail.fields import RichTextField
 from wagtail.models import Orderable
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
@@ -20,7 +19,6 @@ from open_democracy_back.utils import (
     InitiatorType,
     LocalityType,
     ManagedAssessmentType,
-    SIMPLE_RICH_TEXT_FIELD_FEATURE,
 )
 
 

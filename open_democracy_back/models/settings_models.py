@@ -28,7 +28,7 @@ class RGPDSettings(BaseSiteSetting):
         null=True,
         on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name="Conditions Générales d'utilisation",
+        verbose_name="Conditions générales d'utilisation",
     )
     terms_of_sale = models.ForeignKey(
         Document,
@@ -36,7 +36,7 @@ class RGPDSettings(BaseSiteSetting):
         null=True,
         on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name="Conditions Générales de vente",
+        verbose_name="Conditions générales de vente",
     )
     confidentiality_policy = models.ForeignKey(
         Document,

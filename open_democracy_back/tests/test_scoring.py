@@ -350,13 +350,13 @@ class TestScoring(TestCase):
         question = QuestionFactory(
             type=QuestionType.NUMBER, max_number_value=100, step_number_value=0.1
         )
-        number_range_1 = NumberRangeFactory(
+        NumberRangeFactory(
             question=question, lower_bound=None, upper_bound=25.5, associated_score=1
         )
-        NumberRangeFactory(
+        response_range = NumberRangeFactory(
             question=question, lower_bound=25.6, upper_bound=50, associated_score=2
         )
-        number_range_3 = NumberRangeFactory(
+        NumberRangeFactory(
             question=question, lower_bound=50.1, upper_bound=100, associated_score=4
         )
         assessment = AssessmentFactory()
@@ -371,7 +371,6 @@ class TestScoring(TestCase):
             assessment=assessment,
             question=question,
         )
-        value = mean([number_range_1.linearized_score, number_range_3.linearized_score])
         participation_responses = ParticipationResponse.objects.accounted_in_assessment(
             assessment.pk
         )
@@ -385,6 +384,6 @@ class TestScoring(TestCase):
                 question__criteria_id=question.criteria.id,
                 question__criteria__marker_id=question.criteria.marker.id,
                 question__criteria__marker__pillar_id=question.criteria.marker.pillar_id,
-                score=value,
+                score=response_range.linearized_score,
             ),
         )

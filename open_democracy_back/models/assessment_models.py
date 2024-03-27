@@ -15,7 +15,11 @@ from my_auth.models import User
 from open_democracy_back.constants import ASSESSMENT_DOCUMENT_CATEGORIES_CHOICES
 from open_democracy_back.models.participation_models import Response
 from open_democracy_back.models.utils import FrontendRichText
-from open_democracy_back.utils import InitiatorType, LocalityType, ManagedAssessmentType
+from open_democracy_back.utils import (
+    InitiatorType,
+    LocalityType,
+    ManagedAssessmentType,
+)
 
 
 @register_snippet

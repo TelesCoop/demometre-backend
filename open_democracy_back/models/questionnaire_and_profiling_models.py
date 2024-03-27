@@ -26,6 +26,7 @@ from open_democracy_back.utils import (
     SIMPLE_RICH_TEXT_FIELD_FEATURE,
     BooleanOperator,
     QuestionType,
+    PillarName,
 )
 
 
@@ -119,11 +120,42 @@ class ScoreFields(models.Model):
 
 
 @register_snippet
+class Survey(TimeStampedModel):
+    name = models.CharField(max_length=255, verbose_name="Nom", unique=True)
+    description = RichTextField(
+        blank=True,
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+        verbose_name="Description",
+        help_text="Description du questionnaire",
+        max_length=1024,
+        default="",
+    )
+    code = models.CharField(
+        max_length=10,
+        verbose_name="code",
+        help_text="Nom court du questionnaire pour les menus de l'interface admin",
+        default="",
+    )
+    is_active = models.BooleanField(default=False, verbose_name="Actif")
+    panels = [
+        FieldPanel("name"),
+        FieldPanel("code"),
+        FieldPanel("description"),
+        FieldPanel("is_active"),
+    ]
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
+@register_snippet
 class Pillar(models.Model):
-    name = models.CharField(verbose_name="Nom", max_length=125)
+    name = models.CharField(
+        verbose_name="Nom", max_length=125, choices=PillarName.choices
+    )
     code = models.CharField(
         verbose_name="Code",
-        max_length=2,
+        max_length=10,
         help_text="Correspond au numéro (ou lettre) de ce pilier",
     )
     order = models.IntegerField(
@@ -140,13 +172,22 @@ class Pillar(models.Model):
         help_text="Description pour le référentiel",
     )
 
+    survey = models.ForeignKey(
+        Survey,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="pillars",
+    )
+
     panels = [
         FieldPanel("code"),
+        FieldPanel("name"),
         FieldPanel("description"),
+        FieldPanel("survey"),
     ]
 
     def __str__(self):
-        return f"{self.code}: {self.name}"
+        return f"{self.survey.code}.{self.code}: {self.name}"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -166,10 +207,10 @@ class Marker(index.Indexed, ScoreFields):
     name = models.CharField(verbose_name="Nom", max_length=125)
     code = models.CharField(
         verbose_name="Code",
-        max_length=2,
+        max_length=3,
         help_text="Correspond au numéro (ou lettre) de ce marqueur dans son pilier",
     )
-    concatenated_code = models.CharField(max_length=5, default="")
+    concatenated_code = models.CharField(max_length=10, default="")
     description = RichTextField(
         null=True,
         blank=True,
@@ -195,9 +236,13 @@ class Marker(index.Indexed, ScoreFields):
         return f"{self.concatenated_code}: {self.name}"
 
     def save(self, *args, **kwargs):
-        self.concatenated_code = (
-            self.pillar.code + "." if self.pillar else ""
-        ) + self.code
+        code_elements = []
+        if self.pillar:
+            if self.pillar.survey:
+                code_elements.append(self.pillar.survey.code)
+            code_elements.append(self.pillar.code)
+        code_elements.append(self.code)
+        self.concatenated_code = ".".join(code_elements)
         super().save(*args, **kwargs)
         [child_criteria.save() for child_criteria in self.criterias.all()]
 
@@ -239,7 +284,7 @@ class Criteria(index.Indexed, ClusterableModel):
         help_text="Correspond au numéro de ce critère dans son marqueur",
         validators=[MaxValueValidator(100), MinValueValidator(1)],
     )
-    concatenated_code = models.CharField(max_length=8, default="")
+    concatenated_code = models.CharField(max_length=12, default="")
     thematic_tags = models.ManyToManyField(
         ThematicTag, blank=True, verbose_name="Thématiques"
     )
@@ -296,9 +341,11 @@ class Criteria(index.Indexed, ClusterableModel):
         return f"{self.concatenated_code}: {self.name}"
 
     def save(self, *args, **kwargs):
-        self.concatenated_code = (
-            self.marker.concatenated_code + "." if self.marker else ""
-        ) + str(self.code)
+        code_elements = []
+        if self.marker:
+            code_elements.append(self.marker.concatenated_code)
+        code_elements.append(str(self.code))
+        self.concatenated_code = ".".join(code_elements)
         super().save(*args, **kwargs)
         # Use proxy QuestionnaireQuestion
         child_questions = QuestionnaireQuestion.objects.filter(criteria_id=self.id)
@@ -542,6 +589,19 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("allows_to_explain"),
         FieldPanel("comments"),
     ]
+
+    RESPONSE_NAME_BY_QUESTION_TYPE = {
+        QuestionType.PERCENTAGE.value: "percentage_response",
+        QuestionType.NUMBER.value: "number_response",
+        QuestionType.BOOLEAN.value: "boolean_response",
+        QuestionType.UNIQUE_CHOICE.value: "unique_choice_response",
+        QuestionType.MULTIPLE_CHOICE.value: "multiple_choice_response",
+    }
+
+    RESPONSE_RANGES_BY_QUESTION_TYPE = {
+        QuestionType.PERCENTAGE.value: "percentage_ranges",
+        QuestionType.NUMBER.value: "number_ranges",
+    }
 
     def __str__(self):
         if self.profiling_question:

@@ -1,3 +1,5 @@
+import datetime
+
 from rest_framework import serializers
 from open_democracy_back.models.assessment_models import AssessmentType
 
@@ -93,6 +95,32 @@ class QuestionRuleSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+def get_all_roles_with_cache():
+    """Return all roles"""
+    if not hasattr(
+        get_all_roles_with_cache, "roles"
+    ) or get_all_roles_with_cache.last_updated < datetime.datetime.now() - datetime.timedelta(
+        hours=1
+    ):
+        get_all_roles_with_cache.roles = Role.objects.all()
+        get_all_roles_with_cache.last_updated = datetime.datetime.now()
+    return get_all_roles_with_cache.roles
+
+
+def get_all_assessment_types_with_cache():
+    """Return all assessment types"""
+    if not hasattr(
+        get_all_assessment_types_with_cache, "assessment_types"
+    ) or get_all_assessment_types_with_cache.last_updated < datetime.datetime.now() - datetime.timedelta(
+        hours=1
+    ):
+        get_all_assessment_types_with_cache.assessment_types = (
+            AssessmentType.objects.all()
+        )
+        get_all_assessment_types_with_cache.last_updated = datetime.datetime.now()
+    return get_all_assessment_types_with_cache.assessment_types
+
+
 class QuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
@@ -102,8 +130,8 @@ class QuestionSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_role_ids(obj):
         roles = obj.roles.all()
-        # if roles.count() == 0:
-        #     roles = Role.objects.all()
+        if roles.count() == 0:
+            roles = get_all_roles_with_cache()
         return [role.pk for role in roles]
 
     class Meta:
@@ -136,8 +164,8 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
     @staticmethod
     def get_assessment_types(obj):
         assessment_types = obj.assessment_types.all()
-        # if assessment_types.count() == 0:
-        #     assessment_types = AssessmentType.objects.all()
+        if assessment_types.count() == 0:
+            assessment_types = get_all_assessment_types_with_cache()
         return [el.assessment_type for el in assessment_types]
 
     class Meta:
@@ -171,7 +199,7 @@ class CriteriaSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_definition_ids(obj: Criteria):
-        return [el.pk for el in obj.related_definition_ordered.objects.all()]
+        return [el.pk for el in obj.related_definition_ordered.all()]
 
     class Meta:
         model = Criteria

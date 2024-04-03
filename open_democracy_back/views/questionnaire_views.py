@@ -23,7 +23,14 @@ class QuestionnaireStructureView(
     viewsets.GenericViewSet,
 ):
     serializer_class = FullPillarSerializer
-    queryset = Pillar.objects.all()
+    queryset = (
+        Pillar.objects.prefetch_related("markers")
+        .prefetch_related("markers__criterias")
+        .prefetch_related("markers__criterias__questions")
+        .prefetch_related("markers__criterias__thematic_tags")
+        .prefetch_related("markers__criterias__related_definition_ordered")
+        .prefetch_related("markers__criterias")
+    )
 
 
 class PillarView(
@@ -61,13 +68,26 @@ class QuestionnaireQuestionView(
     serializer_class = QuestionnaireQuestionSerializer
 
     def get_queryset(self):
-        return QuestionnaireQuestion.objects.exclude(
-            criteria__marker__pillar__isnull=True
-        ).order_by(
-            "criteria__marker__pillar__code",
-            "criteria__marker__code",
-            "criteria__code",
-            "code",
+        return (
+            QuestionnaireQuestion.objects.exclude(criteria__marker__pillar__isnull=True)
+            .prefetch_related("profiles")
+            .prefetch_related("criteria")
+            .prefetch_related("criteria__marker")
+            .prefetch_related("criteria__marker__pillar")
+            .prefetch_related("criteria__marker__pillar__survey")
+            .prefetch_related("allows_to_explain")
+            .prefetch_related("assessment_types")
+            .prefetch_related("response_choices")
+            .prefetch_related("categories")
+            .prefetch_related("roles")
+            .prefetch_related("rules")
+            .prefetch_related("explained_by")
+            .order_by(
+                "criteria__marker__pillar__code",
+                "criteria__marker__code",
+                "criteria__code",
+                "code",
+            )
         )
 
 

@@ -102,9 +102,9 @@ class QuestionSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_role_ids(obj):
         roles = obj.roles.all()
-        if roles.count() == 0:
-            roles = Role.objects.all()
-        return roles.values_list("id", flat=True)
+        # if roles.count() == 0:
+        #     roles = Role.objects.all()
+        return [role.pk for role in roles]
 
     class Meta:
         abstract = True
@@ -130,11 +130,15 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
         return obj.criteria.marker.pillar_id
 
     @staticmethod
+    def get_survey_locality(obj):
+        return obj.criteria.marker.pillar.survey.survey_locality
+
+    @staticmethod
     def get_assessment_types(obj):
         assessment_types = obj.assessment_types.all()
-        if assessment_types.count() == 0:
-            assessment_types = AssessmentType.objects.all()
-        return assessment_types.values_list("assessment_type", flat=True)
+        # if assessment_types.count() == 0:
+        #     assessment_types = AssessmentType.objects.all()
+        return [el.assessment_type for el in assessment_types]
 
     class Meta:
         model = QuestionnaireQuestion
@@ -167,7 +171,7 @@ class CriteriaSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_definition_ids(obj: Criteria):
-        return obj.related_definition_ordered.values_list("definition_id", flat=True)
+        return [el.pk for el in obj.related_definition_ordered.objects.all()]
 
     class Meta:
         model = Criteria

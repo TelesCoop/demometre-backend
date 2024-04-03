@@ -2,6 +2,7 @@ bleach==6.0.0
 Django>=3.2,<3.3
 django-anymail[mailgun]==8.5
 django-cors-headers==3.5.0
+django-debug-toolbar==4.3.0
 django-extensions==3.2.3
 django-hijack==3.4.1
 django-model-utils==4.2.0

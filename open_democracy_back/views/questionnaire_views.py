@@ -38,14 +38,17 @@ class SurveyView(
     )
 
     @action(
-        detail=True,
+        detail=False,
         methods=["GET"],
     )
-    def questions(self, request, *args, **kwargs):
+    def all(self, request, *args, **kwargs):
+        surveys = self.get_queryset()
+        survey_serializer = self.get_serializer(
+            surveys, many=True, context=self.get_serializer_context()
+        )
+
         questions = (
-            QuestionnaireQuestion.objects.filter(
-                criteria__marker__pillar__survey_id=kwargs["pk"]
-            )
+            QuestionnaireQuestion.objects.exclude(criteria__marker__pillar__isnull=True)
             .prefetch_related("profiles")
             .prefetch_related("criteria")
             .prefetch_related("criteria__marker")
@@ -65,10 +68,15 @@ class SurveyView(
                 "code",
             )
         )
-        serializer = QuestionnaireQuestionSerializer(
+        question_serializer = QuestionnaireQuestionSerializer(
             questions, many=True, context=self.get_serializer_context()
         )
-        return Response(serializer.data)
+        return Response(
+            {
+                "surveys": survey_serializer.data,
+                "questions": question_serializer.data,
+            }
+        )
 
 
 class PillarView(

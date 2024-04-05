@@ -1,6 +1,8 @@
 import datetime
 
 from rest_framework import serializers
+
+from open_democracy_back.models import Survey
 from open_democracy_back.models.assessment_models import AssessmentType
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
@@ -144,6 +146,8 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
     )
     pillar_id = serializers.SerializerMethodField()
     pillar_name = serializers.SerializerMethodField()
+    survey_locality = serializers.SerializerMethodField()
+    survey_id = serializers.SerializerMethodField()
     assessment_types = serializers.SerializerMethodField()
     explains_by_question_ids = serializers.PrimaryKeyRelatedField(
         read_only=True, source="explained_by", many=True
@@ -162,6 +166,10 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
         return obj.criteria.marker.pillar.survey.survey_locality
 
     @staticmethod
+    def get_survey_id(obj):
+        return obj.criteria.marker.pillar.survey.pk
+
+    @staticmethod
     def get_assessment_types(obj):
         assessment_types = obj.assessment_types.all()
         if assessment_types.count() == 0:
@@ -171,15 +179,17 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
     class Meta:
         model = QuestionnaireQuestion
         fields = [
-            "criteria_id",
-            "pillar_name",
-            "pillar_id",
-            "objectivity",
-            "method",
-            "profile_ids",
-            "assessment_types",
             "allows_to_explain",
+            "assessment_types",
+            "criteria_id",
             "explains_by_question_ids",
+            "method",
+            "objectivity",
+            "pillar_id",
+            "pillar_name",
+            "profile_ids",
+            "survey_id",
+            "survey_locality",
         ] + QUESTION_FIELDS
         read_only_fields = fields
 
@@ -196,6 +206,10 @@ class CriteriaSerializer(serializers.ModelSerializer):
         many=True, read_only=True, source="questions"
     )
     definition_ids = serializers.SerializerMethodField()
+    explanatory = serializers.SerializerMethodField()
+
+    def get_explanatory(self, obj: Criteria):
+        return list(obj.explanatory.raw_data or [])
 
     @staticmethod
     def get_definition_ids(obj: Criteria):
@@ -256,7 +270,7 @@ class PillarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pillar
-        fields = ["id", "name", "code", "description", "marker_ids"]
+        fields = ["id", "name", "code", "description", "marker_ids", "survey_id"]
         read_only_fields = fields
 
 
@@ -265,4 +279,13 @@ class FullPillarSerializer(PillarSerializer):
 
     class Meta(PillarSerializer.Meta):
         fields = PillarSerializer.Meta.fields + ["markers"]
+        read_only_fields = fields
+
+
+class FullSurveySerializer(serializers.ModelSerializer):
+    pillars = FullPillarSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Survey
+        fields = ["id", "name", "description", "code", "survey_locality", "pillars"]
         read_only_fields = fields

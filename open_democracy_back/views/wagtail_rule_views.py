@@ -314,7 +314,8 @@ def duplicate_survey(data, survey_to_duplicate):
 
     survey = Survey.objects.create(
         name=data["name"],
-        description=data["description"],
+        survey_locality=data["survey_locality"],
+        code=data["code"],
     )
     for pillar in pillars:
         duplicate_pillar(pillar, survey)

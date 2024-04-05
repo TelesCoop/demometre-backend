@@ -45,7 +45,7 @@ from .views.assessment_views import (
     AssessmentsView,
     CompletedQuestionsInitializationView,
     ExpertView,
-    ZipCodeLocalitiesView,
+    ZipCodeSurveysView,
     AssessmentScoreView,
     get_chart_data,
     AssessmentDocumentView,
@@ -59,7 +59,7 @@ from .views.questionnaire_views import (
     MarkerView,
     PillarView,
     QuestionnaireQuestionView,
-    QuestionnaireStructureView,
+    SurveyView,
     DefinitionView,
 )
 
@@ -130,20 +130,18 @@ router.register(r"assessments", AssessmentsView, basename="assessments")
 router.register(
     r"assessment-documents", AssessmentDocumentView, basename="assessment-documents"
 )
+router.register("surveys", SurveyView, basename="surveys")
 
 
 urlpatterns = [
     path(
-        "localites/by-zip-code/<str:zip_code>/",
-        ZipCodeLocalitiesView.as_view({"get": "list"}),
+        "surveys/by-zip-code/<str:zip_code>/",
+        ZipCodeSurveysView.as_view({"get": "list"}),
     ),
     path(
         "assessments/by-locality/",
         AssessmentsView.as_view({"get": "get_or_create"}),
         name="create-assessment",
-    ),
-    path(
-        "questionnaire-structure/", QuestionnaireStructureView.as_view({"get": "list"})
     ),
     path("pillars/", PillarView.as_view({"get": "list"})),
     path("pillars/<int:pk>/", PillarView.as_view({"get": "retrieve"})),

@@ -200,7 +200,7 @@ class ParticipationResponseSerializer(ResponseSerializer):
 
     def validate(self, data):
         participation = data["participation"]
-        population = participation.assessment.population
+        population = participation.assessment.population or 0
         if (
             not Question.objects.filter_by_role(participation.role)
             .filter_by_population(population)

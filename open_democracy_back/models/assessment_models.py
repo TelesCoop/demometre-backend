@@ -46,7 +46,11 @@ class Department(index.Indexed, models.Model):
     code = models.CharField(max_length=3, verbose_name="Code")
     name = models.CharField(max_length=64, verbose_name="Nom")
     region = models.ForeignKey(
-        Region, verbose_name="Région", on_delete=models.SET_NULL, null=True
+        Region,
+        verbose_name="Région",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="departments",
     )
 
     search_fields = [
@@ -68,7 +72,11 @@ class Municipality(index.Indexed, ClusterableModel):
     code = models.CharField(max_length=100, verbose_name="Code insee")
     name = models.CharField(max_length=255, verbose_name="Nom")
     department = models.ForeignKey(
-        Department, verbose_name="Département", on_delete=models.SET_NULL, null=True
+        Department,
+        verbose_name="Département",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="municipalities",
     )
     population = models.IntegerField(verbose_name="Population", default=0)
 
@@ -215,15 +223,16 @@ class Assessment(TimeStampedModel, ClusterableModel):
         on_delete=models.SET_NULL,
         verbose_name="Type d'évaluation",
     )
-    conditions_of_sale_consent = models.BooleanField(default=False)
-    end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
-    epci = models.ForeignKey(
-        EPCI,
+    survey = models.ForeignKey(
+        "Survey",
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name="Intercommunalité",
+        verbose_name="Questionnaire",
     )
+    conditions_of_sale_consent = models.BooleanField(default=False)
+    end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
+
     experts = models.ManyToManyField(
         User,
         blank=True,
@@ -271,12 +280,33 @@ class Assessment(TimeStampedModel, ClusterableModel):
         default=LocalityType.MUNICIPALITY,
         verbose_name="Type de localité",
     )
+    epci = models.ForeignKey(
+        EPCI,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Intercommunalité",
+    )
     municipality = models.ForeignKey(
         Municipality,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
         verbose_name="Commune",
+    )
+    region = models.ForeignKey(
+        Region,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Région",
+    )
+    department = models.ForeignKey(
+        Department,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Département",
     )
     name = models.CharField(verbose_name="nom", max_length=80, blank=True, null=True)
 

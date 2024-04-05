@@ -5,6 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.fields import RichTextField
+
 from open_democracy_back.models.assessment_models import Assessment
 
 from open_democracy_back.models.questionnaire_and_profiling_models import (
@@ -12,11 +13,17 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     QuestionType,
     ResponseChoice,
 )
-from open_democracy_back.utils import SIMPLE_RICH_TEXT_FIELD_FEATURE
+from open_democracy_back.utils import SIMPLE_RICH_TEXT_FIELD_FEATURE, SurveyLocality
 
 
 @register_snippet
 class RepresentativityCriteria(index.Indexed, models.Model):
+    survey_locality = models.CharField(
+        max_length=32,
+        choices=SurveyLocality.choices,
+        default=SurveyLocality.CITY,
+        verbose_name="Échelon questionnaire",
+    )
     name = models.CharField(max_length=64, verbose_name="Nom")
     profiling_question = models.OneToOneField(
         ProfilingQuestion,

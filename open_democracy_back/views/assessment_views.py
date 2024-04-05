@@ -24,6 +24,9 @@ from open_democracy_back.models import (
     Participation,
     Question,
     AssessmentDocument,
+    Region,
+    Survey,
+    Department,
 )
 from open_democracy_back.models.assessment_models import (
     EPCI,
@@ -54,9 +57,10 @@ from open_democracy_back.serializers.assessment_serializers import (
     has_details_access,
     AssessmentNoDetailSerializer,
     AssessmentSerializerForUpdate,
+    RegionSerializer,
 )
 from open_democracy_back.serializers.user_serializers import UserSerializer
-from open_democracy_back.utils import ManagedAssessmentType
+from open_democracy_back.utils import ManagedAssessmentType, SurveyLocality
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +194,9 @@ class AssessmentsView(
                 "initiator_usage_consent"
             )
             assessment.save()
-            representativity_criterias = RepresentativityCriteria.objects.all()
+            representativity_criterias = RepresentativityCriteria.objects.filter(
+                survey_locality=assessment.survey.survey_locality
+            )
             for representativity_criteria in representativity_criterias:
                 representativity = AssessmentRepresentativity.objects.get_or_create(
                     assessment=assessment,
@@ -222,15 +228,23 @@ class AssessmentsView(
             Q(assessment_type__assessment_type=ManagedAssessmentType.QUICK)
             & ~Q(initiated_by_user_id=user_id)
         )
+        survey = Survey.objects.get(survey_locality=SurveyLocality.CITY)
+        assessment_kwargs = {"locality_type": locality_type}
         if locality_type == LocalityType.MUNICIPALITY:
-            municipality = Municipality.objects.get(id=locality_id)
-            assessment, _ = assessments_usable.get_or_create(
-                locality_type=locality_type, municipality=municipality
+            assessment_kwargs["municipality"] = (
+                locality := Municipality.objects.get(id=locality_id)
             )
         elif locality_type == LocalityType.INTERCOMMUNALITY:
-            epci = EPCI.objects.get(id=locality_id)
-            assessment, _ = assessments_usable.get_or_create(
-                locality_type=locality_type, epci=epci
+            assessment_kwargs["epci"] = (locality := EPCI.objects.get(id=locality_id))
+        elif locality_type == LocalityType.REGION:
+            survey = Survey.objects.get(survey_locality=SurveyLocality.REGION)
+            assessment_kwargs["region"] = (
+                locality := Region.objects.get(id=locality_id)
+            )
+        elif locality_type == LocalityType.DEPARTMENT:
+            survey = Survey.objects.get(survey_locality=SurveyLocality.DEPARTMENT)
+            assessment_kwargs["department"] = (
+                locality := Department.objects.get(id=locality_id)
             )
         else:
             logger.error("locality_type received not correct")
@@ -239,11 +253,15 @@ class AssessmentsView(
                 detail="The locality type received is not correct",
                 code=ErrorCode.UNCORRECT_LOCALITY_TYPE.value,
             )
+        assessment_kwargs["survey"] = survey
+        assessment, _ = assessments_usable.get_or_create(
+            **assessment_kwargs, defaults={"name": locality.name}
+        )
 
         return RestResponse(status=200, data=self.serializer_class(assessment).data)
 
 
-class ZipCodeLocalitiesView(mixins.ListModelMixin, viewsets.GenericViewSet):
+class ZipCodeSurveysView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class_municipality = MunicipalitySerializer
     serializer_class_epci = EpciSerializer
 
@@ -257,11 +275,18 @@ class ZipCodeLocalitiesView(mixins.ListModelMixin, viewsets.GenericViewSet):
             ).distinct(),
             many=True,
         )
+        city_surveys = {
+            LocalityType.MUNICIPALITY: municipalities.data,
+            LocalityType.INTERCOMMUNALITY: epcis.data,
+        }
+        region_surveys = RegionSerializer(
+            Region.objects.filter(
+                departments__municipalities__zip_codes__code=zip_code
+            ).distinct(),
+            many=True,
+        ).data
         return Response(
-            {
-                LocalityType.MUNICIPALITY: municipalities.data,
-                LocalityType.INTERCOMMUNALITY: epcis.data,
-            }
+            {SurveyLocality.CITY: city_surveys, SurveyLocality.REGION: region_surveys}
         )
 
 

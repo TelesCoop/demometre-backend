@@ -24,6 +24,10 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "no-reply@telescoop.fr"
 
 INSTALLED_APPS.append("django_extensions")  # noqa: F405
+INSTALLED_APPS.append("debug_toolbar")  # noqa: F405
+
+MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")  # noqa: F405
+INTERNAL_IPS = ["127.0.0.1"]
 
 
 class DisableMigrations(object):

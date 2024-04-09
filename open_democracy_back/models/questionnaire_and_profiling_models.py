@@ -27,6 +27,7 @@ from open_democracy_back.utils import (
     BooleanOperator,
     QuestionType,
     PillarName,
+    SurveyLocality,
 )
 
 
@@ -122,6 +123,13 @@ class ScoreFields(models.Model):
 @register_snippet
 class Survey(TimeStampedModel):
     name = models.CharField(max_length=255, verbose_name="Nom", unique=True)
+    survey_locality = models.CharField(
+        max_length=32,
+        choices=SurveyLocality.choices,
+        default=SurveyLocality.CITY,
+        verbose_name="Échelon du questionnaire",
+        unique=True,
+    )
     description = RichTextField(
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
@@ -139,6 +147,7 @@ class Survey(TimeStampedModel):
     is_active = models.BooleanField(default=False, verbose_name="Actif")
     panels = [
         FieldPanel("name"),
+        FieldPanel("survey_locality"),
         FieldPanel("code"),
         FieldPanel("description"),
         FieldPanel("is_active"),
@@ -202,7 +211,7 @@ class Pillar(models.Model):
 @register_snippet
 class Marker(index.Indexed, ScoreFields):
     pillar = models.ForeignKey(
-        Pillar, null=True, blank=True, on_delete=models.SET_NULL, related_name="markers"
+        Pillar, null=True, blank=True, on_delete=models.CASCADE, related_name="markers"
     )
     name = models.CharField(verbose_name="Nom", max_length=125)
     code = models.CharField(
@@ -275,7 +284,7 @@ class Criteria(index.Indexed, ClusterableModel):
         Marker,
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         related_name="criterias",
     )
     name = models.CharField(verbose_name="Nom", max_length=125)
@@ -497,14 +506,11 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     )
 
     # Questionnary questions fields
-
-    # TODO : question : how to behave when you delete a criteria?
-    #  Delete all question or not authorize if questions are linked ?
     criteria = models.ForeignKey(
         Criteria,
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         related_name="questions",
     )
     objectivity = models.CharField(

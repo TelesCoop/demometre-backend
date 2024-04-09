@@ -25,6 +25,8 @@ NUMERICAL_OPERATOR = [
 class LocalityType(models.TextChoices):
     MUNICIPALITY = "municipality", "Commune"
     INTERCOMMUNALITY = "intercommunality", "Intercommunalité"
+    DEPARTMENT = "department", "Département"
+    REGION = "region", "Région"
 
 
 class InitiatorType(models.TextChoices):
@@ -97,3 +99,9 @@ class PillarName(models.TextChoices):
     TRANSPARENCY = "transparence", "Transparence"
     PARTICIPATION = "participation", "Participation"
     COOPERATION = "coopération", "Coopération"
+
+
+class SurveyLocality(models.TextChoices):
+    CITY = "city", "Commune/EPCI"
+    DEPARTMENT = "department", "Département"
+    REGION = "region", "Région"

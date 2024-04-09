@@ -41,6 +41,7 @@ class RepresentativityCriteriaSerializer(serializers.ModelSerializer):
         model = RepresentativityCriteria
         fields = [
             "id",
+            "survey_locality",
             "name",
             "profiling_question_id",
             "min_rate",

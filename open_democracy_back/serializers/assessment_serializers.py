@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from my_auth.models import User
 from open_democracy_back.exceptions import ErrorCode
-from open_democracy_back.models import Participation, AssessmentDocument
+from open_democracy_back.models import Participation, AssessmentDocument, Region
 from open_democracy_back.models.assessment_models import (
     EPCI,
     Assessment,
@@ -25,20 +25,14 @@ from open_democracy_back.serializers.user_serializers import (
     UserSerializer,
 )
 from open_democracy_back.serializers.utils import Base64FileField
-from open_democracy_back.utils import LocalityType
 
 
 class MunicipalitySerializer(serializers.ModelSerializer):
     zip_codes = serializers.SerializerMethodField()
-    locality_type = serializers.SerializerMethodField()
 
     @staticmethod
     def get_zip_codes(obj: Municipality):
         return obj.zip_codes.values_list("code", flat=True)
-
-    @staticmethod
-    def get_locality_type(_):
-        return LocalityType.MUNICIPALITY
 
     class Meta:
         model = Municipality
@@ -52,9 +46,20 @@ class MunicipalitySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = [
+            "id",
+            "code",
+            "name",
+            "locality_type",
+        ]
+        read_only_fields = fields
+
+
 class EpciSerializer(serializers.ModelSerializer):
     zip_codes = serializers.SerializerMethodField()
-    locality_type = serializers.SerializerMethodField()
 
     @staticmethod
     def get_zip_codes(obj: EPCI):
@@ -64,10 +69,6 @@ class EpciSerializer(serializers.ModelSerializer):
                 municipality_order.municipality.zip_codes.values_list("code", flat=True)
             ]
         return zip_codes
-
-    @staticmethod
-    def get_locality_type(_):
-        return LocalityType.INTERCOMMUNALITY
 
     class Meta:
         model = EPCI
@@ -157,6 +158,8 @@ class AssessmentSerializer(serializers.ModelSerializer):
     )
     details = serializers.SerializerMethodField()
     workshop_count = serializers.SerializerMethodField()
+    survey_locality = serializers.SerializerMethodField()
+    survey_name = serializers.SerializerMethodField()
 
     def get_is_current(self, obj: Assessment):
         """Returns a boolean indicating if the assessment is ongoing."""
@@ -193,6 +196,14 @@ class AssessmentSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_workshop_count(obj: Assessment):
         return obj.workshops.count()
+
+    @staticmethod
+    def get_survey_locality(obj: Assessment):
+        return obj.survey and obj.survey.survey_locality
+
+    @staticmethod
+    def get_survey_name(obj: Assessment):
+        return obj.survey and obj.survey.name
 
     def update(self, instance: Assessment, validated_data):
         """Custom update so that we can update the experts."""
@@ -233,6 +244,9 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "published_results",
             "representativities",
             "stakeholders",
+            "survey_locality",
+            "survey_name",
+            "survey_id",
             "workshop_count",
         ]
         read_only_fields = [
@@ -275,7 +289,7 @@ class AssessmentResponseSerializer(ResponseSerializer):
 
     def validate(self, data):
         assessment = data["assessment"]
-        population = assessment.population
+        population = assessment.population or 0
         user = self.context["request"].user
 
         question = data["question"]

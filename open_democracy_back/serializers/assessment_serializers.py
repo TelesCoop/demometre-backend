@@ -25,20 +25,14 @@ from open_democracy_back.serializers.user_serializers import (
     UserSerializer,
 )
 from open_democracy_back.serializers.utils import Base64FileField
-from open_democracy_back.utils import LocalityType
 
 
 class MunicipalitySerializer(serializers.ModelSerializer):
     zip_codes = serializers.SerializerMethodField()
-    locality_type = serializers.SerializerMethodField()
 
     @staticmethod
     def get_zip_codes(obj: Municipality):
         return obj.zip_codes.values_list("code", flat=True)
-
-    @staticmethod
-    def get_locality_type(_):
-        return LocalityType.MUNICIPALITY
 
     class Meta:
         model = Municipality
@@ -53,12 +47,6 @@ class MunicipalitySerializer(serializers.ModelSerializer):
 
 
 class RegionSerializer(serializers.ModelSerializer):
-    locality_type = serializers.SerializerMethodField()
-
-    @staticmethod
-    def get_locality_type(_):
-        return LocalityType.REGION
-
     class Meta:
         model = Region
         fields = [
@@ -72,7 +60,6 @@ class RegionSerializer(serializers.ModelSerializer):
 
 class EpciSerializer(serializers.ModelSerializer):
     zip_codes = serializers.SerializerMethodField()
-    locality_type = serializers.SerializerMethodField()
 
     @staticmethod
     def get_zip_codes(obj: EPCI):
@@ -82,10 +69,6 @@ class EpciSerializer(serializers.ModelSerializer):
                 municipality_order.municipality.zip_codes.values_list("code", flat=True)
             ]
         return zip_codes
-
-    @staticmethod
-    def get_locality_type(_):
-        return LocalityType.INTERCOMMUNALITY
 
     class Meta:
         model = EPCI

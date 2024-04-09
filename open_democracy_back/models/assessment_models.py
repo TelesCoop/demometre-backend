@@ -27,6 +27,8 @@ class Region(index.Indexed, models.Model):
     code = models.CharField(max_length=3, verbose_name="Code")
     name = models.CharField(max_length=64, verbose_name="Nom")
 
+    locality_type = LocalityType.REGION
+
     search_fields = [
         index.SearchField(
             "name",
@@ -52,6 +54,8 @@ class Department(index.Indexed, models.Model):
         null=True,
         related_name="departments",
     )
+
+    locality_type = LocalityType.INTERCOMMUNALITY
 
     search_fields = [
         index.SearchField(
@@ -79,6 +83,8 @@ class Municipality(index.Indexed, ClusterableModel):
         related_name="municipalities",
     )
     population = models.IntegerField(verbose_name="Population", default=0)
+
+    locality_type = LocalityType.MUNICIPALITY
 
     panels = [
         FieldPanel("code"),
@@ -127,6 +133,8 @@ class EPCI(index.Indexed, ClusterableModel):
     code = models.CharField(max_length=100, verbose_name="Code siren")
     name = models.CharField(max_length=255, verbose_name="Nom")
     population = models.IntegerField(verbose_name="Population", default=0)
+
+    locality_type = LocalityType.INTERCOMMUNALITY
 
     panels = [
         FieldPanel("code"),

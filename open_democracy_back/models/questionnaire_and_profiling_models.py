@@ -144,13 +144,11 @@ class Survey(TimeStampedModel):
         help_text="Nom court du questionnaire pour les menus de l'interface admin",
         default="",
     )
-    is_active = models.BooleanField(default=False, verbose_name="Actif")
     panels = [
         FieldPanel("name"),
         FieldPanel("survey_locality"),
         FieldPanel("code"),
         FieldPanel("description"),
-        FieldPanel("is_active"),
     ]
 
     def __str__(self):

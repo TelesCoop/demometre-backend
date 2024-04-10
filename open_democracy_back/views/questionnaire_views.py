@@ -27,8 +27,7 @@ class SurveyView(
 ):
     serializer_class = FullSurveySerializer
     queryset = (
-        Survey.objects.filter(is_active=True)
-        .prefetch_related("pillars")
+        Survey.objects.prefetch_related("pillars")
         .prefetch_related("pillars__markers")
         .prefetch_related("pillars__markers__criterias")
         .prefetch_related("pillars__markers__criterias__questions")

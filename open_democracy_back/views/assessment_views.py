@@ -374,7 +374,6 @@ class AssessmentScoreView(APIView):
 @api_view(["GET"])
 def get_chart_data(request, assessment_id, question_id):
     question = Question.objects.get(id=question_id)
-
     data = (
         CHART_DATA_FN_BY_QUESTION_TYPE[question.type](question, assessment_id)
         if CHART_DATA_FN_BY_QUESTION_TYPE.get(question.type)

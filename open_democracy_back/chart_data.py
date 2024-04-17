@@ -86,23 +86,31 @@ def get_chart_data_of_choice_question(question, assessment_id, choice_type):
     ).annotate(
         count_by_role=Count("role_name", filter=Q(**base_queryset)),
     )
+
+    question_roles = [role.name for role in question.roles.all()]
+
     data = {"value": {}, "role": {}}
+    total_count = 0
     for response_choice in response_choices:
         data["value"][response_choice.id] = {
             "label": response_choice.response_choice,
             "value": response_choice.count,
         }
     for response_choice in response_choices_role_count:
+        if response_choice.role_name not in question_roles:
+            # we don't want to show roles that are not attached to the question
+            # because they are not displayed to the frontend, so the totals would
+            # be wrong (less than 100%)
+            continue
         data["value"][response_choice.id][response_choice.role_name] = {
             "value": response_choice.count_by_role,
         }
+        total_count += response_choice.count_by_role
 
     # count is not the number of answers, because an answer can count multiple times
     # if answered for multiple profiles
-    count = 0
-    for pk, details in data["value"].items():
-        count += details["value"]
-    data["count"] = count
+    # we also only count roles that are still attached to the question
+    data["count"] = total_count
     return data
 
 
@@ -137,7 +145,7 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
     result = closed_with_scale_responses.values(
         "category_id", "response_choice_id"
     ).annotate(count=Count("id"))
-    result_by_category_id = defaultdict(lambda: {})
+    result_by_category_id = defaultdict(dict)
     for item in result:
         result_by_category_id[item["category_id"]][item["response_choice_id"]] = item[
             "count"

@@ -197,7 +197,7 @@ class QuestionnaireQuestionSerializer(QuestionSerializer):
 class ProfilingQuestionSerializer(QuestionSerializer):
     class Meta:
         model = ProfilingQuestion
-        fields = QUESTION_FIELDS
+        fields = QUESTION_FIELDS + ["surveys"]
         read_only_fields = fields
 
 

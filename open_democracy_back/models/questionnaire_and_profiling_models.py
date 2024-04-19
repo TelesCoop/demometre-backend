@@ -539,6 +539,13 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     # Profiling questions fields
     profiling_question = models.BooleanField(default=False)
+    # this is only for profiling questions
+    surveys = models.ManyToManyField(
+        Survey,
+        verbose_name="Questionnaires concernés",
+        related_name="profiling_questions",
+        blank=True,
+    )
 
     roles = models.ManyToManyField(
         Role,
@@ -713,6 +720,7 @@ class ProfilingQuestion(Question):
     panels = [
         *Question.principal_panels,
         *Question.commun_types_panels,
+        FieldPanel("surveys", widget=forms.CheckboxSelectMultiple),
         *Question.explanation_panels,
         get_number_multifield_panel(True),
     ]

@@ -16,14 +16,23 @@ from open_democracy_back.scoring import get_interval_average_values
 from open_democracy_back.utils import QuestionType
 
 
-def get_chart_data_objective_queryset(assessment_id, prefix_queryset=""):
+def get_chart_data_objective_queryset(
+    assessment_id, prefix_queryset="", exclude_empty_for_question_type=None
+):
     prefix = f"{prefix_queryset}__" if prefix_queryset else ""
 
-    return {
+    to_return = {
         f"{prefix}answered_by__is_unknown_user": False,
         f"{prefix}assessment_id": assessment_id,
-        f"{prefix}has_passed": False,
     }
+
+    if exclude_empty_for_question_type:
+        response_name = Question.RESPONSE_NAME_BY_QUESTION_TYPE[
+            exclude_empty_for_question_type
+        ]
+        to_return[f"{response_name}__isnull"] = False
+
+    return to_return
 
 
 def get_chart_data_subjective_queryset(assessment_id, prefix_queryset=""):
@@ -39,7 +48,9 @@ def get_chart_data_subjective_queryset(assessment_id, prefix_queryset=""):
 def get_chart_data_of_boolean_question(question, assessment_id):
     if question.objectivity == "objective":
         base_count = "assessmentresponses"
-        base_queryset = get_chart_data_objective_queryset(assessment_id, base_count)
+        base_queryset = get_chart_data_objective_queryset(
+            assessment_id, base_count, QuestionType.BOOLEAN.value
+        )
     else:
         base_count = "participationresponses"
         base_queryset = get_chart_data_subjective_queryset(assessment_id, base_count)

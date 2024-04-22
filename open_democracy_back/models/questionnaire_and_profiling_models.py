@@ -154,6 +154,10 @@ class Survey(TimeStampedModel):
     def __str__(self):
         return f"{self.name} ({self.code})"
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        [child_pillar.save() for child_pillar in self.pillars.all()]
+
 
 @register_snippet
 class Pillar(models.Model):

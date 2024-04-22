@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Dict, Callable
 
 from django.db.models import Count, Q, F
+from rest_framework.response import Response
 
 from open_democracy_back.models import (
     ResponseChoice,
@@ -201,14 +202,17 @@ def get_chart_data_of_interval_question(question, assessment_id):
         base_queryset = get_chart_data_subjective_queryset(assessment_id)
         model = ParticipationResponse
 
-    result = (
-        get_interval_average_values(
-            model.objects.filter(**base_queryset, question_id=question.id),
-            question.type,
+    try:
+        result = (
+            get_interval_average_values(
+                model.objects.filter(**base_queryset, question_id=question.id),
+                question.type,
+            )
+            .annotate(count=Count("id"))
+            .get()
         )
-        .annotate(count=Count("id"))
-        .get()
-    )
+    except model.DoesNotExist:
+        return Response(status=404)
 
     return {
         "value": {"label": label, "value": result["avg_value"]},

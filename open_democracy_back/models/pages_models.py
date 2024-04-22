@@ -8,8 +8,6 @@ from wagtail import blocks
 from wagtail.admin.panels import (
     MultiFieldPanel,
     FieldRowPanel,
-    ObjectList,
-    TabbedInterface,
     InlinePanel,
     FieldPanel,
 )
@@ -127,9 +125,6 @@ class HomePage(Page):
             heading="Partenaires",
         ),
     ]
-
-    # Admin tabs list (Remove promotion and settings tabs)
-    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
 
     class Meta:
         verbose_name = "Page d'accueil"
@@ -300,9 +295,6 @@ class UsagePage(Page):
         ),
     ]
 
-    # Admin tabs list (Remove promotion and settings tabs)
-    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
-
     class Meta:
         verbose_name = "Page des utilisations possibles"
 
@@ -434,9 +426,6 @@ class ReferentialPage(Page):
             heading="Explication des critères d'évaluation",
         ),
     ]
-
-    # Admin tabs list (Remove promotion and settings tabs)
-    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
 
     class Meta:
         verbose_name = "Référentiel"
@@ -791,9 +780,6 @@ class ProjectPage(Page):
             heading="Bloc Comment",
         ),
     ]
-
-    # Admin tabs list (Remove promotion and settings tabs)
-    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
 
     class Meta:
         verbose_name = "Page du projet"
@@ -1170,9 +1156,6 @@ class EvaluationInitiationPage(Page):
         ),
     ]
 
-    # Admin tabs list (Remove promotion and settings tabs)
-    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
-
     class Meta:
         verbose_name = "Lancement d'une évaluation"
 
@@ -1293,9 +1276,6 @@ class EvaluationQuestionnairePage(Page):
         ),
     ]
 
-    # Admin tabs list (Remove promotion and settings tabs)
-    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
-
     class Meta:
         verbose_name = "Déroulement de l'évaluation"
 
@@ -1365,9 +1345,6 @@ class AnimatorPage(Page):
         ),
     ]
 
-    # Admin tabs list (Remove promotion and settings tabs)
-    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
-
     class Meta:
         verbose_name = "Espace Expert"
 
@@ -1385,9 +1362,6 @@ class ContentPage(Page):
     content_panels = Page.content_panels + [
         FieldPanel("content"),
     ]
-
-    # Admin tabs list (Remove promotion and settings tabs)
-    edit_handler = TabbedInterface([ObjectList(content_panels, heading="Content")])
 
     class Meta:
         verbose_name = "Page de contenu"

@@ -212,7 +212,12 @@ def get_chart_data_of_interval_question(question, assessment_id):
             .get()
         )
     except model.DoesNotExist:
-        return Response(status=404)
+        return Response(
+            {
+                "status": f"no corresponding response for model {model}, question {question.pk}, assessment {assessment_id}"
+            },
+            status=404,
+        )
 
     return {
         "value": {"label": label, "value": result["avg_value"]},

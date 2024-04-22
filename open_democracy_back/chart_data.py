@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import Dict, Callable
 
 from django.db.models import Count, Q, F
-from rest_framework.response import Response
+from django.http import Http404
 
 from open_democracy_back.models import (
     ResponseChoice,
@@ -212,11 +212,8 @@ def get_chart_data_of_interval_question(question, assessment_id):
             .get()
         )
     except model.DoesNotExist:
-        return Response(
-            {
-                "status": f"no corresponding response for model {model}, question {question.pk}, assessment {assessment_id}"
-            },
-            status=404,
+        raise Http404(
+            f"no corresponding response for model {model}, question {question.pk}, assessment {assessment_id}"
         )
 
     return {

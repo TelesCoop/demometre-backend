@@ -275,18 +275,19 @@ class ZipCodeSurveysView(mixins.ListModelMixin, viewsets.GenericViewSet):
             ).distinct(),
             many=True,
         )
-        city_surveys = {
-            LocalityType.MUNICIPALITY: municipalities.data,
-            LocalityType.INTERCOMMUNALITY: epcis.data,
-        }
-        region_surveys = RegionSerializer(
+        regions = RegionSerializer(
             Region.objects.filter(
                 departments__municipalities__zip_codes__code=zip_code
             ).distinct(),
             many=True,
-        ).data
+        )
+
         return Response(
-            {SurveyLocality.CITY: city_surveys, SurveyLocality.REGION: region_surveys}
+            {
+                LocalityType.MUNICIPALITY: municipalities.data,
+                LocalityType.INTERCOMMUNALITY: epcis.data,
+                LocalityType.REGION: regions.data,
+            }
         )
 
 

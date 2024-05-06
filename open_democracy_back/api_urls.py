@@ -53,6 +53,7 @@ from .views.assessment_views import (
 from .views.profiling_views import (
     ProfilingQuestionView,
     RoleView,
+    ProfileTypeView,
 )
 from .views.questionnaire_views import (
     CriteriaView,
@@ -131,6 +132,7 @@ router.register(
     r"assessment-documents", AssessmentDocumentView, basename="assessment-documents"
 )
 router.register("surveys", SurveyView, basename="surveys")
+router.register("profile-types", ProfileTypeView, basename="profile-types")
 
 
 urlpatterns = [

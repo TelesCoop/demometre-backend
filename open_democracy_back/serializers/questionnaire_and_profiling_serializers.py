@@ -57,7 +57,7 @@ class RoleSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class RuleSerializer(serializers.ModelSerializer):
+class RuleAbstractSerializer(serializers.ModelSerializer):
     class Meta:
         fields = [
             "id",
@@ -71,7 +71,7 @@ class RuleSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class QuestionRuleSerializer(RuleSerializer):
+class QuestionRuleAbstractSerializer(RuleAbstractSerializer):
     conditional_question_id = serializers.PrimaryKeyRelatedField(
         read_only=True, source="conditional_question"
     )
@@ -84,16 +84,16 @@ class QuestionRuleSerializer(RuleSerializer):
         fields = [
             "conditional_question_id",
             "response_choice_ids",
-            *RuleSerializer.Meta.fields,
+            *RuleAbstractSerializer.Meta.fields,
         ]
         read_only_fields = fields
 
 
-class ProfileDefinitionSerializer(RuleSerializer):
+class ProfileDefinitionAbstractSerializer(RuleAbstractSerializer):
     class Meta:
         model = ProfileDefinition
         fields = [
-            *RuleSerializer.Meta.fields,
+            *RuleAbstractSerializer.Meta.fields,
             "profile_type",
             "explanation",
         ]
@@ -101,7 +101,7 @@ class ProfileDefinitionSerializer(RuleSerializer):
 
 
 class ProfileTypeSerializer(serializers.ModelSerializer):
-    rules = ProfileDefinitionSerializer(many=True, read_only=True)
+    rules = ProfileDefinitionAbstractSerializer(many=True, read_only=True)
 
     class Meta:
         model = ProfileType
@@ -159,7 +159,7 @@ def get_all_assessment_types_with_cache():
 class QuestionSerializer(serializers.ModelSerializer):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
-    rules = QuestionRuleSerializer(many=True, read_only=True)
+    rules = QuestionRuleAbstractSerializer(many=True, read_only=True)
     role_ids = serializers.SerializerMethodField()
 
     @staticmethod

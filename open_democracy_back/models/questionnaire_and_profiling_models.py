@@ -985,6 +985,48 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     def type(self):
         return self.conditional_question.type
 
+    @staticmethod
+    def format_explanation(question_code, response):
+        return (
+            f"La réponse de la question d'affinage {question_code} doit être {response}"
+        )
+
+    @staticmethod
+    def explain_choice_rule(rule):
+        response_choices = "".join(
+            [
+                response_choice.response_choice
+                for response_choice in rule.response_choices.all()
+            ]
+        )
+        return rule.format_explanation(
+            rule.conditional_question.code, f"égale à {response_choices}"
+        )
+
+    RULE_EXPLANATION_BY_TYPE = {
+        QuestionType.BOOLEAN.value: lambda rule: rule.format_explanation(
+            rule.conditional_question.code, "Oui" if rule.boolean_response else "Non"
+        ),
+        QuestionType.UNIQUE_CHOICE.value: explain_choice_rule,
+        QuestionType.MULTIPLE_CHOICE.value: explain_choice_rule,
+        QuestionType.NUMBER.value: lambda rule: rule.format_explanation(
+            rule.conditional_question.code,
+            f"{rule.numerical_operator} à {rule.numerical_value}",
+        ),
+        QuestionType.PERCENTAGE.value: lambda rule: rule.format_explanation(
+            rule.conditional_question.code,
+            f"{rule.numerical_operator} à {rule.numerical_value}%",
+        ),
+    }
+
+    @property
+    def explanation(self):
+        return (
+            self.RULE_EXPLANATION_BY_TYPE[self.conditional_question.type](self)
+            if self.conditional_question.type in self.RULE_EXPLANATION_BY_TYPE
+            else "Règle non prise en charge"
+        )
+
     def __str__(self):
         condition_question_str = ""
         if self.conditional_question:

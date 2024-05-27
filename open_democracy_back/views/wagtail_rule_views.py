@@ -274,6 +274,11 @@ def duplicate_question(question_to_duplicate, criterion):
         for instance in getattr(question_to_duplicate, child_key).all():
             duplicate_instance_and_set_foreign_key(instance, "question", new_question)
 
+    # foreign keys whose relations should stay the same
+    for foreign_key in ["assessment_types", "roles", "profiles"]:
+        for instance in getattr(question_to_duplicate, foreign_key).all():
+            getattr(new_question, foreign_key).add(instance)
+
     return new_question
 
 

@@ -13,9 +13,9 @@ getconf==1.11.1
 gunicorn==22.0.0
 humanize==4.8.0
 ipython==8.14.0
-numpy==1.22.3
-pandas==1.4.1
-psycopg2==2.9.5
+numpy==1.25.2
+pandas==1.5.3
+psycopg2==2.9.9
 rollbar>=0.16,<0.17
 telescoop_backup==0.1.4
 wagtail>=5.0,<5.1

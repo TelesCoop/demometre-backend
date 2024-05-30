@@ -55,7 +55,7 @@ class Department(index.Indexed, models.Model):
         related_name="departments",
     )
 
-    locality_type = LocalityType.INTERCOMMUNALITY
+    locality_type = LocalityType.DEPARTMENT
 
     search_fields = [
         index.SearchField(

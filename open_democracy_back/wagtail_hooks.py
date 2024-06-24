@@ -2,12 +2,13 @@ from django.urls import path, reverse
 from django.utils.html import format_html_join
 from django.templatetags.static import static
 from wagtail.admin.menu import MenuItem
-from wagtail.contrib.modeladmin.options import (
+from wagtail.admin.site_summary import SummaryItem
+from wagtail_modeladmin.options import (
     ModelAdmin,
     modeladmin_register,
     ModelAdminGroup,
 )
-from wagtail.contrib.modeladmin.helpers import PermissionHelper
+from wagtail_modeladmin.helpers import PermissionHelper
 
 from wagtail import hooks
 
@@ -35,7 +36,7 @@ from open_democracy_back.models import (
     Survey,
 )
 
-from wagtail.contrib.modeladmin.helpers import ButtonHelper
+from wagtail_modeladmin.helpers import ButtonHelper
 from open_democracy_back.models.assessment_models import AssessmentType
 from open_democracy_back.models.contents_models import (
     BlogPost,

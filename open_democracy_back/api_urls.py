@@ -73,7 +73,7 @@ router.register(
 )
 router.register(r"results-pages", ResultsPageView, basename="ResultsPage")
 router.register(r"usage-pages", UsagePageView, basename="UsagePage")
-router.register(r"project-pages", ProjectPageView, basename="UsagePage")
+router.register(r"project-pages", ProjectPageView, basename="ProjectPage")
 router.register(
     r"evaluation-initiation-pages",
     EvaluationInitiationPageSerializerView,

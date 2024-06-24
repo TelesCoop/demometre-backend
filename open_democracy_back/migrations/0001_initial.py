@@ -15,7 +15,7 @@ import wagtail.fields
 import wagtail.images.blocks
 import wagtail.search.index
 import wagtail.snippets.blocks
-import wagtailsvg.blocks
+from open_democracy_back.models.wagtailsvg import SvgChooserBlock
 
 
 class Migration(migrations.Migration):
@@ -483,14 +483,14 @@ class Migration(migrations.Migration):
                 ('why_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Titre')),
                 ('why_block_data', wagtail.fields.StreamField([('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Paragraphe')), ('image', wagtail.images.blocks.ImageChooserBlock(label='Image'))], blank=True, verbose_name='Texte')),
                 ('objective_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Titre')),
-                ('objective_block_data', wagtail.fields.StreamField([('objective', wagtail.blocks.StructBlock([('svg', wagtailsvg.blocks.SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.blocks.CharBlock(label='Titre'))], label='Objectif', label_format='Objectif : {title}'))], blank=True, verbose_name='Les objectifs')),
+                ('objective_block_data', wagtail.fields.StreamField([('objective', wagtail.blocks.StructBlock([('svg', SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.blocks.CharBlock(label='Titre'))], label='Objectif', label_format='Objectif : {title}'))], blank=True, verbose_name='Les objectifs')),
                 ('impact_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Titre')),
                 ('impact_block_data', wagtail.fields.StreamField([('impact', wagtail.blocks.StructBlock([('image', wagtail.images.blocks.ImageChooserBlock(label='Image')), ('title', wagtail.blocks.CharBlock(label='Titre'))], label='Impact', label_format='Impact : {title}'))], blank=True, verbose_name='Les impacts')),
                 ('who_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Titre')),
                 ('who_partner_sub_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Partenaires - titre')),
                 ('who_partner_sub_block_data', wagtail.fields.StreamField([('group_partners', wagtail.blocks.StructBlock([('title', wagtail.blocks.CharBlock(label='Titre')), ('description', wagtail.blocks.CharBlock(label='Description')), ('partners', wagtail.blocks.ListBlock(wagtail.snippets.blocks.SnippetChooserBlock(open_democracy_back.models.contents_models.Partner)))], label='Type de partenaires', label_format='{title}'))], blank=True, verbose_name='Partenaires - contenu')),
                 ('how_block_title', models.CharField(blank=True, help_text="Si ce champ est vide le bloc ne s'affichera pas", max_length=68, verbose_name='Titre')),
-                ('how_block_data', wagtail.fields.StreamField([('title', wagtail.blocks.CharBlock(label='Titre')), ('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Paragraphe')), ('step', wagtail.blocks.ListBlock(wagtail.blocks.StructBlock([('svg', wagtailsvg.blocks.SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.blocks.CharBlock(label='Titre')), ('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Descriptif')), ('link', wagtail.blocks.CharBlock(label='Lien en savoir plus', required=False))]), label='Etapes', label_format='Carte : {title}'))], blank=True, verbose_name='Contenu')),
+                ('how_block_data', wagtail.fields.StreamField([('title', wagtail.blocks.CharBlock(label='Titre')), ('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Paragraphe')), ('step', wagtail.blocks.ListBlock(wagtail.blocks.StructBlock([('svg', SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.blocks.CharBlock(label='Titre')), ('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Descriptif')), ('link', wagtail.blocks.CharBlock(label='Lien en savoir plus', required=False))]), label='Etapes', label_format='Carte : {title}'))], blank=True, verbose_name='Contenu')),
                 ('intro_image', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='wagtailimages.image', verbose_name='Image')),
             ],
             options={

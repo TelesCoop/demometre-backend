@@ -7,8 +7,7 @@ import wagtail.documents.blocks
 import wagtail.fields
 import wagtail.images.blocks
 import wagtail.snippets.blocks
-import wagtailsvg.blocks
-
+from open_democracy_back.models.wagtailsvg import SvgChooserBlock
 
 class Migration(migrations.Migration):
 
@@ -30,7 +29,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='projectpage',
             name='how_block_data',
-            field=wagtail.fields.StreamField([('title', wagtail.blocks.CharBlock(label='Titre')), ('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Paragraphe')), ('step', wagtail.blocks.ListBlock(wagtail.blocks.StructBlock([('svg', wagtailsvg.blocks.SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.blocks.CharBlock(label='Titre')), ('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Descriptif')), ('link', wagtail.blocks.CharBlock(label='Lien en savoir plus', required=False))]), label='Etapes', label_format='Carte : {title}'))], blank=True, use_json_field=True, verbose_name='Contenu'),
+            field=wagtail.fields.StreamField([('title', wagtail.blocks.CharBlock(label='Titre')), ('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Paragraphe')), ('step', wagtail.blocks.ListBlock(wagtail.blocks.StructBlock([('svg', SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.blocks.CharBlock(label='Titre')), ('richtext', wagtail.blocks.RichTextBlock(features=['bold', 'italic', 'link', 'ol', 'ul'], label='Descriptif')), ('link', wagtail.blocks.CharBlock(label='Lien en savoir plus', required=False))]), label='Etapes', label_format='Carte : {title}'))], blank=True, use_json_field=True, verbose_name='Contenu'),
         ),
         migrations.AlterField(
             model_name='projectpage',
@@ -40,7 +39,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='projectpage',
             name='objective_block_data',
-            field=wagtail.fields.StreamField([('objective', wagtail.blocks.StructBlock([('svg', wagtailsvg.blocks.SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.blocks.CharBlock(label='Titre'))], label='Objectif', label_format='Objectif : {title}'))], blank=True, use_json_field=True, verbose_name='Les objectifs'),
+            field=wagtail.fields.StreamField([('objective', wagtail.blocks.StructBlock([('svg', SvgChooserBlock(help_text="Pour ajouter un SVG d'abord l'ajouter dans le menu SVG", label='Icon au format svg')), ('title', wagtail.blocks.CharBlock(label='Titre'))], label='Objectif', label_format='Objectif : {title}'))], blank=True, use_json_field=True, verbose_name='Les objectifs'),
         ),
         migrations.AlterField(
             model_name='projectpage',

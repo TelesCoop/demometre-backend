@@ -15,9 +15,9 @@ from wagtail.fields import RichTextField, StreamField
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.models import Page
 from wagtail.snippets.blocks import SnippetChooserBlock
-from wagtailsvg.blocks import SvgChooserBlock
 
 from open_democracy_back.models.contents_models import Partner, Person
+from open_democracy_back.models.wagtailsvg import SvgChooserBlock
 from open_democracy_back.utils import (
     SIMPLE_RICH_TEXT_FIELD_FEATURE,
     ManagedAssessmentType,

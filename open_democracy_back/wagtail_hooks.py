@@ -50,7 +50,9 @@ from open_democracy_back.models.participation_models import Participation
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
 )
+from open_democracy_back.models.wagtailsvg import Svg
 from open_democracy_back.views.custom_admin_views import anomaly
+from open_democracy_back.views.svg_chooser_viewset import SvgChooserViewSet
 from open_democracy_back.views.wagtail_rule_views import (
     question_intersection_operator_view,
     question_rules_view,
@@ -584,3 +586,39 @@ def register_custom_admin_views():
 @hooks.register("register_admin_menu_item")
 def register_missing_score_item():
     return MenuItem("Anomalies", reverse("anomaly"), icon_name="warning")
+
+
+### below are imports from wagtailsvg_wagtail_hooks
+class SvgSummaryItem(SummaryItem):
+    order = 290
+    template_name = "wagtailsvg/homepage/site_summary_svg.html"
+
+    def get_context_data(self, parent_context):
+        return {
+            "total_svg": Svg.objects.count(),
+        }
+
+
+@hooks.register("construct_homepage_summary_items")
+def add_svg_summary_item(request, items):
+    items.append(SvgSummaryItem(request))
+
+
+@hooks.register("register_admin_viewset")
+def register_site_chooser_viewset():
+    return SvgChooserViewSet("svg_chooser", url_prefix="svg-chooser")
+
+
+class SvgModelAdmin(ModelAdmin):
+    model = Svg
+    menu_label = "Svg"
+    menu_icon = "image"
+    menu_order = 400
+    add_to_settings_menu = False
+    exclude_from_explorer = False
+    list_display = ("title",)
+    list_filter = ("collection__name",)
+    search_fields = ("title",)
+
+
+modeladmin_register(SvgModelAdmin)

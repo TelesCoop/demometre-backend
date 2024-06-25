@@ -51,6 +51,9 @@ INSTALLED_APPS = [
     "wagtail",
     "wagtail.api.v2",
     "wagtail_modeladmin",
+    "wagtail_localize.modeladmin",
+    "wagtail_localize",
+    "wagtail_localize.locales",
     "modelcluster",
     "taggit",
     "corsheaders",
@@ -162,6 +165,8 @@ WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
     ("fr", "FR 🇫🇷"),
     ("en", "EN 🇬🇧"),
 ]
+# after updating this list, you need to run makemigrations
+LOCALES_FOR_TRANSLATED_FIELDS = ["fr", "en"]
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 
 

@@ -109,12 +109,8 @@ class ScoreFields(models.Model):
         default="",
     )
 
-    panels = [
-        FieldPanel("score_1"),
-        FieldPanel("score_2"),
-        FieldPanel("score_3"),
-        FieldPanel("score_4"),
-    ]
+    panels = [FieldPanel(f"score_{i}") for i in range(1, 5)]
+    panel_names = [f"score_{i}" for i in range(1, 5)]
 
     class Meta:
         abstract = True
@@ -151,12 +147,18 @@ class Survey(TimeStampedModel):
         FieldPanel("description"),
     ]
 
+    translated_fields = ["description"]
+
     def __str__(self):
         return f"{self.name} ({self.code})"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         [child_pillar.save() for child_pillar in self.pillars.all()]
+
+    class Meta:
+        verbose_name_plural = "Questionnaires"
+        verbose_name = "Questionnaire"
 
 
 @register_snippet
@@ -197,6 +199,8 @@ class Pillar(models.Model):
         FieldPanel("survey"),
     ]
 
+    translated_fields = ["description"]
+
     def __str__(self):
         return f"{self.survey.code}.{self.code}: {self.name}"
 
@@ -236,6 +240,8 @@ class Marker(index.Indexed, ScoreFields):
         FieldPanel("code"),
         FieldPanel("description"),
     ] + ScoreFields.panels
+
+    translated_fields = ["description"] + ScoreFields.panel_names
 
     search_fields = [
         index.SearchField(

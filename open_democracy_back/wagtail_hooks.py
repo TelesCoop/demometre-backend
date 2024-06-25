@@ -1,18 +1,16 @@
+from django.templatetags.static import static
 from django.urls import path, reverse
 from django.utils.html import format_html_join
-from django.templatetags.static import static
+from wagtail import hooks
 from wagtail.admin.menu import MenuItem
-from wagtail.admin.site_summary import SummaryItem
+from wagtail.snippets import widgets as wagtailsnippets_widgets
+from wagtail_modeladmin.helpers import ButtonHelper
+from wagtail_modeladmin.helpers import PermissionHelper
 from wagtail_modeladmin.options import (
     ModelAdmin,
     modeladmin_register,
     ModelAdminGroup,
 )
-from wagtail_modeladmin.helpers import PermissionHelper
-
-from wagtail import hooks
-
-from wagtail.snippets import widgets as wagtailsnippets_widgets
 
 from my_auth.models import User
 from open_democracy_back.models import (
@@ -35,8 +33,6 @@ from open_democracy_back.models import (
     Training,
     Survey,
 )
-
-from wagtail_modeladmin.helpers import ButtonHelper
 from open_democracy_back.models.assessment_models import AssessmentType
 from open_democracy_back.models.contents_models import (
     BlogPost,
@@ -46,7 +42,6 @@ from open_democracy_back.models.contents_models import (
     Resource,
 )
 from open_democracy_back.models.participation_models import Participation
-
 from open_democracy_back.models.representativity_models import (
     RepresentativityCriteria,
 )

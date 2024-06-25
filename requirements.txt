@@ -22,4 +22,4 @@ wagtail>=6.1,<6.2
 wagtail-generic-chooser==0.5.1
 wagtail-localize==1.9
 wagtail-modeladmin==2.0.0
-wagtailsvg==0.0.37
+wagtailsvg @ git+https://github.com/TelesCoop/wagtailsvg.git@wagtail6-support

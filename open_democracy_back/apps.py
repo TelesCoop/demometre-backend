@@ -5,6 +5,7 @@ from django.conf import settings
 from django.utils.datastructures import ImmutableList
 
 POSSIBLE_ARGS = ["help_text", "max_length", "features"]
+NUMBER_LARGER_THAN_LOCALES_COUNT = 100
 
 
 class AuthConfig(AppConfig):
@@ -46,7 +47,8 @@ class AuthConfig(AppConfig):
                         ),
                     )
                     field_order[translated_field_name] = (
-                        field_order[field_name] + locale_ix / 10
+                        field_order[field_name]
+                        + locale_ix / NUMBER_LARGER_THAN_LOCALES_COUNT
                     )
 
                 # replace field in model.panels for wagtail admin

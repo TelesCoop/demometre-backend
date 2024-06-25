@@ -241,7 +241,7 @@ class Marker(index.Indexed, ScoreFields):
         FieldPanel("description"),
     ] + ScoreFields.panels
 
-    translated_fields = ["description"] + ScoreFields.panel_names
+    translated_fields = ["name", "description"] + ScoreFields.panel_names
 
     search_fields = [
         index.SearchField(
@@ -347,6 +347,8 @@ class Criteria(index.Indexed, ClusterableModel):
         InlinePanel("related_definition_ordered", label="Définitions"),
         FieldPanel("explanatory"),
     ]
+
+    translated_fields = ["name", "description"]
 
     search_fields = [
         index.SearchField(
@@ -611,6 +613,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("comments"),
     ]
 
+    translated_fields = ["name", "question_statement", "description", "comments"]
+
     RESPONSE_NAME_BY_QUESTION_TYPE = {
         QuestionType.PERCENTAGE.value: "percentage_response",
         QuestionType.NUMBER.value: "number_response",
@@ -808,6 +812,8 @@ class ResponseChoice(TimeStampedModel, Orderable, Score):
         FieldPanel("description"),
         FieldPanel("associated_score"),
     ]
+
+    translated_fields = ["response_choice", "description"]
 
     def __str__(self):
         return self.response_choice

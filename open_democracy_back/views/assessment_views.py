@@ -58,6 +58,7 @@ from open_democracy_back.serializers.assessment_serializers import (
     AssessmentNoDetailSerializer,
     AssessmentSerializerForUpdate,
     RegionSerializer,
+    DepartmentSerializer,
 )
 from open_democracy_back.serializers.user_serializers import UserSerializer
 from open_democracy_back.utils import ManagedAssessmentType, SurveyLocality
@@ -275,6 +276,13 @@ class ZipCodeSurveysView(mixins.ListModelMixin, viewsets.GenericViewSet):
             ).distinct(),
             many=True,
         )
+        departments = DepartmentSerializer(
+            Department.objects.filter(
+                municipalities__zip_codes__code=zip_code
+            ).distinct(),
+            many=True,
+        )
+
         regions = RegionSerializer(
             Region.objects.filter(
                 departments__municipalities__zip_codes__code=zip_code
@@ -286,6 +294,7 @@ class ZipCodeSurveysView(mixins.ListModelMixin, viewsets.GenericViewSet):
             {
                 LocalityType.MUNICIPALITY: municipalities.data,
                 LocalityType.INTERCOMMUNALITY: epcis.data,
+                LocalityType.DEPARTMENT: departments.data,
                 LocalityType.REGION: regions.data,
             }
         )

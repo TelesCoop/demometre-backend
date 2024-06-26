@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     "wagtail.admin",
     "wagtail",
     "wagtail.api.v2",
-    "wagtail.contrib.modeladmin",
+    "wagtail_modeladmin",
     "modelcluster",
     "taggit",
     "corsheaders",

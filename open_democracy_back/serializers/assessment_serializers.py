@@ -11,6 +11,7 @@ from open_democracy_back.models.assessment_models import (
     AssessmentResponse,
     AssessmentType,
     Municipality,
+    Department,
 )
 from open_democracy_back.models.questionnaire_and_profiling_models import Question
 from open_democracy_back.serializers.participation_serializers import (
@@ -46,9 +47,9 @@ class MunicipalitySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class RegionSerializer(serializers.ModelSerializer):
+class AbstractLocalitySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Region
+        abstract = True
         fields = [
             "id",
             "code",
@@ -56,6 +57,16 @@ class RegionSerializer(serializers.ModelSerializer):
             "locality_type",
         ]
         read_only_fields = fields
+
+
+class RegionSerializer(AbstractLocalitySerializer):
+    class Meta(AbstractLocalitySerializer.Meta):
+        model = Region
+
+
+class DepartmentSerializer(AbstractLocalitySerializer):
+    class Meta(AbstractLocalitySerializer.Meta):
+        model = Department
 
 
 class EpciSerializer(serializers.ModelSerializer):

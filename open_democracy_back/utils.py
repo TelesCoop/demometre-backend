@@ -48,7 +48,6 @@ class BooleanOperator(models.TextChoices):
 
 
 class QuestionType(models.TextChoices):
-    OPEN = "open", "Ouverte"
     UNIQUE_CHOICE = "unique_choice", "Choix unique"
     MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
     CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"

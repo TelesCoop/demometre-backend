@@ -10,6 +10,10 @@ class User(AbstractUser):
     email = models.EmailField(_("email address"), blank=True, unique=True)
 
     @property
+    def is_admin(self):
+        return self.is_staff
+
+    @property
     def is_expert(self):
         return self.groups.filter(name="Experts").exists()
 

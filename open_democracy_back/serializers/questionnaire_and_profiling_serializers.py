@@ -16,10 +16,13 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Definition,
     Role,
     Category,
+    ProfileType,
+    ProfileDefinition,
 )
 
 QUESTION_FIELDS = [
     "id",
+    "code",
     "concatenated_code",
     "name",
     "question_statement",
@@ -80,7 +83,59 @@ class RoleSerializer(SerializerWithTranslatedFields):
         read_only_fields = fields
 
 
-class DefinitionSerializer(SerializerWithTranslatedFields):
+class RuleAbstractSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = [
+            "id",
+            "conditional_question",
+            "response_choices",
+            "numerical_operator",
+            "numerical_value",
+            "boolean_response",
+            "type",
+        ]
+        read_only_fields = fields
+
+
+class QuestionRuleAbstractSerializer(RuleAbstractSerializer):
+    conditional_question_id = serializers.PrimaryKeyRelatedField(
+        read_only=True, source="conditional_question"
+    )
+    response_choice_ids = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True, source="response_choices"
+    )
+
+    class Meta:
+        model = QuestionRule
+        fields = [
+            "conditional_question_id",
+            "response_choice_ids",
+            *RuleAbstractSerializer.Meta.fields,
+        ]
+        read_only_fields = fields
+
+
+class ProfileDefinitionAbstractSerializer(RuleAbstractSerializer):
+    class Meta:
+        model = ProfileDefinition
+        fields = [
+            *RuleAbstractSerializer.Meta.fields,
+            "profile_type",
+            "explanation",
+        ]
+        read_only_fields = fields
+
+
+class ProfileTypeSerializer(serializers.ModelSerializer):
+    rules = ProfileDefinitionAbstractSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ProfileType
+        fields = ["id", "name", "rules", "rules_intersection_operator"]
+        read_only_fields = fields
+
+
+class DefinitionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Definition
         fields = ["id", "word", "explanation"]
@@ -98,28 +153,6 @@ class CategorySerializer(SerializerWithTranslatedFields):
     class Meta:
         model = Category
         fields = ["id", "category"]
-        read_only_fields = fields
-
-
-class QuestionRuleSerializer(SerializerWithTranslatedFields):
-    conditional_question_id = serializers.PrimaryKeyRelatedField(
-        read_only=True, source="conditional_question"
-    )
-    response_choice_ids = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True, source="response_choices"
-    )
-
-    class Meta:
-        model = QuestionRule
-        fields = [
-            "id",
-            "conditional_question_id",
-            "response_choice_ids",
-            "numerical_operator",
-            "numerical_value",
-            "boolean_response",
-            "type",
-        ]
         read_only_fields = fields
 
 
@@ -152,7 +185,7 @@ def get_all_assessment_types_with_cache():
 class QuestionSerializer(SerializerWithTranslatedFields):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
-    rules = QuestionRuleSerializer(many=True, read_only=True)
+    rules = QuestionRuleAbstractSerializer(many=True, read_only=True)
     role_ids = serializers.SerializerMethodField()
 
     @staticmethod

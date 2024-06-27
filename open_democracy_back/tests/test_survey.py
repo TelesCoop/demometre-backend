@@ -8,7 +8,7 @@ from open_democracy_back.factories import (
     ALL_FACTORY_QUESTION_CLASSES,
 )
 from open_democracy_back.models import Criteria, Marker, Question
-from open_democracy_back.utils import QuestionType
+from open_democracy_back.utils import QuestionType, SurveyLocality
 from open_democracy_back.views.wagtail_rule_views import (
     duplicate_survey,
     duplicate_question,
@@ -23,7 +23,7 @@ class TestSurvey(TestCase):
             question_id = question.id
             duplicated_question = duplicate_question(question, criterion)
             question = Question.objects.get(id=question_id)
-            self.assertNotEquals(duplicated_question.id, question.id)
+            self.assertNotEqual(duplicated_question.id, question.id)
             self.assertEqual(duplicated_question.name, question.name)
             self.assertEqual(duplicated_question.type, question.type)
 
@@ -74,6 +74,8 @@ class TestSurvey(TestCase):
         data = {
             "name": "test",
             "description": "test",
+            "survey_locality": SurveyLocality.REGION,
+            "code": "R0",
         }
 
         pillars = PillarFactory.create_batch(child_number, survey=survey)
@@ -88,7 +90,7 @@ class TestSurvey(TestCase):
 
         new_survey = duplicate_survey(data, survey)
         survey.refresh_from_db()
-        self.assertNotEquals(new_survey.id, survey.id)
+        self.assertNotEqual(new_survey.id, survey.id)
         self.assertEqual(new_survey.name, data["name"])
         self.assertEqual(new_survey.description, data["description"])
         self.assertEqual(new_survey.pillars.count(), survey.pillars.count())

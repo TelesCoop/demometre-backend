@@ -34,6 +34,7 @@ from open_democracy_back.utils import (
     InitiatorType,
     ManagedAssessmentType,
     QuestionType,
+    SurveyLocality,
 )
 
 
@@ -58,9 +59,11 @@ class UserFactory(factory.django.DjangoModelFactory):
 class SurveyFactory(factory.django.DjangoModelFactory):
     name: str = factory.Faker("name")
     description: str = factory.Faker("text")
+    survey_locality: str = SurveyLocality.CITY
 
     class Meta:
         model = Survey
+        django_get_or_create = ("survey_locality",)
 
 
 class PillarFactory(factory.django.DjangoModelFactory):
@@ -130,7 +133,7 @@ class RegionFactory(factory.django.DjangoModelFactory):
         model = Region
 
     name: str = factory.Faker("name")
-    code: str = factory.Faker("zipcode")
+    code: str = factory.LazyAttribute(lambda _: str(random.randint(0, 1000)))
 
 
 class DepartmentFactory(factory.django.DjangoModelFactory):
@@ -138,7 +141,7 @@ class DepartmentFactory(factory.django.DjangoModelFactory):
         model = Department
 
     name: str = factory.Faker("name")
-    code: str = factory.Faker("zipcode")
+    code: str = factory.LazyAttribute(lambda _: str(random.randint(0, 1000)))
     region = factory.SubFactory(RegionFactory)
 
 
@@ -147,7 +150,7 @@ class MunicipalityFactory(factory.django.DjangoModelFactory):
         model = Municipality
 
     name: str = factory.Faker("name")
-    code: str = factory.Faker("zipcode")
+    code: str = factory.LazyAttribute(lambda _: str(random.randint(0, 1000)))
     department: str = factory.SubFactory(DepartmentFactory)
 
     population: int = factory.Faker("random_int")
@@ -157,6 +160,7 @@ class AssessmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Assessment
 
+    survey = factory.SubFactory(SurveyFactory)
     initiated_by_user = factory.SubFactory(UserFactory)
     municipality = factory.SubFactory(MunicipalityFactory)
     initiator_type = InitiatorType.INDIVIDUAL
@@ -238,7 +242,7 @@ class CategoryFactory(factory.django.DjangoModelFactory):
         model = Category
 
     question = factory.SubFactory(QuestionFactory)
-    category = factory.Faker("text")
+    category = factory.Faker("text", max_nb_chars=50)
 
 
 class ResponseFactory(factory.django.DjangoModelFactory):

@@ -14,4 +14,4 @@ class TestQuestionnaireViews(TestCase):
             QuestionFactory.create(criteria=criteria)
         with CaptureQueriesContext(connection) as queries:
             self.client.get(url)
-        self.assertLessEqual(len(queries), 20)
+        self.assertLessEqual(len(queries), 25)

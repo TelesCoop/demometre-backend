@@ -1,10 +1,10 @@
 import datetime
 
+from django.utils import translation
 from rest_framework import serializers
 
 from open_democracy_back.models import Survey
 from open_democracy_back.models.assessment_models import AssessmentType
-
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Criteria,
     Marker,
@@ -47,35 +47,61 @@ SCORE_FIELDS = [
 ]
 
 
-class RoleSerializer(serializers.ModelSerializer):
+def method_for_translated_field(field_name):
+    @staticmethod
+    def my_function(obj):
+        locale = translation.get_language()
+        return getattr(obj, f"{field_name}_{locale}")
+
+    my_function.__name__ = f"get_{field_name}"
+
+    return my_function
+
+
+class SerializerWithTranslatedFields(serializers.ModelSerializer):
+    """
+    Serializer that looks for translated fields in the original model,
+    and creates a SerializerMethodField for each of them.
+
+    The method will return the content in the current locale.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in getattr(self.Meta.model, "translated_fields", []):
+            setattr(self, field, serializers.SerializerMethodField())
+            setattr(self, f"get_{field}", method_for_translated_field(field))
+
+
+class RoleSerializer(SerializerWithTranslatedFields):
     class Meta:
         model = Role
         fields = ["id", "name", "description"]
         read_only_fields = fields
 
 
-class DefinitionSerializer(serializers.ModelSerializer):
+class DefinitionSerializer(SerializerWithTranslatedFields):
     class Meta:
         model = Definition
         fields = ["id", "word", "explanation"]
         read_only_fields = fields
 
 
-class ResponseChoiceSerializer(serializers.ModelSerializer):
+class ResponseChoiceSerializer(SerializerWithTranslatedFields):
     class Meta:
         model = ResponseChoice
         fields = ["id", "response_choice", "description"]
         read_only_fields = fields
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(SerializerWithTranslatedFields):
     class Meta:
         model = Category
         fields = ["id", "category"]
         read_only_fields = fields
 
 
-class QuestionRuleSerializer(serializers.ModelSerializer):
+class QuestionRuleSerializer(SerializerWithTranslatedFields):
     conditional_question_id = serializers.PrimaryKeyRelatedField(
         read_only=True, source="conditional_question"
     )
@@ -123,7 +149,7 @@ def get_all_assessment_types_with_cache():
     return get_all_assessment_types_with_cache.assessment_types
 
 
-class QuestionSerializer(serializers.ModelSerializer):
+class QuestionSerializer(SerializerWithTranslatedFields):
     response_choices = ResponseChoiceSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
     rules = QuestionRuleSerializer(many=True, read_only=True)
@@ -201,7 +227,7 @@ class ProfilingQuestionSerializer(QuestionSerializer):
         read_only_fields = fields
 
 
-class CriteriaSerializer(serializers.ModelSerializer):
+class CriteriaSerializer(SerializerWithTranslatedFields):
     question_ids = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, source="questions"
     )
@@ -231,7 +257,7 @@ class CriteriaSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class MarkerSerializer(serializers.ModelSerializer):
+class MarkerSerializer(SerializerWithTranslatedFields):
     criteria_ids = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, source="criterias"
     )
@@ -263,10 +289,11 @@ class FullMarkerSerializer(MarkerSerializer):
         read_only_fields = fields
 
 
-class PillarSerializer(serializers.ModelSerializer):
+class PillarSerializer(SerializerWithTranslatedFields):
     marker_ids = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, source="markers"
     )
+    description = serializers.SerializerMethodField()
 
     class Meta:
         model = Pillar
@@ -282,7 +309,7 @@ class FullPillarSerializer(PillarSerializer):
         read_only_fields = fields
 
 
-class FullSurveySerializer(serializers.ModelSerializer):
+class FullSurveySerializer(SerializerWithTranslatedFields):
     pillars = FullPillarSerializer(many=True, read_only=True)
 
     class Meta:

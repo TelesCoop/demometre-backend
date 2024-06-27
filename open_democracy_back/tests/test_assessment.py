@@ -12,6 +12,7 @@ from open_democracy_back.factories import (
     UserFactory,
     MunicipalityFactory,
     AssessmentTypeFactory,
+    SurveyFactory,
 )
 from open_democracy_back.models import Assessment
 from open_democracy_back.tests.utils import authenticate
@@ -163,7 +164,7 @@ class TestAssessmentsEdits(TestCase):
                 {"experts": [expert.pk]},
                 content_type="application/json",
             ).json()["experts"],
-            [2],
+            [expert.pk],
         )
 
         # remove it with another patch
@@ -193,6 +194,7 @@ class TestAssessmentsEdits(TestCase):
 class TestAssessmentCreation(TestCase):
     def test_anonymous_can_create_assessment(self):
         municipality = MunicipalityFactory.create()
+        SurveyFactory.create()
         url = (
             reverse(
                 "create-assessment",
@@ -215,6 +217,7 @@ class TestAssessmentCreation(TestCase):
         and we get-or-create an assessment for that municipality, a new assessment is
         created.
         """
+        SurveyFactory.create()
         municipality = MunicipalityFactory.create()
         assessment = AssessmentFactory.create(
             assessment_type=AssessmentTypeFactory.create(
@@ -235,9 +238,10 @@ class TestAssessmentCreation(TestCase):
     def test_can_join_participative_and_with_expert_assessment(self):
         """
         When a non-QUICK assessment is already created by another user for a
-        municipality and we get-or-create an assessment for that municipality, a new
+        municipality and we get-or-create an assessment for that municipality,
         the already created assessment is returned.
         """
+        SurveyFactory.create()
         for assessment_type in [
             ManagedAssessmentType.PARTICIPATIVE,
             ManagedAssessmentType.WITH_EXPERT,

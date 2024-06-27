@@ -76,9 +76,10 @@ def consent_condition_of_sales(assessment, conditions_of_sale_consent):
             code=ErrorCode.CGV_MUST_BE_CONSENTED.value,
         )
 
+    mixins.ListModelMixin,
+
 
 class AssessmentsView(
-    mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
@@ -224,7 +225,7 @@ class AssessmentsView(
         else:
             user_id = request.user.id
         locality_id = request.GET.get("locality_id")
-        locality_type = request.GET.get("locality_type")
+        locality_type = request.GET.get("locality_type", LocalityType.MUNICIPALITY)
         assessments_usable = Assessment.objects.all().exclude(
             Q(assessment_type__assessment_type=ManagedAssessmentType.QUICK)
             & ~Q(initiated_by_user_id=user_id)

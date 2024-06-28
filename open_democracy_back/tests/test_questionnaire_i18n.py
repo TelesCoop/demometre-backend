@@ -1,6 +1,3 @@
-from http.cookies import SimpleCookie
-
-from django.conf import settings
 from django.test import TestCase
 from rest_framework.reverse import reverse
 
@@ -9,7 +6,7 @@ from open_democracy_back.factories import PillarFactory
 
 class TestQuestionnaireI18n(TestCase):
     def set_locale_on_cookie(self, locale):
-        self.client.cookies = SimpleCookie({settings.LANGUAGE_COOKIE_NAME: locale})
+        self.client.get(reverse("set-locale", args=[locale]))
 
     def test_questionnaire_i18n(self):
         pillar = PillarFactory.create()

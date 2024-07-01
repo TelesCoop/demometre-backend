@@ -22,3 +22,17 @@ class TestQuestionnaireI18n(TestCase):
         self.set_locale_on_cookie("en")
         res = self.client.get(reverse("pillars-detail", args=[pillar.pk])).json()
         self.assertEqual(res["description"], "English description")
+
+    def test_set_language_cookie_en_on_profile(self):
+        self.client.get(reverse("auth:auth_profile"), headers={"ACCEPT_LANGUAGE": "en"})
+        self.assertEqual(
+            self.client.cookies["django_language"].value,
+            "en",
+        )
+
+    def test_set_language_cookie_fr_on_profile(self):
+        self.client.get(reverse("auth:auth_profile"), headers={"ACCEPT_LANGUAGE": "fr"})
+        self.assertEqual(
+            self.client.cookies["django_language"].value,
+            "fr",
+        )

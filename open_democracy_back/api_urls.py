@@ -14,7 +14,7 @@ from open_democracy_back.views.content_views import BlogPostView, ResourceView
 from open_democracy_back.views.page_views import (
     AnimatorPageView,
     ContentPageView,
-    EvaluationInitiationPageSerializerView,
+    EvaluationInitiationPageView,
     EvaluationQuestionnairePageView,
     HomePageView,
     ParticipationBoardPageView,
@@ -50,6 +50,7 @@ from .views.assessment_views import (
     get_chart_data,
     AssessmentDocumentView,
 )
+from .views.i18n import set_locale
 from .views.profiling_views import (
     ProfilingQuestionView,
     RoleView,
@@ -77,7 +78,7 @@ router.register(r"usage-pages", UsagePageView, basename="UsagePage")
 router.register(r"project-pages", ProjectPageView, basename="ProjectPage")
 router.register(
     r"evaluation-initiation-pages",
-    EvaluationInitiationPageSerializerView,
+    EvaluationInitiationPageView,
     basename="EvaluationInitiationPage",
 )
 router.register(
@@ -146,7 +147,11 @@ urlpatterns = [
         name="create-assessment",
     ),
     path("pillars/", PillarView.as_view({"get": "list"})),
-    path("pillars/<int:pk>/", PillarView.as_view({"get": "retrieve"})),
+    path(
+        "pillars/<int:pk>/",
+        PillarView.as_view({"get": "retrieve"}),
+        name="pillars-detail",
+    ),
     path("markers/", MarkerView.as_view({"get": "list"})),
     path("markers/<int:pk>/", MarkerView.as_view({"get": "retrieve"})),
     path("criterias/", CriteriaView.as_view({"get": "list"})),
@@ -202,4 +207,5 @@ urlpatterns = [
         ),
         name="traning-list",
     ),
+    path("set-locale/<str:locale>/", set_locale, name="set-locale"),
 ]

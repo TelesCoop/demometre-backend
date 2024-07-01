@@ -16,7 +16,6 @@ CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ORIGIN_WHITELIST = ("http://localhost:3000",)
-
 CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
 
 
@@ -30,7 +29,7 @@ MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")  # noqa: F4
 INTERNAL_IPS = ["127.0.0.1"]
 
 
-class DisableMigrations(object):
+class DisableMigrations:
     """Disable migrations for tests so that it's faster"""
 
     def __contains__(self, item):

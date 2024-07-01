@@ -27,7 +27,7 @@ from open_democracy_back.utils import (
 class HomePage(Page):
     # HomePage can be created only on the root
     parent_page_types = ["wagtailcore.Page"]
-    preview_modes = None
+    preview_modes = []
 
     tag_line = models.CharField(
         max_length=255, default="", verbose_name="Phrase d'accroche"
@@ -134,7 +134,7 @@ class UsagePage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
     max_count_per_parent = 1
-    preview_modes = None
+    preview_modes = []
 
     tag_line = models.TextField(default="", verbose_name="Phrase d'accroche")
     introduction = RichTextField(
@@ -303,7 +303,7 @@ class ReferentialPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
     max_count_per_parent = 1
-    preview_modes = None
+    preview_modes = []
 
     introduction = models.TextField(default="")
 
@@ -435,7 +435,7 @@ class ParticipationBoardPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
     max_count_per_parent = 1
-    preview_modes = None
+    preview_modes = []
 
     class Meta:
         verbose_name = "Tableau de bord de la participation"
@@ -445,7 +445,7 @@ class ResultsPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
     max_count_per_parent = 1
-    preview_modes = None
+    preview_modes = []
 
     tag_line = models.CharField(max_length=510, default="", verbose_name="Consigne")
     tag_line_no_results = models.CharField(
@@ -481,7 +481,7 @@ class ProjectPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
     max_count_per_parent = 1
-    preview_modes = None
+    preview_modes = []
 
     tag_line = models.CharField(
         max_length=510, default="", verbose_name="Phrase d'accroche"
@@ -803,7 +803,7 @@ class EvaluationInitiationPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
     max_count_per_parent = 1
-    preview_modes = None
+    preview_modes = []
 
     search_assessment_title = models.CharField(
         verbose_name=_("title"),
@@ -1164,7 +1164,7 @@ class EvaluationQuestionnairePage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
     max_count_per_parent = 1
-    preview_modes = None
+    preview_modes = []
 
     role_question_title = models.CharField(
         max_length=128,
@@ -1284,7 +1284,7 @@ class AnimatorPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
     max_count_per_parent = 1
-    preview_modes = None
+    preview_modes = []
 
     list_workshops_title = models.CharField(
         max_length=128,
@@ -1352,7 +1352,7 @@ class AnimatorPage(Page):
 class ContentPage(Page):
     parent_page_types = ["HomePage"]
     subpage_types: List[str] = []
-    preview_modes = None
+    preview_modes = []
 
     content = RichTextField(
         default="",

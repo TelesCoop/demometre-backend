@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 EMAIL_REGEX = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
@@ -23,47 +24,47 @@ NUMERICAL_OPERATOR = [
 
 # NB : use get_<field_name>_display() to retrieve the second argument of TextChoices
 class LocalityType(models.TextChoices):
-    MUNICIPALITY = "municipality", "Commune"
-    INTERCOMMUNALITY = "intercommunality", "Intercommunalité"
-    DEPARTMENT = "department", "Département"
-    REGION = "region", "Région"
+    MUNICIPALITY = "municipality", _("Commune")
+    INTERCOMMUNALITY = "intercommunality", _("Intercommunalité")
+    DEPARTMENT = "department", _("Département")
+    REGION = "region", _("Région")
 
 
 class InitiatorType(models.TextChoices):
-    COLLECTIVITY = "collectivity", "La collectivité"
-    ASSOCIATION = "association", "Une association"
-    INDIVIDUAL = "individual", "Un particulier"
-    OTHER = "other", "Autre"
+    COLLECTIVITY = "collectivity", _("La collectivité")
+    ASSOCIATION = "association", _("Une association")
+    INDIVIDUAL = "individual", _("Un particulier")
+    OTHER = "other", _("Autre")
 
 
 class ManagedAssessmentType(models.TextChoices):
-    QUICK = "quick", "Diagnostic rapide"
-    PARTICIPATIVE = "participative", "Evaluation participative"
-    WITH_EXPERT = "with_expert", "Evaluation avec expert"
+    QUICK = "quick", _("Diagnostic rapide")
+    PARTICIPATIVE = "participative", _("Evaluation participative")
+    WITH_EXPERT = "with_expert", _("Evaluation avec expert")
 
 
 class BooleanOperator(models.TextChoices):
-    AND = "and", "et"
-    OR = "or", "ou"
+    AND = "and", _("et")
+    OR = "or", _("ou")
 
 
 class QuestionType(models.TextChoices):
-    UNIQUE_CHOICE = "unique_choice", "Choix unique"
-    MULTIPLE_CHOICE = "multiple_choice", "Choix multiple"
-    CLOSED_WITH_SCALE = "closed_with_scale", "Fermée à échelle"
-    BOOLEAN = "boolean", "Binaire oui / non"
-    PERCENTAGE = "percentage", "Pourcentage"
-    NUMBER = "number", "Nombre"
+    UNIQUE_CHOICE = "unique_choice", _("Choix unique")
+    MULTIPLE_CHOICE = "multiple_choice", _("Choix multiple")
+    CLOSED_WITH_SCALE = "closed_with_scale", _("Fermée à échelle")
+    BOOLEAN = "boolean", _("Binaire oui / non")
+    PERCENTAGE = "percentage", _("Pourcentage")
+    NUMBER = "number", _("Nombre")
 
 
 class QuestionObjectivity(models.TextChoices):
-    OBJECTIVE = "objective", "Objective"
-    SUBJECTIVE = "subjective", "Subjective"
+    OBJECTIVE = "objective", _("Objective")
+    SUBJECTIVE = "subjective", _("Subjective")
 
 
 class QuestionMethod(models.TextChoices):
-    QUANTITATIVE = "quantitative", "Quantitative"
-    QUALITATIVE = "qualitative", "Qualitative"
+    QUANTITATIVE = "quantitative", _("Quantitative")
+    QUALITATIVE = "qualitative", _("Qualitative")
 
 
 QUESTION_TYPE_WITH_SCORE = [
@@ -94,13 +95,13 @@ def generate_randon_string_char_and_digits(length):
 
 
 class PillarName(models.TextChoices):
-    REPRESENTATION = "représentation", "Représentation"
-    TRANSPARENCY = "transparence", "Transparence"
-    PARTICIPATION = "participation", "Participation"
-    COOPERATION = "coopération", "Coopération"
+    REPRESENTATION = "représentation", _("Représentation")
+    TRANSPARENCY = "transparence", _("Transparence")
+    PARTICIPATION = "participation", _("Participation")
+    COOPERATION = "coopération", _("Coopération")
 
 
 class SurveyLocality(models.TextChoices):
-    CITY = "city", "Commune/EPCI"
-    DEPARTMENT = "department", "Département"
-    REGION = "region", "Région"
+    CITY = "city", _("Commune/EPCI")
+    DEPARTMENT = "department", _("Département")
+    REGION = "region", _("Région")

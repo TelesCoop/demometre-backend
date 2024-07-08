@@ -5,13 +5,14 @@ from django.db import models
 from wagtail import blocks
 from wagtail.documents.blocks import DocumentChooserBlock
 from wagtail.images.blocks import ImageChooserBlock
+from django.utils.translation import gettext_lazy as _
 
 
 def rich_text_block(additional_field, required):
     return (
         "rich_text",
         blocks.RichTextBlock(
-            label="Contenu",
+            label=_("Contenu"),
             features=SIMPLE_RICH_TEXT_FIELD_FEATURE
             + ["h3", "h4", "ol", "ul", "document-link"]
             + additional_field,
@@ -29,7 +30,7 @@ BODY_FIELD_PARAMS = [
         blocks.StructBlock(
             [
                 ("image", ImageChooserBlock()),
-                ("caption", blocks.TextBlock(label="légende")),
+                ("caption", blocks.TextBlock(label=_("légende"))),
             ]
         ),
     ),
@@ -38,7 +39,7 @@ BODY_FIELD_PARAMS = [
         blocks.StructBlock(
             [
                 ("document", DocumentChooserBlock()),
-                ("title", blocks.TextBlock(label="titre")),
+                ("title", blocks.TextBlock(label=_("titre"))),
             ]
         ),
     ),

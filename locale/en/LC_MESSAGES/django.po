@@ -1,0 +1,1896 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-05 14:59+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: my_auth/models.py:10 open_democracy_back/models/animator_models.py:10
+msgid "email address"
+msgstr ""
+
+#: open_democracy_back/constants.py:4
+msgid "Rapports d'évaluation"
+msgstr ""
+
+#: open_democracy_back/constants.py:5
+msgid "Autres documents"
+msgstr ""
+
+#: open_democracy_back/constants.py:6
+msgid "Factures"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:31
+msgid "évaluation"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:31
+msgid "résultats"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:36
+msgid "commentaires"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:37
+#: open_democracy_back/models/assessment_models.py:337
+msgid "contexte"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:38
+msgid "déroulé"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:40
+msgid "suggestions démomètre"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:43
+msgid "suggestions sur la plateforme"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:46
+msgid "remarques sur les mesures d'amélioration"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:50
+#: open_democracy_back/models/assessment_models.py:338
+msgid "objectifs"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:52
+msgid "remarques sur les résultats"
+msgstr ""
+
+#: open_democracy_back/models/animator_models.py:56
+msgid "Atelier"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:29
+#: open_democracy_back/models/assessment_models.py:50
+#: open_democracy_back/models/assessment_models.py:122
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:175
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:229
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:333
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:476
+msgid "Code"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:30
+#: open_democracy_back/models/assessment_models.py:51
+#: open_democracy_back/models/assessment_models.py:82
+#: open_democracy_back/models/assessment_models.py:141
+#: open_democracy_back/models/contents_models.py:159
+#: open_democracy_back/models/contents_models.py:206
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:37
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:126
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:172
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:227
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:331
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:484
+msgid "Nom"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:44
+#: open_democracy_back/models/assessment_models.py:54
+#: open_democracy_back/models/assessment_models.py:325
+#: open_democracy_back/utils.py:30 open_democracy_back/utils.py:97
+msgid "Région"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:45
+msgid "Régions"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:72
+#: open_democracy_back/models/assessment_models.py:85
+#: open_democracy_back/models/assessment_models.py:332
+#: open_democracy_back/utils.py:29 open_democracy_back/utils.py:96
+msgid "Département"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:73
+msgid "Départements"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:80
+msgctxt "unique code for a city"
+msgid "Code insee"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:91
+msgctxt "number of inhabitants"
+msgid "Population"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:103
+#: open_democracy_back/models/assessment_models.py:134
+msgid "Code postal"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:117
+#: open_democracy_back/models/assessment_models.py:172
+#: open_democracy_back/models/assessment_models.py:318
+#: open_democracy_back/utils.py:27
+msgid "Commune"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:118
+msgid "Communes"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:125
+msgid "Municipalité"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:135
+msgid "Code postaux"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:140
+msgid "Code siren"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:142
+msgid "Population"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:150
+msgid "Liste des communes"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:163
+#: open_democracy_back/models/assessment_models.py:311
+#: open_democracy_back/utils.py:28
+msgid "Intercommunalité"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:164
+msgid "Intercommunalités"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:184
+msgid "type d'évaluation"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:189
+msgid "A qui c'est adressé"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:192
+msgid "Ce que ça contient"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:195
+msgid "Ce que ça permet"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:198
+msgid "Les résultats"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:200
+msgid "Le prix"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:203
+msgid "Pdf du questionnaire"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:223
+#: open_democracy_back/models/assessment_models.py:241
+#: open_democracy_back/models/pages_models.py:253
+msgid "Type d'évaluation"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:224
+msgid "Types d'évaluation"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:248
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:166
+msgid "Questionnaire"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:251
+msgid "Date de fin"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:256
+msgid "Experts"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:260
+msgid ""
+"Pour ajouter un expert à la liste il faut créer / modifier l'utilisateur "
+"correspondant, aller dans l'onglet rôles et cocher la case Experts"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:268
+msgid "Initialisé par"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:271
+msgid ""
+"Si l'évaluation est initié au nom de la localité, quelqu'un peut tout de "
+"même être à la source"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:286
+msgid "Initialisé au nom de"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:291
+msgid "Date d'initialisation"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:293
+msgid ""
+"Si il n'y a pas de date d'initialisation, c'est que le début de l'évaluation "
+"n'a pas été confirmée"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:298
+msgid "Date de dernière participation"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:304
+msgid "Type de localité"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:334
+#: open_democracy_back/models/assessment_models.py:443
+#: open_democracy_back/models/training_models.py:11
+msgid "nom"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:340
+msgid "parties prenantes"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:342
+msgid "calendrier"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:405
+msgid "Évaluation"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:406
+msgid "Évaluations"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:435
+msgid "documents"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:438
+msgid "catégorie"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:442
+msgid "fichier"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:458
+msgid "auteur du paiement"
+msgstr ""
+
+#: open_democracy_back/models/assessment_models.py:463
+msgid "montant"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:31
+msgid "Context de la personne"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:33
+msgid ""
+"Exemple : Elu de Strasbourg, Membre de Démocratie Ouverte, Habitant de "
+"Toulouse ... "
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:38
+msgid "Publier dans la page d'accueil"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:41
+#: open_democracy_back/models/contents_models.py:103
+#: open_democracy_back/models/training_models.py:36
+msgid "Lien externe"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:68
+msgid "Retour d'expériences"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:69
+msgid "Retours d'expériences"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:84
+msgid "Date de publication"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:86
+msgid "Permet de trier l'ordre d'affichage des articles de blog"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:92
+msgid "Description courte"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:93
+msgid "Ce texte apparait sur la miniature"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:98
+#: open_democracy_back/models/pages_models.py:397
+#: open_democracy_back/models/pages_models.py:434
+#: open_democracy_back/models/pages_models.py:455
+#: open_democracy_back/models/pages_models.py:750
+#: open_democracy_back/models/utils.py:15
+msgid "Contenu"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:99
+msgid "Corps de l'article"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:107
+msgid "Si ce champ est rempli, le corps de l'article sera ignoré"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:144
+msgid "Article de blog"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:145
+msgid "Articles de blog"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:152
+msgid "Ressource"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:153
+#: open_democracy_back/models/pages_models.py:132
+msgid "Ressources"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:162
+msgid "Logo"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:169
+msgid "Choisir la hauteur du logo (min 40px / max 120px)"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:170
+msgid "Hauteur"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:173
+msgid "Afficher dans la page d'accueil"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:183
+msgid "Logo du partenaire"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:200
+msgid "Partenaire"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:201
+#: open_democracy_back/models/pages_models.py:139
+msgid "Partenaires"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:209
+#: open_democracy_back/models/pages_models.py:42
+#: open_democracy_back/models/pages_models.py:161
+#: open_democracy_back/models/pages_models.py:185
+#: open_democracy_back/models/pages_models.py:378
+#: open_democracy_back/models/pages_models.py:494
+#: open_democracy_back/models/pages_models.py:529
+#: open_democracy_back/models/pages_models.py:551
+#: open_democracy_back/models/pages_models.py:603
+msgid "Image"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:215
+msgid "Intitulé du poste"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:234
+msgid "Personne"
+msgstr ""
+
+#: open_democracy_back/models/contents_models.py:235
+msgid "Personnes"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:33
+#: open_democracy_back/models/pages_models.py:153
+#: open_democracy_back/models/pages_models.py:519
+msgid "Phrase d'accroche"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:38
+#: open_democracy_back/models/pages_models.py:157
+#: open_democracy_back/models/pages_models.py:489
+#: open_democracy_back/models/pages_models.py:524
+#: open_democracy_back/models/pages_models.py:1352
+#: open_democracy_back/models/pages_models.py:1370
+#: open_democracy_back/models/pages_models.py:1379
+msgid "Introduction"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:48
+msgid ""
+"Si l'id d'une vidéo youtube est indiqué alors l'image ne sera pas affiché "
+"sur la page d'accueil"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:55
+msgid "Vidéo Youtube (id)"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:57
+msgid ""
+"Indiquer ici seulement l'id de la video youtube, celui-ci est indiqué dans "
+"l'url après 'v='. Exemple : pour https://www.youtube.com/watch?v=xMQMvVIB0vM "
+"renseigner xMQMvVIB0vM"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:62
+msgid "Titre du bloc retours d'expérience"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:65
+msgid ""
+"Si ce champ est vide les retours d'expérience ne s'afficheront pas sur "
+"l'accueil"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:69
+msgid "Intro du bloc retours d'expérience"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:73
+msgid "Titre du bloc Blog"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:76
+msgid ""
+"Si ce champ est vide les articles de blog ne s'afficheront pas sur l'accueil"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:82
+msgid "Titre du bloc Ressources"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:85
+msgid "Si ce champ est vide bloc Ressources ne s'afficheront pas sur l'accueil"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:89
+msgid "Intro du bloc Ressources"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:93
+msgid "Titre du bloc Partenaires"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:96
+msgid ""
+"Si ce champ est vide le bloc Partenaires ne s'afficheront pas sur l'accueil"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:100
+msgid "Intro du bloc Partenaires"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:111
+msgid "Image ou Vidéo d'introduction"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:118
+msgid "Retour d'expérience"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:125
+msgid "Blog"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:144
+msgid "Page d'accueil"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:170
+#: open_democracy_back/models/pages_models.py:186
+#: open_democracy_back/models/pages_models.py:201
+#: open_democracy_back/models/pages_models.py:225
+#: open_democracy_back/models/pages_models.py:240
+#: open_democracy_back/models/pages_models.py:358
+#: open_democracy_back/models/pages_models.py:387
+#: open_democracy_back/models/pages_models.py:402
+#: open_democracy_back/models/pages_models.py:538
+#: open_democracy_back/models/pages_models.py:560
+#: open_democracy_back/models/pages_models.py:579
+#: open_democracy_back/models/pages_models.py:593
+#: open_democracy_back/models/pages_models.py:604
+#: open_democracy_back/models/pages_models.py:618
+#: open_democracy_back/models/pages_models.py:684
+#: open_democracy_back/models/pages_models.py:700
+#: open_democracy_back/models/pages_models.py:706
+#: open_democracy_back/models/pages_models.py:728
+#: open_democracy_back/models/pages_models.py:880
+#: open_democracy_back/models/pages_models.py:894
+#: open_democracy_back/models/pages_models.py:906
+#: open_democracy_back/models/pages_models.py:916
+#: open_democracy_back/models/pages_models.py:926
+#: open_democracy_back/models/pages_models.py:936
+#: open_democracy_back/models/pages_models.py:960
+#: open_democracy_back/models/pages_models.py:970
+#: open_democracy_back/models/pages_models.py:977
+#: open_democracy_back/models/pages_models.py:987
+#: open_democracy_back/models/pages_models.py:997
+#: open_democracy_back/models/pages_models.py:1014
+#: open_democracy_back/models/pages_models.py:1223
+#: open_democracy_back/models/pages_models.py:1235
+#: open_democracy_back/models/pages_models.py:1254
+#: open_democracy_back/models/pages_models.py:1263
+#: open_democracy_back/models/pages_models.py:1280
+#: open_democracy_back/models/pages_models.py:1349
+#: open_democracy_back/models/pages_models.py:1367
+#: open_democracy_back/models/pages_models.py:1376
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:299
+msgid "Titre"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:173
+#: open_democracy_back/models/pages_models.py:204
+#: open_democracy_back/models/pages_models.py:228
+msgid ""
+"Si ce champ est vide les étapes d'utilisation du DémoMètre ne s'afficheront "
+"pas"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:177
+#: open_democracy_back/models/pages_models.py:208
+#: open_democracy_back/models/pages_models.py:232
+msgid "Intro"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:187
+#: open_democracy_back/models/pages_models.py:302
+#: open_democracy_back/models/pages_models.py:339
+#: open_democracy_back/models/pages_models.py:685
+#: open_democracy_back/models/pages_models.py:851
+#: open_democracy_back/models/pages_models.py:898
+#: open_democracy_back/models/pages_models.py:909
+#: open_democracy_back/models/pages_models.py:919
+#: open_democracy_back/models/pages_models.py:929
+#: open_democracy_back/models/pages_models.py:939
+#: open_democracy_back/models/pages_models.py:963
+#: open_democracy_back/models/pages_models.py:973
+#: open_democracy_back/models/pages_models.py:980
+#: open_democracy_back/models/pages_models.py:990
+#: open_democracy_back/models/pages_models.py:1000
+#: open_democracy_back/models/pages_models.py:1016
+#: open_democracy_back/models/pages_models.py:1230
+#: open_democracy_back/models/pages_models.py:1241
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:137
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:189
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:238
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:303
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:345
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:549
+msgid "Description"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:189
+#, python-brace-format
+msgid "Étape : {title}"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:190
+msgid "Étape"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:195
+msgid "Etapes d'utilisation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:213
+#: open_democracy_back/models/pages_models.py:368
+#: open_democracy_back/models/pages_models.py:412
+msgid "Paragraphe de gauche"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:219
+#: open_democracy_back/models/pages_models.py:374
+#: open_democracy_back/models/pages_models.py:418
+msgid "Paragraphe de droite"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:244
+msgid "Type"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:249
+msgid "Nom du bouton pour le pdf"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:252
+#, python-brace-format
+msgid "Evaluation : {title}"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:258
+msgid "Descriptif des différents types d'évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:260
+msgid ""
+"Pour modifier le descriptif de chaque type d'évaluation il faut directement "
+"aller dans le type d'évaluation correspondant"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:267
+msgid "Titre de la section formation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:270
+msgid "Formations certifiantes"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:274
+msgid ""
+"Démocratie Ouverte vous propose des formations pour accompagner des "
+"évaluations DémoMètre et/ou animer des ateliers d’évaluations."
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:277
+msgid "Intro de la section formation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:291
+msgid "Etapes d'utilisation du DémoMètre"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:305
+msgid "Participer à une évaluation en cours"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:313
+msgid "Lancer une nouvelle évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:320
+msgid "Formations"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:325
+msgid "Page des utilisations possibles"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:346
+msgid "Légende du schéma interactif"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:353
+msgid "Légende du schéma d'arborescence du DémoMètre"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:361
+msgid "si ce champ est vide l'explication des piliers ne s'affichera pas"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:390
+msgid "si ce champ est vide l'explication des marqueurs ne s'affichera pas"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:405
+msgid ""
+"si ce champ est vide l'explication des critères d'évaluation ne s'affichera "
+"pas"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:438
+msgid "Explication des piliers"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:445
+msgid "Explication des marqueurs"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:458
+msgid "Explication des critères d'évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:463
+msgid "Référentiel"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:473
+msgid "Tableau de bord de la participation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:482
+msgid "Consigne"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:484
+msgid "Consigne si aucun résultat publié"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:509
+msgid "Page de résultats"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:540
+#: open_democracy_back/models/pages_models.py:562
+#: open_democracy_back/models/pages_models.py:595
+#: open_democracy_back/models/pages_models.py:620
+#: open_democracy_back/models/pages_models.py:626
+#: open_democracy_back/models/pages_models.py:640
+#: open_democracy_back/models/pages_models.py:676
+#: open_democracy_back/models/pages_models.py:702
+msgid "Si ce champ est vide le bloc ne s'affichera pas"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:547
+#: open_democracy_back/models/pages_models.py:710
+msgid "Paragraphe"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:573
+#: open_democracy_back/models/pages_models.py:722
+msgid "Icone au format svg"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:575
+#: open_democracy_back/models/pages_models.py:724
+msgid "Pour ajouter un SVG d'abord l'ajouter dans le menu SVG"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:581
+#, python-brace-format
+msgid "Objectif : {title}"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:582
+msgid "Objectif"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:587
+msgid "Les objectifs"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:606
+#, python-brace-format
+msgid "Impact : {title}"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:607
+msgid "Impact"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:612
+msgid "Les impacts"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:624
+msgid "Equipe Démocratie Ouverte - titre"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:630
+msgid "Logo Démocratie Ouverte"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:638
+msgid "Le Comité d’orientation - titre"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:645
+msgid "Le Comité d’orientation - description"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:663
+msgid "Groupe du Comité d’orientation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:668
+msgid "Membres du Comité - contenu"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:674
+msgid "Partenaires - titre"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:689
+msgid "Type de partenaires"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:694
+msgid "Partenaires - contenu"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:732
+msgid "Descriptif"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:739
+msgid "Lien en savoir plus"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:744
+#, python-brace-format
+msgid "Carte : {title}"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:745
+msgid "Etapes"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:763
+msgid "Bloc pourquoi"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:770
+msgid "Bloc objectif"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:777
+msgid "Bloc Impact"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:788
+msgid "Membres de Démocratie Ouverte"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:791
+msgid "Sous bloc : Equipe Démocratie Ouverte"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:799
+msgid "Sous bloc : Equipe Comité d’orientation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:806
+msgid "Sous bloc : Partenaire"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:809
+msgid "Bloc Avec Qui"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:816
+msgid "Bloc comment"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:821
+msgid "Page du projet"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:829
+msgid "Membre"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:847
+msgid "title"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:855
+msgid "Question Commune / Interco"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:860
+msgid "Description de la question Commune / Interco"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:865
+msgid "Question du code postal"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:870
+msgid "Description de la question du code postal"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:875
+msgid "Aucun résultat"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:884
+msgid "Description pour un utilisateur connecté"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:889
+msgid "Description pour un utilisateur NON connecté"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:902
+msgid "Texte sur redevance d'utilisation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:945
+msgid "Ajout d'un expert - Titre"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:948
+msgid "Ajout d'un expert - Description"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:951
+msgid "Ajout d'un expert - Bouton OUI"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:954
+msgid "Ajout d'un expert - Bouton NON"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1006
+msgid "Choisir un expert dans la liste"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1011
+msgid "Si il n'y a pas mon expert, contactez-nous"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1024
+msgid ""
+"Enoncé de la question sur le nom de l'initateur qui sera affiché publiquement"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1030
+msgid ""
+"Description de la question sur le nom de l'initateur qui sera affiché "
+"publiquement"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1038
+msgid "Titre - page des seuils d'acceptabilité de la représentativité"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1042
+msgid ""
+"Correspond à la partie où seront posées les questions sur les seuils "
+"d'acceptabilité de la représentativité"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1047
+msgid "Description - page des seuils d'acceptabilité de la représentativité"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1052
+msgid ""
+"Permet à la personne de mieux comprendre les questions sur les "
+"représentativités, et lui donne des éléments de réponse"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1060
+msgid "Titre - Répondre aux questions objectives"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1063
+msgid "Description - Répondre aux questions objectives"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1070
+msgid "Call to action - Répondre aux questions objectives"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1077
+msgid "Titre - page de validation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1078
+msgid "S'affichera une fois l'initialisation de l'évaluation terminée"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1081
+msgid "Description - page de validation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1088
+msgid "Call to action - page de validation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1089
+msgid "Commencer l'évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1103
+msgid "Recherche d'une évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1110
+msgid "Aucune évaluation ne correspond"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1118
+msgid "Consentement aux CGU"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1126
+msgid "Consentement aux CGV"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1133
+msgid "Un diagnostic rapide correspond"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1144
+msgid "Une évaluation participative correspond"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1151
+msgid "Tableau de bord de l'évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1159
+msgid "Un utilisateur non connecté ne peut pas initaliser une évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1167
+msgid "Une évaluation avec expert correspond"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1174
+msgid "Créer un diagnostic rapide"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1181
+msgid "Créer une évaluation participative"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1190
+msgid "Créer une évaluation avec un expert"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1207
+msgid "Initialisation de l'évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1212
+msgid "Lancement d'une évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1243
+msgid ""
+"Expliquer qu'il ne sera pas possible de revenir en arrière, puisque les "
+"questions du questionnaire dépendent du profilage"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1248
+msgid "Call to action"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1249
+msgid "Valider"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1257
+msgid "Texte"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1267
+msgid "Afficher dans le titre le liste des piliers terminés"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1270
+#: open_democracy_back/models/pages_models.py:1283
+msgid "Texte pour un utilisateur connecté"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1274
+#: open_democracy_back/models/pages_models.py:1287
+msgid "Texte pour un utilisateur non connecté"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1297
+msgid "Enoncé de la question concernant les rôles"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1305
+msgid "Page de confirmation du profilage"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1312
+msgid "Commencement de l'évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1322
+msgid "Etape intermédiaire (évaluation en cours et au moins un pilier terminé)"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1332
+msgid "L'Evaluation est terminée, toutes les questions ont été répondu"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1338
+msgid "Déroulement de l'évaluation"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1359
+msgid "Explication du la clôture d'un workshop"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1361
+msgid ""
+"Après clôture l'expert ne pourra plus accéder aux réponses des participants "
+"et donc ne pourra plus les modifier, leurs réponses seront alors pris en "
+"compte pour le calcul des résultats"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1390
+msgid "Page ateliers"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1397
+msgid "Page participants"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1404
+msgid "Page réponses"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1409
+msgid "Espace Expert"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1419
+msgid "Contenu de la page"
+msgstr ""
+
+#: open_democracy_back/models/pages_models.py:1427
+msgid "Page de contenu"
+msgstr ""
+
+#: open_democracy_back/models/participation_models.py:53
+msgid "Support de réponse"
+msgstr ""
+
+#: open_democracy_back/models/participation_models.py:54
+msgid "en ligne"
+msgstr ""
+
+#: open_democracy_back/models/participation_models.py:54
+msgid "papier"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:43
+msgid "Description du rôle"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:44
+msgid "Texte précisant le rôle (définition, exemple, reformulation)."
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:50
+msgid "Ordre des marqueurs"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:65
+msgid "Rôles"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:66
+msgid "Rôle"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:87
+msgid "Types de profil"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:88
+msgid "Type de profil"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:94
+msgid "Score = 1 (Signification)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:95
+msgid "Signification du résultat 1, affiché dans le DémoMètre"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:100
+msgid "Score = 2 (Signification)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:101
+msgid "Signification du résultat 2, affiché dans le DémoMètre"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:106
+msgid "Score = 3 (Signification)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:107
+msgid "Signification du résultat 3, affiché dans le DémoMètre"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:112
+msgid "Score = 4 (Signification)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:113
+msgid "Signification du résultat 4, affiché dans le DémoMètre"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:131
+msgid "Échelon du questionnaire"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:138
+msgid "Description du questionnaire"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:144
+msgid "code"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:145
+msgid "Nom court du questionnaire pour les menus de l'interface admin"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:165
+msgid "Questionnaires"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:177
+msgid "Correspond au numéro (ou lettre) de ce pilier"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:180
+msgid "Ordre"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:181
+msgid "Permet de ranger dans l'ordre voulu les piliers"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:190
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:239
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:346
+msgid "Description pour le référentiel"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:217
+msgid "1. Piliers"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:218
+msgid "1. Pilier"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:231
+msgid "Correspond au numéro (ou lettre) de ce marqueur dans son pilier"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:272
+msgid "2. Marqueurs"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:273
+msgid "2. Marqueur"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:290
+msgid "Thématique"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:291
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:339
+msgid "Thématiques"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:308
+#, python-brace-format
+msgid "Catégorie : {title}"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:309
+msgid "Catégorie"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:316
+msgid "Explicatif du critère (sources, exemples, obligations légales ...)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:334
+msgid "Correspond au numéro de ce critère dans son marqueur"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:358
+msgid "Explicatif du critère (sources, exemples, obligations légales ...) (fr)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:368
+msgid "Explicatif du critère (sources, exemples, obligations légales ...) (en)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:380
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:426
+msgid "Définitions"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:407
+msgid "3. Critères"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:408
+msgid "3. Critère"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:414
+msgid "mot"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:416
+msgid "explication"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:425
+msgid "Définition"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:479
+msgid "Correspond au numéro (ou lettre) de cette question, détermine son ordre"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:486
+msgid "Enoncé de la question"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:489
+msgid "Obligatoire"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:495
+msgid "Choisir le type de question"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:499
+msgid "Borne inférieure (population min)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:503
+msgid ""
+"Si aucune valeur n'est renseignée, aucune borne inférieur ne sera prise en "
+"compte"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:507
+msgid "Borne suppérieur (population max)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:511
+msgid ""
+"Si aucune valeur n'est renseignée, aucune borne suppérieur ne sera prise en "
+"compte"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:521
+msgid "Permet d'expliciter une autre question"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:525
+msgid "Nombre maximal de choix possible"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:529
+msgid ""
+"Pour une question à choix multiple, indiquer le nombre maximum de choix "
+"possible"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:534
+msgid "Valeur minimale du champ nombre"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:537
+msgid "Valeur maximale du champ nombre"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:540
+msgid "Granularité minimale du champ nombre (ex: 1, 0.1, 0.01, ...)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:550
+msgid "Texte précisant la question et pourquoi elle est posée."
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:557
+msgid "Commentaires (pour l'interne)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:558
+msgid "Indication affichée uniquement pour les administrateurs."
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:571
+#: open_democracy_back/utils.py:61
+msgid "Objective"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:571
+#: open_democracy_back/utils.py:62
+msgid "Subjective"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:573
+msgid "Objective / Subjective (Non modifiable)"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:574
+msgid "Ce champ n'est pas modifiable après la création de la question"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:579
+#: open_democracy_back/utils.py:66
+msgid "Quantitative"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:580
+#: open_democracy_back/utils.py:67
+msgid "Qualitative"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:583
+msgid "Methode"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:587
+msgid "Profils concernés"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:593
+msgid "Types d'évaluation concernés"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:603
+msgid "Questionnaires concernés"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:611
+msgid "Rôles concernés"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:612
+msgid "Si aucun rôle n'est sélectionné c'est comme si tous l'étaient"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:639
+msgid "Taille des collectivités concernées"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:648
+msgid "Choix de réponses possibles"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:653
+msgid "Catégories pour une question fermée à échelle"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:686
+msgid "La granularité du champ nombre doit être renseignée"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:717
+msgid ""
+"Attention à prendre en compte la granularité dans les bornes des scores "
+"associés"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:725
+msgid "Score associé aux réponses d'une question nombre"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:731
+msgid "Paramétrage d'une question de nombre"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:750
+msgid "Score associé aux réponses d'une question de pourcentage"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:770
+msgid "4. Questions"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:771
+msgid "4. Question"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:803
+msgid "Questions de Profilage"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:804
+msgid "Question de Profilage"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:818
+msgid "Score associé"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:821
+msgid "Si pertinent"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:826
+msgid "Score associé linéarisé"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:850
+msgid "Réponse possible"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:857
+msgid "Description de la réponse"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:859
+msgid ""
+"Texte précisant la réponse (définition, exemple, reformulation). Si la "
+"question est fermée à échelle la description ne s'affichera pas."
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:874
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:875
+msgid "Choix de réponse"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:889
+msgid "Borne inférieure"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:890
+msgid "Si la réponse est suppérieur ou égale à"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:894
+msgid "Borne suppérieure"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:895
+msgid "Si la réponse est inférieur ou égale à"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:906
+msgid "Score associé à une fourchette de pourcentage"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:921
+msgid "La borne inférieure doit être inférieure ou égale à la borne supérieure"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:926
+msgid "Scores pour les différentes fourchettes"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:927
+msgid "Score pour une fourchette donnée"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:937
+msgid "Lower Bound"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:938
+msgid "If the answer is greater than or equal to"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:944
+msgid "Upper Bound"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:945
+msgid "If the answer is less than or equal to"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:958
+msgid "Score associated with a number range"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:977
+msgid "At least one bound must be filled in"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:986
+msgid "The lower bound must be less than or equal to the upper bound"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:990
+msgid "Scores for different ranges"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:991
+msgid "Score for a given range"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1008
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1018
+msgid "Category"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1009
+msgid "Allows answering the same question for different categories"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1033
+msgid "Filter by question"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1059
+#, python-format
+msgid ""
+"The answer to the refining question %(question_code)s must be %(response)s"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1072
+#, python-format
+msgid "equal to %(response_choices)s"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1078
+msgid "Yes"
+msgstr ""
+
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1078
+msgid "No"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:26
+msgid "Échelon questionnaire"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:32
+msgid "Question de profilage reliée"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:40
+msgid "Taux (en %) minimum acceptable pour la publication des résultats"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:43
+msgid "En dessous de ce taux (%) la publication des résultats est interdite"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:49
+msgid "Explication"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:52
+msgid ""
+"L'explication doit aider l'utilisateur à savoir quel pourcentage indiquer et "
+"expliciter le pourcentage renseigné par défault"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:77
+msgid "Critère de représentativité"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:78
+msgid "Critères de représentativité"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:91
+msgid "Réponse"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:97
+msgid "Ne pas compter pour le seuil d'acceptabilité minimal"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:98
+msgid "Ex: binaire pour la parité"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:102
+msgid "Ignorer totalement"
+msgstr ""
+
+#: open_democracy_back/models/representativity_models.py:125
+msgid "Seuil d'acceptabilité"
+msgstr ""
+
+#: open_democracy_back/models/settings_models.py:10
+msgid "Adresse mail de contact"
+msgstr ""
+
+#: open_democracy_back/models/settings_models.py:13
+msgid "Paramètre de la structure"
+msgstr ""
+
+#: open_democracy_back/models/settings_models.py:24
+msgid "Mentions légales"
+msgstr ""
+
+#: open_democracy_back/models/settings_models.py:32
+msgid "Conditions générales d'utilisation"
+msgstr ""
+
+#: open_democracy_back/models/settings_models.py:40
+msgid "Conditions générales de vente"
+msgstr ""
+
+#: open_democracy_back/models/settings_models.py:48
+msgid "Politique de confidentialité"
+msgstr ""
+
+#: open_democracy_back/models/settings_models.py:56
+msgid "Licence Contenu"
+msgstr ""
+
+#: open_democracy_back/models/settings_models.py:74
+msgid "Pages importantes"
+msgstr ""
+
+#: open_democracy_back/models/settings_models.py:82
+msgid "FAQ"
+msgstr ""
+
+#: open_democracy_back/models/training_models.py:9
+msgid "Formation"
+msgstr ""
+
+#: open_democracy_back/models/training_models.py:13
+msgid "public ciblé pour la formation"
+msgstr ""
+
+#: open_democracy_back/models/training_models.py:15
+msgid "description courte"
+msgstr ""
+
+#: open_democracy_back/models/training_models.py:17
+msgid "durée de la formation"
+msgstr ""
+
+#: open_democracy_back/models/training_models.py:18
+msgid "ex une journée, une heure..."
+msgstr ""
+
+#: open_democracy_back/models/training_models.py:26
+msgid "Document lié"
+msgstr ""
+
+#: open_democracy_back/models/training_models.py:27
+msgid "Ce document est ignoré si le lien externe est défini"
+msgstr ""
+
+#: open_democracy_back/models/training_models.py:31
+msgid "bientôt disponible"
+msgstr ""
+
+#: open_democracy_back/models/training_models.py:33
+msgid ""
+"si cette case est cochée, la formation ne sera pas accessible, mais "
+"l'utilisateur sera informé de sa publication prochaine"
+msgstr ""
+
+#: open_democracy_back/models/utils.py:33
+msgid "légende"
+msgstr ""
+
+#: open_democracy_back/models/utils.py:42
+msgid "titre"
+msgstr ""
+
+#: open_democracy_back/utils.py:34
+msgid "La collectivité"
+msgstr ""
+
+#: open_democracy_back/utils.py:35
+msgid "Une association"
+msgstr ""
+
+#: open_democracy_back/utils.py:36
+msgid "Un particulier"
+msgstr ""
+
+#: open_democracy_back/utils.py:37
+msgid "Autre"
+msgstr ""
+
+#: open_democracy_back/utils.py:41
+msgid "Diagnostic rapide"
+msgstr ""
+
+#: open_democracy_back/utils.py:42
+msgid "Evaluation participative"
+msgstr ""
+
+#: open_democracy_back/utils.py:43
+msgid "Evaluation avec expert"
+msgstr ""
+
+#: open_democracy_back/utils.py:47
+msgid "et"
+msgstr ""
+
+#: open_democracy_back/utils.py:48
+msgid "ou"
+msgstr ""
+
+#: open_democracy_back/utils.py:52
+msgid "Choix unique"
+msgstr ""
+
+#: open_democracy_back/utils.py:53
+msgid "Choix multiple"
+msgstr ""
+
+#: open_democracy_back/utils.py:54
+msgid "Fermée à échelle"
+msgstr ""
+
+#: open_democracy_back/utils.py:55
+msgid "Binaire oui / non"
+msgstr ""
+
+#: open_democracy_back/utils.py:56
+msgid "Pourcentage"
+msgstr ""
+
+#: open_democracy_back/utils.py:57
+msgid "Nombre"
+msgstr ""
+
+#: open_democracy_back/utils.py:88
+msgid "Représentation"
+msgstr ""
+
+#: open_democracy_back/utils.py:89
+msgid "Transparence"
+msgstr ""
+
+#: open_democracy_back/utils.py:90
+msgid "Participation"
+msgstr ""
+
+#: open_democracy_back/utils.py:91
+msgid "Coopération"
+msgstr ""
+
+#: open_democracy_back/utils.py:95
+msgid "Commune/EPCI"
+msgstr ""

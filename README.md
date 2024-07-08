@@ -50,7 +50,8 @@ Pour terminer : connectez-vous à la plateforme du DémoMètre avec le compte qu
 
 - ajouter la langue dans `settings/base.py`, dans les `WAGTAIL_CONTENT_LANGUAGES` et
 `LOCALES_FOR_TRANSLATED_FIELDS`
-- ajouter les migrations (des champs sont ajoutés automatiquement dans les modèles via
+- ajouter manuellement le champ Criteria.explanatory_{locale}
+- lancer `python manage.py makemigrations` (des champs sont ajoutés automatiquement dans les modèles via
 le code de `open_democracy_back.apps.ready`)
 - envoyer en (pré-)prod le nouveau code
 - ajouter la langue dans les paramètres de wagtail

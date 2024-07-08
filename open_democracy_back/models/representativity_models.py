@@ -1,10 +1,11 @@
 from django.db import models
 from django.db.models import Count, F, Q
 from django.core.validators import MaxValueValidator, MinValueValidator
-
+from django.utils.translation import gettext_lazy as _
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.fields import RichTextField
+
 
 from open_democracy_back.models.assessment_models import Assessment
 
@@ -22,28 +23,34 @@ class RepresentativityCriteria(index.Indexed, models.Model):
         max_length=32,
         choices=SurveyLocality.choices,
         default=SurveyLocality.CITY,
-        verbose_name="Échelon questionnaire",
+        verbose_name=_("Échelon questionnaire"),
     )
     name = models.CharField(max_length=64, verbose_name="Nom")
     profiling_question = models.OneToOneField(
         ProfilingQuestion,
         on_delete=models.CASCADE,
-        verbose_name="Question de profilage reliée",
+        verbose_name=_("Question de profilage reliée"),
         related_name="representativity_criteria",
         limit_choices_to={"type": QuestionType.UNIQUE_CHOICE},
     )
     min_rate = models.IntegerField(
         default=0,
         validators=[MinValueValidator(1), MaxValueValidator(100)],
-        verbose_name="Taux (en %) minimum acceptable pour la publication des résultats",
-        help_text="En dessous de ce taux (%) la publication des résultats est interdite",
+        verbose_name=_(
+            "Taux (en %) minimum acceptable pour la publication des résultats"
+        ),
+        help_text=_(
+            "En dessous de ce taux (%) la publication des résultats est interdite"
+        ),
     )
     explanation = RichTextField(
         default="",
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Explication",
+        verbose_name=_("Explication"),
         blank=True,
-        help_text="L'explication doit aider l'utilisateur à savoir quel pourcentage indiquer et expliciter le pourcentage renseigné par défault",
+        help_text=_(
+            "L'explication doit aider l'utilisateur à savoir quel pourcentage indiquer et expliciter le pourcentage renseigné par défault"
+        ),
     )
 
     search_fields = [
@@ -67,8 +74,8 @@ class RepresentativityCriteria(index.Indexed, models.Model):
                 )
 
     class Meta:
-        verbose_name = "Critère de représentativité"
-        verbose_name_plural = "Critères de représentativité"
+        verbose_name = _("Critère de représentativité")
+        verbose_name_plural = _("Critères de représentativité")
 
 
 class RepresentativityCriteriaRule(models.Model):
@@ -81,18 +88,18 @@ class RepresentativityCriteriaRule(models.Model):
     response_choice = models.OneToOneField(
         ResponseChoice,
         on_delete=models.CASCADE,
-        verbose_name="Réponse",
+        verbose_name=_("Réponse"),
         related_name="representativity_criteria_rule",
     )
 
     ignore_for_acceptability_threshold = models.BooleanField(
         default=False,
-        verbose_name="Ne pas compter pour le seuil d'acceptabilité minimal",
-        help_text="Ex: binaire pour la parité",
+        verbose_name=_("Ne pas compter pour le seuil d'acceptabilité minimal"),
+        help_text=_("Ex: binaire pour la parité"),
     )
     totally_ignore = models.BooleanField(
         default=False,
-        verbose_name="Ignorer totalement",
+        verbose_name=_("Ignorer totalement"),
     )
 
     def __str__(self):
@@ -115,7 +122,7 @@ class AssessmentRepresentativity(models.Model):
         blank=True,
         null=True,
         validators=[MinValueValidator(1), MaxValueValidator(100)],
-        verbose_name="Seuil d'acceptabilité",
+        verbose_name=_("Seuil d'acceptabilité"),
     )
 
     # TODO : try https://medium.com/@fdemmer/django-cached-property-on-models-f4673de33990 for @cached_property (first attempt not conclusive)

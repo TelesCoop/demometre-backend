@@ -20,6 +20,9 @@ def add_translated_fields_to_model(
     The translated fields are created by copying the original field and some of its
     parameters.
     """
+    if field_name == "explanatory":
+        return
+
     for locale_ix, locale in enumerate(locales):
         translated_field_name = f"{field_name}_{locale}"
         original_field = model._meta.get_field(field_name)

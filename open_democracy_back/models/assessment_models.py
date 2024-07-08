@@ -10,6 +10,8 @@ from wagtail.documents.models import Document
 from wagtail.models import Orderable
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import pgettext_lazy
 
 from my_auth.models import User
 from open_democracy_back.constants import ASSESSMENT_DOCUMENT_CATEGORIES_CHOICES
@@ -24,8 +26,8 @@ from open_democracy_back.utils import (
 
 @register_snippet
 class Region(index.Indexed, models.Model):
-    code = models.CharField(max_length=3, verbose_name="Code")
-    name = models.CharField(max_length=64, verbose_name="Nom")
+    code = models.CharField(max_length=3, verbose_name=_("Code"))
+    name = models.CharField(max_length=64, verbose_name=_("Nom"))
 
     locality_type = LocalityType.REGION
 
@@ -39,17 +41,17 @@ class Region(index.Indexed, models.Model):
         return self.name
 
     class Meta:
-        verbose_name = "Région"
-        verbose_name_plural = "Régions"
+        verbose_name = _("Région")
+        verbose_name_plural = _("Régions")
 
 
 @register_snippet
 class Department(index.Indexed, models.Model):
-    code = models.CharField(max_length=3, verbose_name="Code")
-    name = models.CharField(max_length=64, verbose_name="Nom")
+    code = models.CharField(max_length=3, verbose_name=_("Code"))
+    name = models.CharField(max_length=64, verbose_name=_("Nom"))
     region = models.ForeignKey(
         Region,
-        verbose_name="Région",
+        verbose_name=_("Région"),
         on_delete=models.SET_NULL,
         null=True,
         related_name="departments",
@@ -67,22 +69,27 @@ class Department(index.Indexed, models.Model):
         return f"{self.name} ({self.code})"
 
     class Meta:
-        verbose_name = "Département"
-        verbose_name_plural = "Départements"
+        verbose_name = _("Département")
+        verbose_name_plural = _("Départements")
 
 
 @register_snippet
 class Municipality(index.Indexed, ClusterableModel):
-    code = models.CharField(max_length=100, verbose_name="Code insee")
-    name = models.CharField(max_length=255, verbose_name="Nom")
+    code = models.CharField(
+        max_length=100,
+        verbose_name=pgettext_lazy("unique code for a city", "Code insee"),
+    )
+    name = models.CharField(max_length=255, verbose_name=_("Nom"))
     department = models.ForeignKey(
         Department,
-        verbose_name="Département",
+        verbose_name=_("Département"),
         on_delete=models.SET_NULL,
         null=True,
         related_name="municipalities",
     )
-    population = models.IntegerField(verbose_name="Population", default=0)
+    population = models.IntegerField(
+        verbose_name=pgettext_lazy("number of inhabitants", "Population"), default=0
+    )
 
     locality_type = LocalityType.MUNICIPALITY
 
@@ -93,7 +100,7 @@ class Municipality(index.Indexed, ClusterableModel):
         FieldPanel("population"),
         InlinePanel(
             "zip_codes",
-            label="Code postal",
+            label=_("Code postal"),
         ),
     ]
 
@@ -107,15 +114,15 @@ class Municipality(index.Indexed, ClusterableModel):
         return self.name
 
     class Meta:
-        verbose_name = "Commune"
-        verbose_name_plural = "Communes"
+        verbose_name = _("Commune")
+        verbose_name_plural = _("Communes")
 
 
 class ZipCode(models.Model):
-    code = models.CharField(max_length=100, verbose_name="Code")
+    code = models.CharField(max_length=100, verbose_name=_("Code"))
     municipality = ParentalKey(
         Municipality,
-        verbose_name="Municipalité",
+        verbose_name=_("Municipalité"),
         on_delete=models.CASCADE,
         related_name="zip_codes",
     )
@@ -124,15 +131,15 @@ class ZipCode(models.Model):
         return self.code
 
     class Meta:
-        verbose_name = "Code postal"
-        verbose_name_plural = "Code postaux"
+        verbose_name = _("Code postal")
+        verbose_name_plural = _("Code postaux")
 
 
 @register_snippet
 class EPCI(index.Indexed, ClusterableModel):
-    code = models.CharField(max_length=100, verbose_name="Code siren")
-    name = models.CharField(max_length=255, verbose_name="Nom")
-    population = models.IntegerField(verbose_name="Population", default=0)
+    code = models.CharField(max_length=100, verbose_name=_("Code siren"))
+    name = models.CharField(max_length=255, verbose_name=_("Nom"))
+    population = models.IntegerField(verbose_name=_("Population"), default=0)
 
     locality_type = LocalityType.INTERCOMMUNALITY
 
@@ -140,7 +147,7 @@ class EPCI(index.Indexed, ClusterableModel):
         FieldPanel("code"),
         FieldPanel("name"),
         FieldPanel("population"),
-        InlinePanel("related_municipalities_ordered", label="Liste des communes"),
+        InlinePanel("related_municipalities_ordered", label=_("Liste des communes")),
     ]
 
     search_fields = [
@@ -153,8 +160,8 @@ class EPCI(index.Indexed, ClusterableModel):
         return self.name
 
     class Meta:
-        verbose_name = "Intercommunalité"
-        verbose_name_plural = "Intercommunalités"
+        verbose_name = _("Intercommunalité")
+        verbose_name_plural = _("Intercommunalités")
 
 
 class MunicipalityOrderByEPCI(Orderable):
@@ -162,7 +169,7 @@ class MunicipalityOrderByEPCI(Orderable):
         EPCI, on_delete=models.CASCADE, related_name="related_municipalities_ordered"
     )
     municipality = models.ForeignKey(
-        Municipality, on_delete=models.CASCADE, verbose_name="Commune"
+        Municipality, on_delete=models.CASCADE, verbose_name=_("Commune")
     )
     panels = [
         FieldPanel("municipality"),
@@ -174,24 +181,26 @@ class AssessmentType(models.Model):
     assessment_type = models.CharField(
         max_length=32,
         choices=ManagedAssessmentType.choices,
-        verbose_name="Evaluation géré par le code",
+        verbose_name=_("type d'évaluation"),
         unique=True,
         editable=False,
     )
     for_who = models.CharField(
-        max_length=510, blank=True, verbose_name="A qui c'est adressé"
+        max_length=510, blank=True, verbose_name=_("A qui c'est adressé")
     )
     what = models.CharField(
-        max_length=510, blank=True, verbose_name="Ce que ça contient"
+        max_length=510, blank=True, verbose_name=_("Ce que ça contient")
     )
     for_what = models.CharField(
-        max_length=510, blank=True, verbose_name="Ce que ça permet"
+        max_length=510, blank=True, verbose_name=_("Ce que ça permet")
     )
-    results = models.CharField(max_length=510, blank=True, verbose_name="Les résultats")
-    price = models.CharField(max_length=510, blank=True, verbose_name="Le prix")
+    results = models.CharField(
+        max_length=510, blank=True, verbose_name=_("Les résultats")
+    )
+    price = models.CharField(max_length=510, blank=True, verbose_name=_("Le prix"))
     pdf = models.ForeignKey(
         Document,
-        verbose_name="Pdf du questionnaire",
+        verbose_name=_("Pdf du questionnaire"),
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -211,8 +220,8 @@ class AssessmentType(models.Model):
         return self.get_assessment_type_display()
 
     class Meta:
-        verbose_name = "Type d'évaluation"
-        verbose_name_plural = "Types d'évaluation"
+        verbose_name = _("Type d'évaluation")
+        verbose_name_plural = _("Types d'évaluation")
 
 
 class AssessmentQueryset(models.QuerySet):
@@ -229,34 +238,38 @@ class Assessment(TimeStampedModel, ClusterableModel):
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name="Type d'évaluation",
+        verbose_name=_("Type d'évaluation"),
     )
     survey = models.ForeignKey(
         "Survey",
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name="Questionnaire",
+        verbose_name=_("Questionnaire"),
     )
     conditions_of_sale_consent = models.BooleanField(default=False)
-    end_date = models.DateField(null=True, blank=True, verbose_name="Date de fin")
+    end_date = models.DateField(null=True, blank=True, verbose_name=_("Date de fin"))
 
     experts = models.ManyToManyField(
         User,
         blank=True,
-        verbose_name="Experts",
+        verbose_name=_("Experts"),
         related_name="assessments",
         limit_choices_to={"groups__name": "Experts"},
-        help_text="Pour ajouter un expert à la liste il faut créer / modifier l'utilisateur correspondant, aller dans l'onglet rôles et cocher la case Experts",
+        help_text=_(
+            "Pour ajouter un expert à la liste il faut créer / modifier l'utilisateur correspondant, aller dans l'onglet rôles et cocher la case Experts"
+        ),
     )
     initiated_by_user = models.ForeignKey(
         User,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name="Initialisé par",
+        verbose_name=_("Initialisé par"),
         related_name="initiated_assessments",
-        help_text="Si l'évaluation est initié au nom de la localité, quelqu'un peut tout de même être à la source",
+        help_text=_(
+            "Si l'évaluation est initié au nom de la localité, quelqu'un peut tout de même être à la source"
+        ),
     )
     initiator_type = models.CharField(
         "type d'initilisateur",
@@ -270,61 +283,63 @@ class Assessment(TimeStampedModel, ClusterableModel):
         max_length=255,
         blank=True,
         null=True,
-        verbose_name="Initialisé au nom de",
+        verbose_name=_("Initialisé au nom de"),
     )
     initialization_date = models.DateField(
         null=True,
         blank=True,
-        verbose_name="Date d'initialisation",
-        help_text="Si il n'y a pas de date d'initialisation, c'est que le début de l'évaluation n'a pas été confirmée",
+        verbose_name=_("Date d'initialisation"),
+        help_text=_(
+            "Si il n'y a pas de date d'initialisation, c'est que le début de l'évaluation n'a pas été confirmée"
+        ),
     )
     is_initialization_questions_completed = models.BooleanField(default=False)
     last_participation_date = models.DateTimeField(
-        default=timezone.now, verbose_name="Date de dernière participation"
+        default=timezone.now, verbose_name=_("Date de dernière participation")
     )
     locality_type = models.CharField(
         max_length=32,
         choices=LocalityType.choices,
         default=LocalityType.MUNICIPALITY,
-        verbose_name="Type de localité",
+        verbose_name=_("Type de localité"),
     )
     epci = models.ForeignKey(
         EPCI,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name="Intercommunalité",
+        verbose_name=_("Intercommunalité"),
     )
     municipality = models.ForeignKey(
         Municipality,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name="Commune",
+        verbose_name=_("Commune"),
     )
     region = models.ForeignKey(
         Region,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name="Région",
+        verbose_name=_("Région"),
     )
     department = models.ForeignKey(
         Department,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name="Département",
+        verbose_name=_("Département"),
     )
-    name = models.CharField(verbose_name="nom", max_length=80, blank=True, null=True)
+    name = models.CharField(verbose_name=_("nom"), max_length=80, blank=True, null=True)
 
     # details
-    context = FrontendRichText(verbose_name="contexte", blank=True, default="")
-    objectives = FrontendRichText(verbose_name="objectifs", blank=True, default="")
+    context = FrontendRichText(verbose_name=_("contexte"), blank=True, default="")
+    objectives = FrontendRichText(verbose_name=_("objectifs"), blank=True, default="")
     stakeholders = FrontendRichText(
-        verbose_name="parties prenantes", blank=True, default=""
+        verbose_name=_("parties prenantes"), blank=True, default=""
     )
-    calendar = FrontendRichText(verbose_name="calendrier", blank=True, default="")
+    calendar = FrontendRichText(verbose_name=_("calendrier"), blank=True, default="")
 
     objects = AssessmentQueryset.as_manager()
 
@@ -387,8 +402,8 @@ class Assessment(TimeStampedModel, ClusterableModel):
         super().save(*args, **kwargs)
 
     class Meta:
-        verbose_name = "Évaluation"
-        verbose_name_plural = "Évaluations"
+        verbose_name = _("Évaluation")
+        verbose_name_plural = _("Évaluations")
 
 
 class AssessmentResponseQuerySet(models.QuerySet):
@@ -417,15 +432,15 @@ class AssessmentResponse(Response):
 
 class AssessmentDocument(TimeStampedModel):
     assessment = ParentalKey(
-        Assessment, on_delete=models.CASCADE, related_name="documents"
+        Assessment, on_delete=models.CASCADE, related_name=_("documents")
     )
     category = models.CharField(
-        verbose_name="catégorie",
+        verbose_name=_("catégorie"),
         max_length=20,
         choices=ASSESSMENT_DOCUMENT_CATEGORIES_CHOICES,
     )
-    file = models.FileField(verbose_name="fichier")
-    name = models.CharField(verbose_name="nom", max_length=80)
+    file = models.FileField(verbose_name=_("fichier"))
+    name = models.CharField(verbose_name=_("nom"), max_length=80)
 
     panels = [
         FieldPanel("category"),
@@ -440,12 +455,12 @@ class AssessmentPayment(TimeStampedModel):
     )
     author = models.ForeignKey(
         User,
-        verbose_name="auteur du paiement",
+        verbose_name=_("auteur du paiement"),
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
     )
-    amount = models.FloatField(verbose_name="montant")
+    amount = models.FloatField(verbose_name=_("montant"))
 
     panels = [
         FieldPanel("amount"),

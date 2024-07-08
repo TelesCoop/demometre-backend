@@ -2,7 +2,6 @@ from django.db import models
 from my_auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from open_democracy_back.models.animator_models import Participant, Workshop
-
 from open_democracy_back.models.questionnaire_and_profiling_models import (
     Category,
     ProfileType,
@@ -11,6 +10,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     Role,
     Pillar,
 )
+from django.utils.translation import gettext_lazy as _
 
 
 class ParticipationQuerySet(models.QuerySet):
@@ -50,8 +50,8 @@ class Participation(models.Model):
         related_name="participations",
     )
     medium = models.CharField(
-        verbose_name="Support de réponse",
-        choices=[("online", "en ligne"), ("paper", "papier")],
+        verbose_name=_("Support de réponse"),
+        choices=[("online", _("en ligne")), ("paper", _("papier"))],
         max_length=6,
         default="online",
     )

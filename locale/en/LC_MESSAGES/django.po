@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-05 14:59+0000\n"
+"POT-Creation-Date: 2024-07-08 08:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: my_auth/models.py:10 open_democracy_back/models/animator_models.py:10
 msgid "email address"
 msgstr ""
@@ -107,7 +108,7 @@ msgstr ""
 #: open_democracy_back/models/assessment_models.py:44
 #: open_democracy_back/models/assessment_models.py:54
 #: open_democracy_back/models/assessment_models.py:325
-#: open_democracy_back/utils.py:30 open_democracy_back/utils.py:97
+#: open_democracy_back/utils.py:30 open_democracy_back/utils.py:107
 msgid "Région"
 msgstr ""
 
@@ -118,7 +119,7 @@ msgstr ""
 #: open_democracy_back/models/assessment_models.py:72
 #: open_democracy_back/models/assessment_models.py:85
 #: open_democracy_back/models/assessment_models.py:332
-#: open_democracy_back/utils.py:29 open_democracy_back/utils.py:96
+#: open_democracy_back/utils.py:29 open_democracy_back/utils.py:106
 msgid "Département"
 msgstr ""
 
@@ -1580,18 +1581,22 @@ msgid "Choix de réponse"
 msgstr ""
 
 #: open_democracy_back/models/questionnaire_and_profiling_models.py:889
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:937
 msgid "Borne inférieure"
 msgstr ""
 
 #: open_democracy_back/models/questionnaire_and_profiling_models.py:890
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:938
 msgid "Si la réponse est suppérieur ou égale à"
 msgstr ""
 
 #: open_democracy_back/models/questionnaire_and_profiling_models.py:894
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:944
 msgid "Borne suppérieure"
 msgstr ""
 
 #: open_democracy_back/models/questionnaire_and_profiling_models.py:895
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:945
 msgid "Si la réponse est inférieur ou égale à"
 msgstr ""
 
@@ -1600,83 +1605,58 @@ msgid "Score associé à une fourchette de pourcentage"
 msgstr ""
 
 #: open_democracy_back/models/questionnaire_and_profiling_models.py:921
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:987
 msgid "La borne inférieure doit être inférieure ou égale à la borne supérieure"
 msgstr ""
 
 #: open_democracy_back/models/questionnaire_and_profiling_models.py:926
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:992
 msgid "Scores pour les différentes fourchettes"
 msgstr ""
 
 #: open_democracy_back/models/questionnaire_and_profiling_models.py:927
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:993
 msgid "Score pour une fourchette donnée"
 msgstr ""
 
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:937
-msgid "Lower Bound"
-msgstr ""
-
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:938
-msgid "If the answer is greater than or equal to"
-msgstr ""
-
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:944
-msgid "Upper Bound"
-msgstr ""
-
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:945
-msgid "If the answer is less than or equal to"
-msgstr ""
-
 #: open_democracy_back/models/questionnaire_and_profiling_models.py:958
-msgid "Score associated with a number range"
+msgid "Score associé à une fourchette de nombre"
 msgstr ""
 
 #: open_democracy_back/models/questionnaire_and_profiling_models.py:977
-msgid "At least one bound must be filled in"
+msgid "Au moins une borne doit être renseignée"
 msgstr ""
 
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:986
-msgid "The lower bound must be less than or equal to the upper bound"
-msgstr ""
-
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:990
-msgid "Scores for different ranges"
-msgstr ""
-
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:991
-msgid "Score for a given range"
-msgstr ""
-
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:1008
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:1018
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1010
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1022
 msgid "Category"
 msgstr ""
 
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:1009
-msgid "Allows answering the same question for different categories"
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1012
+msgid "Permet de répondre à la même question pour différentes catégories"
 msgstr ""
 
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:1033
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1037
 msgid "Filter by question"
 msgstr ""
 
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:1059
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1063
 #, python-format
 msgid ""
-"The answer to the refining question %(question_code)s must be %(response)s"
+"La réponse de la question d'affinage %(question_code)s doit être %(response)s"
 msgstr ""
 
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:1072
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1076
 #, python-format
-msgid "equal to %(response_choices)s"
+msgid "égale à %(response_choices)s"
 msgstr ""
 
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:1078
-msgid "Yes"
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1082
+msgid "Oui"
 msgstr ""
 
-#: open_democracy_back/models/questionnaire_and_profiling_models.py:1078
-msgid "No"
+#: open_democracy_back/models/questionnaire_and_profiling_models.py:1082
+msgid "Non"
 msgstr ""
 
 #: open_democracy_back/models/representativity_models.py:26
@@ -1875,22 +1855,22 @@ msgstr ""
 msgid "Nombre"
 msgstr ""
 
-#: open_democracy_back/utils.py:88
+#: open_democracy_back/utils.py:98
 msgid "Représentation"
 msgstr ""
 
-#: open_democracy_back/utils.py:89
+#: open_democracy_back/utils.py:99
 msgid "Transparence"
 msgstr ""
 
-#: open_democracy_back/utils.py:90
+#: open_democracy_back/utils.py:100
 msgid "Participation"
 msgstr ""
 
-#: open_democracy_back/utils.py:91
+#: open_democracy_back/utils.py:101
 msgid "Coopération"
 msgstr ""
 
-#: open_democracy_back/utils.py:95
+#: open_democracy_back/utils.py:105
 msgid "Commune/EPCI"
 msgstr ""

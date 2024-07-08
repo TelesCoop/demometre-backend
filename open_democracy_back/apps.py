@@ -3,9 +3,11 @@ from typing import Dict, List
 from django.apps import AppConfig
 from django.conf import settings
 from django.db import models
+from django.db.models import ForeignKey
 from django.utils.datastructures import ImmutableList
+from django.utils.translation import gettext_lazy as _
 
-POSSIBLE_ARGS = ["help_text", "max_length", "features"]
+POSSIBLE_ARGS = ["help_text", "max_length", "features", "to"]
 NUMBER_LARGER_THAN_LOCALES_COUNT = 100
 
 
@@ -32,13 +34,17 @@ def add_translated_fields_to_model(
             for key, value in original_field.__dict__.items()
             if key in POSSIBLE_ARGS
         }
+        if issubclass(field_class, ForeignKey):
+            args["on_delete"] = models.SET_NULL
+            args["to"] = original_field.related_model
+            args["related_name"] = f"{field_name}s_{locale}"
         model.add_to_class(
             translated_field_name,
             field_class(
                 **args,
                 blank=True,
                 null=True,
-                verbose_name=f"{original_field.verbose_name or field_name} ({locale})",
+                verbose_name=f"{_(original_field.verbose_name or field_name)} ({locale})",
             ),
         )
         field_order[translated_field_name] = (

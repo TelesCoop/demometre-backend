@@ -64,6 +64,14 @@ class RGPDSettings(BaseSiteSetting):
         FieldPanel("content_license"),
     ]
 
+    translated_fields = [
+        "legal_mention",
+        "terms_of_use",
+        "terms_of_sale",
+        "confidentiality_policy",
+        "content_license",
+    ]
+
     class Meta:
         verbose_name = "RGPD"
 

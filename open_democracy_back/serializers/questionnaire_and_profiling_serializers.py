@@ -54,6 +54,8 @@ def method_for_translated_field(field_name):
     @staticmethod
     def my_function(obj):
         locale = translation.get_language()
+        if field_name == "explanatory":
+            return list(getattr(obj, f"{field_name}_{locale}").raw_data or [])
         return getattr(obj, f"{field_name}_{locale}")
 
     my_function.__name__ = f"get_{field_name}"

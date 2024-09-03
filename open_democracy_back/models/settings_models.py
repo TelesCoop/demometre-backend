@@ -2,14 +2,15 @@ from django.db import models
 from wagtail.admin.panels import FieldPanel
 from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
 from wagtail.documents.models import Document
+from django.utils.translation import gettext_lazy as _
 
 
 @register_setting
 class StructureSettings(BaseSiteSetting):
-    email = models.EmailField(verbose_name="Adresse mail de contact", blank=True)
+    email = models.EmailField(verbose_name=_("Adresse mail de contact"), blank=True)
 
     class Meta:
-        verbose_name = "Paramètre de la structure"
+        verbose_name = _("Paramètre de la structure")
 
 
 @register_setting
@@ -20,7 +21,7 @@ class RGPDSettings(BaseSiteSetting):
         null=True,
         on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name="Mentions légales",
+        verbose_name=_("Mentions légales"),
     )
     terms_of_use = models.ForeignKey(
         Document,
@@ -28,7 +29,7 @@ class RGPDSettings(BaseSiteSetting):
         null=True,
         on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name="Conditions générales d'utilisation",
+        verbose_name=_("Conditions générales d'utilisation"),
     )
     terms_of_sale = models.ForeignKey(
         Document,
@@ -36,7 +37,7 @@ class RGPDSettings(BaseSiteSetting):
         null=True,
         on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name="Conditions générales de vente",
+        verbose_name=_("Conditions générales de vente"),
     )
     confidentiality_policy = models.ForeignKey(
         Document,
@@ -44,7 +45,7 @@ class RGPDSettings(BaseSiteSetting):
         null=True,
         on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name="Politique de confidentialité",
+        verbose_name=_("Politique de confidentialité"),
     )
     content_license = models.ForeignKey(
         Document,
@@ -52,7 +53,7 @@ class RGPDSettings(BaseSiteSetting):
         null=True,
         on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name="Licence Contenu",
+        verbose_name=_("Licence Contenu"),
     )
 
     panels = [
@@ -63,6 +64,14 @@ class RGPDSettings(BaseSiteSetting):
         FieldPanel("content_license"),
     ]
 
+    translated_fields = [
+        "legal_mention",
+        "terms_of_use",
+        "terms_of_sale",
+        "confidentiality_policy",
+        "content_license",
+    ]
+
     class Meta:
         verbose_name = "RGPD"
 
@@ -70,7 +79,7 @@ class RGPDSettings(BaseSiteSetting):
 @register_setting
 class ImportantPagesSettings(BaseSiteSetting):
     class Meta:
-        verbose_name = "Pages importantes"
+        verbose_name = _("Pages importantes")
 
     faq_page = models.ForeignKey(
         "wagtailcore.Page",
@@ -78,7 +87,7 @@ class ImportantPagesSettings(BaseSiteSetting):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="+",
-        verbose_name="FAQ",
+        verbose_name=_("FAQ"),
     )
 
     panels = [

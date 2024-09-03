@@ -20,6 +20,7 @@ from wagtail.fields import RichTextField, StreamField
 from wagtail.models import TranslatableMixin, Orderable
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
+from django.utils.translation import gettext_lazy as _
 
 from open_democracy_back.utils import (
     NUMERICAL_OPERATOR,
@@ -33,21 +34,23 @@ from open_democracy_back.utils import (
 
 @register_snippet
 class Role(TranslatableMixin, ClusterableModel):
-    name = models.CharField(verbose_name="Nom", max_length=125)
+    name = models.CharField(verbose_name=_("Nom"), max_length=125)
 
     description = models.TextField(
         default="",
         null=True,
         blank=True,
-        verbose_name="Description du rôle",
-        help_text="Texte précisant le rôle (définition, exemple, reformulation).",
+        verbose_name=_("Description du rôle"),
+        help_text=_("Texte précisant le rôle (définition, exemple, reformulation)."),
     )
 
     panels = [
         FieldPanel("name"),
         FieldPanel("description"),
-        InlinePanel("related_markers_ordered", label="Ordre des marqueurs"),
+        InlinePanel("related_markers_ordered", label=_("Ordre des marqueurs")),
     ]
+
+    translated_fields = ["name", "description"]
 
     def __str__(self):
         return self.name
@@ -59,8 +62,8 @@ class Role(TranslatableMixin, ClusterableModel):
         super().__init__(*args, **kwargs)
 
     class Meta(TranslatableMixin.Meta):
-        verbose_name_plural = "Rôles"
-        verbose_name = "Rôle"
+        verbose_name_plural = _("Rôles")
+        verbose_name = _("Rôle")
 
 
 @register_snippet
@@ -75,46 +78,44 @@ class ProfileType(models.Model):
         FieldPanel("name"),
     ]
 
+    translated_fields = ["name"]
+
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name_plural = "Types de profil"
-        verbose_name = "Type de profil"
+        verbose_name_plural = _("Types de profil")
+        verbose_name = _("Type de profil")
 
 
 class ScoreFields(models.Model):
     score_1 = models.TextField(
         blank=True,
-        verbose_name="Score = 1 (Signification)",
-        help_text="Signification du résultat 1, affiché dans le DémoMètre",
+        verbose_name=_("Score = 1 (Signification)"),
+        help_text=_("Signification du résultat 1, affiché dans le DémoMètre"),
         default="",
     )
     score_2 = models.TextField(
         blank=True,
-        verbose_name="Score = 2 (Signification)",
-        help_text="Signification du résultat 2, affiché dans le DémoMètre",
+        verbose_name=_("Score = 2 (Signification)"),
+        help_text=_("Signification du résultat 2, affiché dans le DémoMètre"),
         default="",
     )
     score_3 = models.TextField(
         blank=True,
-        verbose_name="Score = 3 (Signification)",
-        help_text="Signification du résultat 3, affiché dans le DémoMètre",
+        verbose_name=_("Score = 3 (Signification)"),
+        help_text=_("Signification du résultat 3, affiché dans le DémoMètre"),
         default="",
     )
     score_4 = models.TextField(
         blank=True,
-        verbose_name="Score = 4 (Signification)",
-        help_text="Signification du résultat 4, affiché dans le DémoMètre",
+        verbose_name=_("Score = 4 (Signification)"),
+        help_text=_("Signification du résultat 4, affiché dans le DémoMètre"),
         default="",
     )
 
-    panels = [
-        FieldPanel("score_1"),
-        FieldPanel("score_2"),
-        FieldPanel("score_3"),
-        FieldPanel("score_4"),
-    ]
+    panels = [FieldPanel(f"score_{i}") for i in range(1, 5)]
+    panel_names = [f"score_{i}" for i in range(1, 5)]
 
     class Meta:
         abstract = True
@@ -122,26 +123,26 @@ class ScoreFields(models.Model):
 
 @register_snippet
 class Survey(TimeStampedModel):
-    name = models.CharField(max_length=255, verbose_name="Nom", unique=True)
+    name = models.CharField(max_length=255, verbose_name=_("Nom"), unique=True)
     survey_locality = models.CharField(
         max_length=32,
         choices=SurveyLocality.choices,
         default=SurveyLocality.CITY,
-        verbose_name="Échelon du questionnaire",
+        verbose_name=_("Échelon du questionnaire"),
         unique=True,
     )
     description = RichTextField(
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Description",
-        help_text="Description du questionnaire",
+        verbose_name=_("Description"),
+        help_text=_("Description du questionnaire"),
         max_length=1024,
         default="",
     )
     code = models.CharField(
         max_length=10,
-        verbose_name="code",
-        help_text="Nom court du questionnaire pour les menus de l'interface admin",
+        verbose_name=_("code"),
+        help_text=_("Nom court du questionnaire pour les menus de l'interface admin"),
         default="",
     )
     panels = [
@@ -151,6 +152,8 @@ class Survey(TimeStampedModel):
         FieldPanel("description"),
     ]
 
+    translated_fields = ["description"]
+
     def __str__(self):
         return f"{self.name} ({self.code})"
 
@@ -158,20 +161,24 @@ class Survey(TimeStampedModel):
         super().save(*args, **kwargs)
         [child_pillar.save() for child_pillar in self.pillars.all()]
 
+    class Meta:
+        verbose_name_plural = _("Questionnaires")
+        verbose_name = _("Questionnaire")
+
 
 @register_snippet
 class Pillar(models.Model):
     name = models.CharField(
-        verbose_name="Nom", max_length=125, choices=PillarName.choices
+        verbose_name=_("Nom"), max_length=125, choices=PillarName.choices
     )
     code = models.CharField(
-        verbose_name="Code",
+        verbose_name=_("Code"),
         max_length=10,
-        help_text="Correspond au numéro (ou lettre) de ce pilier",
+        help_text=_("Correspond au numéro (ou lettre) de ce pilier"),
     )
     order = models.IntegerField(
-        verbose_name="Ordre",
-        help_text="Permet de ranger dans l'ordre voulu les piliers",
+        verbose_name=_("Ordre"),
+        help_text=_("Permet de ranger dans l'ordre voulu les piliers"),
         default="1",
     )
 
@@ -179,8 +186,8 @@ class Pillar(models.Model):
         null=True,
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Description",
-        help_text="Description pour le référentiel",
+        verbose_name=_("Description"),
+        help_text=_("Description pour le référentiel"),
     )
 
     survey = models.ForeignKey(
@@ -197,6 +204,8 @@ class Pillar(models.Model):
         FieldPanel("survey"),
     ]
 
+    translated_fields = ["description"]
+
     def __str__(self):
         return f"{self.survey.code}.{self.code}: {self.name}"
 
@@ -205,8 +214,8 @@ class Pillar(models.Model):
         [child_marker.save() for child_marker in self.markers.all()]
 
     class Meta:
-        verbose_name_plural = "1. Piliers"
-        verbose_name = "1. Pilier"
+        verbose_name_plural = _("1. Piliers")
+        verbose_name = _("1. Pilier")
         ordering = ["order"]
 
 
@@ -215,19 +224,19 @@ class Marker(index.Indexed, ScoreFields):
     pillar = models.ForeignKey(
         Pillar, null=True, blank=True, on_delete=models.CASCADE, related_name="markers"
     )
-    name = models.CharField(verbose_name="Nom", max_length=125)
+    name = models.CharField(verbose_name=_("Nom"), max_length=125)
     code = models.CharField(
-        verbose_name="Code",
+        verbose_name=_("Code"),
         max_length=3,
-        help_text="Correspond au numéro (ou lettre) de ce marqueur dans son pilier",
+        help_text=_("Correspond au numéro (ou lettre) de ce marqueur dans son pilier"),
     )
     concatenated_code = models.CharField(max_length=10, default="")
     description = RichTextField(
         null=True,
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Description",
-        help_text="Description pour le référentiel",
+        verbose_name=_("Description"),
+        help_text=_("Description pour le référentiel"),
     )
 
     panels = [
@@ -236,6 +245,8 @@ class Marker(index.Indexed, ScoreFields):
         FieldPanel("code"),
         FieldPanel("description"),
     ] + ScoreFields.panels
+
+    translated_fields = ["name", "description"] + ScoreFields.panel_names
 
     search_fields = [
         index.SearchField(
@@ -258,8 +269,8 @@ class Marker(index.Indexed, ScoreFields):
         [child_criteria.save() for child_criteria in self.criterias.all()]
 
     class Meta:
-        verbose_name_plural = "2. Marqueurs"
-        verbose_name = "2. Marqueur"
+        verbose_name_plural = _("2. Marqueurs")
+        verbose_name = _("2. Marqueur")
         ordering = ["code"]
 
 
@@ -276,8 +287,36 @@ class MarkerOrderByRole(Orderable):
 @register_snippet
 class ThematicTag(TagBase):
     class Meta:
-        verbose_name = "Thématique"
-        verbose_name_plural = "Thématiques"
+        verbose_name = _("Thématique")
+        verbose_name_plural = _("Thématiques")
+
+
+explanatory_args = [
+    (
+        "category",
+        blocks.StructBlock(
+            [
+                ("title", blocks.CharBlock(label=_("Titre"))),
+                (
+                    "description",
+                    blocks.RichTextBlock(
+                        label=_("Description"),
+                        features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
+                    ),
+                ),
+            ],
+            label_format=_("Catégorie : {title}"),
+            label=_("Catégorie"),
+        ),
+    )
+]
+explanatory_kwargs = {
+    "blank": True,
+    "verbose_name": _(
+        "Explicatif du critère (sources, exemples, obligations légales ...)"
+    ),
+    "use_json_field": True,
+}
 
 
 @register_snippet
@@ -289,47 +328,47 @@ class Criteria(index.Indexed, ClusterableModel):
         on_delete=models.CASCADE,
         related_name="criterias",
     )
-    name = models.CharField(verbose_name="Nom", max_length=125)
+    name = models.CharField(verbose_name=_("Nom"), max_length=125)
     code = models.IntegerField(
-        verbose_name="Code",
-        help_text="Correspond au numéro de ce critère dans son marqueur",
+        verbose_name=_("Code"),
+        help_text=_("Correspond au numéro de ce critère dans son marqueur"),
         validators=[MaxValueValidator(100), MinValueValidator(1)],
     )
     concatenated_code = models.CharField(max_length=12, default="")
     thematic_tags = models.ManyToManyField(
-        ThematicTag, blank=True, verbose_name="Thématiques"
+        ThematicTag, blank=True, verbose_name=_("Thématiques")
     )
     description = RichTextField(
         null=True,
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Description",
-        help_text="Description pour le référentiel",
+        verbose_name=_("Description"),
+        help_text=_("Description pour le référentiel"),
     )
 
     explanatory = StreamField(
-        [
-            (
-                "category",
-                blocks.StructBlock(
-                    [
-                        ("title", blocks.CharBlock(label="Titre")),
-                        (
-                            "description",
-                            blocks.RichTextBlock(
-                                label="Description",
-                                features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-                            ),
-                        ),
-                    ],
-                    label_format="Catégorie : {title}",
-                    label="Catégorie",
-                ),
-            )
-        ],
-        blank=True,
-        verbose_name="Explicatif du critère (sources, exemples, obligations légales ...)",
-        use_json_field=True,
+        explanatory_args,
+        **explanatory_kwargs,
+    )
+    explanatory_fr = StreamField(
+        explanatory_args,
+        **{
+            **explanatory_kwargs,
+            "verbose_name": _(
+                "Explicatif du critère (sources, exemples, obligations légales ...) (fr)"
+            ),
+            "null": True,
+        },
+    )
+    explanatory_en = StreamField(
+        explanatory_args,
+        **{
+            **explanatory_kwargs,
+            "verbose_name": _(
+                "Explicatif du critère (sources, exemples, obligations légales ...) (en)"
+            ),
+            "null": True,
+        },
     )
 
     panels = [
@@ -338,9 +377,11 @@ class Criteria(index.Indexed, ClusterableModel):
         FieldPanel("code"),
         FieldPanel("thematic_tags", widget=forms.CheckboxSelectMultiple),
         FieldPanel("description"),
-        InlinePanel("related_definition_ordered", label="Définitions"),
+        InlinePanel("related_definition_ordered", label=_("Définitions")),
         FieldPanel("explanatory"),
     ]
+
+    translated_fields = ["name", "description", "explanatory"]
 
     search_fields = [
         index.SearchField(
@@ -363,24 +404,26 @@ class Criteria(index.Indexed, ClusterableModel):
         [child_question.save() for child_question in child_questions]
 
     class Meta:
-        verbose_name_plural = "3. Critères"
-        verbose_name = "3. Critère"
+        verbose_name_plural = _("3. Critères")
+        verbose_name = _("3. Critère")
         ordering = ["code"]
 
 
 @register_snippet
 class Definition(models.Model):
-    word = models.CharField(max_length=255, verbose_name="mot")
+    word = models.CharField(max_length=255, verbose_name=_("mot"))
     explanation = RichTextField(
-        features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name="explication"
+        features=SIMPLE_RICH_TEXT_FIELD_FEATURE, verbose_name=_("explication")
     )
+
+    translated_fields = ["word", "explanation"]
 
     def __str__(self):
         return f"Définition de {self.word}"
 
     class Meta:
-        verbose_name = "Définition"
-        verbose_name_plural = "Définitions"
+        verbose_name = _("Définition")
+        verbose_name_plural = _("Définitions")
 
 
 class CriteriaDefinition(Orderable):
@@ -430,37 +473,43 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     )
 
     code = models.CharField(
-        verbose_name="Code",
+        verbose_name=_("Code"),
         max_length=2,
-        help_text="Correspond au numéro (ou lettre) de cette question, détermine son ordre",
+        help_text=_(
+            "Correspond au numéro (ou lettre) de cette question, détermine son ordre"
+        ),
     )
     concatenated_code = models.CharField(max_length=11, default="")
 
-    name = models.CharField(verbose_name="Nom", max_length=125, default="")
+    name = models.CharField(verbose_name=_("Nom"), max_length=125, default="")
     question_statement = models.TextField(
-        verbose_name="Enoncé de la question", default=""
+        verbose_name=_("Enoncé de la question"), default=""
     )
 
-    mandatory = models.BooleanField(default=False, verbose_name="Obligatoire")
+    mandatory = models.BooleanField(default=False, verbose_name=_("Obligatoire"))
 
     type = models.CharField(
         max_length=32,
         choices=QuestionType.choices,
         default=QuestionType.BOOLEAN,
-        help_text="Choisir le type de question",
+        help_text=_("Choisir le type de question"),
     )
 
     population_lower_bound = models.IntegerField(
-        verbose_name="Borne inférieure (population min)",
+        verbose_name=_("Borne inférieure (population min)"),
         blank=True,
         null=True,
-        help_text="Si aucune valeur n'est renseignée, aucune borne inférieur ne sera prise en compte",
+        help_text=_(
+            "Si aucune valeur n'est renseignée, aucune borne inférieur ne sera prise en compte"
+        ),
     )
     population_upper_bound = models.IntegerField(
-        verbose_name="Borne suppérieur (population max)",
+        verbose_name=_("Borne suppérieur (population max)"),
         blank=True,
         null=True,
-        help_text="Si aucune valeur n'est renseignée, aucune borne suppérieur ne sera prise en compte",
+        help_text=_(
+            "Si aucune valeur n'est renseignée, aucune borne suppérieur ne sera prise en compte"
+        ),
     )
 
     allows_to_explain = models.ForeignKey(
@@ -469,24 +518,26 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="explained_by",
-        verbose_name="Permet d'expliciter une autre question",
+        verbose_name=_("Permet d'expliciter une autre question"),
     )
 
     max_multiple_choices = models.IntegerField(
-        verbose_name="Nombre maximal de choix possible",
+        verbose_name=_("Nombre maximal de choix possible"),
         blank=True,
         null=True,
-        help_text="Pour une question à choix multiple, indiquer le nombre maximum de choix possible",
+        help_text=_(
+            "Pour une question à choix multiple, indiquer le nombre maximum de choix possible"
+        ),
     )
 
     min_number_value = models.FloatField(
-        verbose_name="Valeur minimale du champ nombre", blank=True, null=True
+        verbose_name=_("Valeur minimale du champ nombre"), blank=True, null=True
     )
     max_number_value = models.FloatField(
-        verbose_name="Valeur maximale du champ nombre", blank=True, null=True
+        verbose_name=_("Valeur maximale du champ nombre"), blank=True, null=True
     )
     step_number_value = models.FloatField(
-        verbose_name="Granularité minimale du champ nombre (ex: 1, 0.1, 0.01, ...)",
+        verbose_name=_("Granularité minimale du champ nombre (ex: 1, 0.1, 0.01, ...)"),
         blank=True,
         null=True,
     )
@@ -495,16 +546,16 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         null=True,
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Description",
-        help_text="Texte précisant la question et pourquoi elle est posée.",
+        verbose_name=_("Description"),
+        help_text=_("Texte précisant la question et pourquoi elle est posée."),
     )
 
     comments = RichTextField(
         null=True,
         blank=True,
         features=SIMPLE_RICH_TEXT_FIELD_FEATURE,
-        verbose_name="Commentaires (pour l'interne)",
-        help_text="Indication affichée uniquement pour les administrateurs.",
+        verbose_name=_("Commentaires (pour l'interne)"),
+        help_text=_("Indication affichée uniquement pour les administrateurs."),
     )
 
     # Questionnary questions fields
@@ -517,26 +568,29 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     )
     objectivity = models.CharField(
         max_length=32,
-        choices=[("objective", "Objective"), ("subjective", "Subjective")],
+        choices=[("objective", _("Objective")), ("subjective", _("Subjective"))],
         default="subjective",
-        verbose_name="Objective / Subjective (Non modifiable)",
-        help_text="Ce champ n'est pas modifiable après la création de la question",
+        verbose_name=_("Objective / Subjective (Non modifiable)"),
+        help_text=_("Ce champ n'est pas modifiable après la création de la question"),
     )
     method = models.CharField(
         max_length=32,
-        choices=[("quantitative", "Quantitative"), ("qualitative", "Qualitative")],
+        choices=[
+            ("quantitative", _("Quantitative")),
+            ("qualitative", _("Qualitative")),
+        ],
         blank=True,
-        verbose_name="Methode",
+        verbose_name=_("Methode"),
     )
     profiles = models.ManyToManyField(
         ProfileType,
-        verbose_name="Profils concernés",
+        verbose_name=_("Profils concernés"),
         related_name="questions_that_depend_on_me",
         blank=True,
     )
     assessment_types = models.ManyToManyField(
         "open_democracy_back.AssessmentType",
-        verbose_name="Types d'évaluation concernés",
+        verbose_name=_("Types d'évaluation concernés"),
         related_name="questions",
         blank=True,
     )
@@ -546,7 +600,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     # this is only for profiling questions
     surveys = models.ManyToManyField(
         Survey,
-        verbose_name="Questionnaires concernés",
+        verbose_name=_("Questionnaires concernés"),
         related_name="profiling_questions",
         blank=True,
     )
@@ -554,8 +608,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
     roles = models.ManyToManyField(
         Role,
         blank=True,
-        verbose_name="Rôles concernés",
-        help_text="Si aucun rôle n'est sélectionné c'est comme si tous l'étaient",
+        verbose_name=_("Rôles concernés"),
+        help_text=_("Si aucun rôle n'est sélectionné c'est comme si tous l'étaient"),
     )
 
     @property
@@ -582,7 +636,7 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
                 FieldPanel("population_lower_bound"),
                 FieldPanel("population_upper_bound"),
             ],
-            heading="Taille des collectivités concernées",
+            heading=_("Taille des collectivités concernées"),
         ),
         FieldPanel("roles", widget=forms.CheckboxSelectMultiple),
     ]
@@ -591,12 +645,12 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("type"),
         InlinePanel(
             "response_choices",
-            label="Choix de réponses possibles",
+            label=_("Choix de réponses possibles"),
         ),
         FieldPanel("max_multiple_choices"),
         InlinePanel(
             "categories",
-            label="Catégories pour une question fermée à échelle",
+            label=_("Catégories pour une question fermée à échelle"),
         ),
     ]
 
@@ -604,6 +658,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
         FieldPanel("allows_to_explain"),
         FieldPanel("comments"),
     ]
+
+    translated_fields = ["name", "question_statement", "description", "comments"]
 
     RESPONSE_NAME_BY_QUESTION_TYPE = {
         QuestionType.PERCENTAGE.value: "percentage_response",
@@ -620,14 +676,14 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     def __str__(self):
         if self.profiling_question:
-            return f"Profilage: {self.name}"
+            return f"{_('Profilage')}: {self.name}"
         return f"{self.concatenated_code}: {self.name}"
 
     def clean(self):
         if self.type == QuestionType.NUMBER.value:
             if self.step_number_value is None:
                 raise ValidationError(
-                    "La granularité du champ nombre doit être renseignée",
+                    _("La granularité du champ nombre doit être renseignée"),
                     code="invalid",
                 )
 
@@ -656,19 +712,23 @@ def get_number_multifield_panel(is_profiling_question=False):
     if not is_profiling_question:
         panels.append(
             HelpPanel(
-                '<div class="help-block help-info">Attention à prendre en compte la granularité dans les bornes des scores associés</div">'
+                '<div class="help-block help-info">'
+                + _(
+                    "Attention à prendre en compte la granularité dans les bornes des scores associés"
+                )
+                + '</div">'
             )
         )
         panels.append(
             InlinePanel(
                 "number_ranges",
-                label="Score associé aux réponses d'une question nombre",
+                label=_("Score associé aux réponses d'une question nombre"),
             )
         )
 
     return MultiFieldPanel(
         panels,
-        heading="Paramétrage d'une question de nombre",
+        heading=_("Paramétrage d'une question de nombre"),
         classname="collapsible number-question-panel",
     )
 
@@ -687,7 +747,7 @@ class QuestionnaireQuestion(Question):
         *Question.commun_types_panels,
         InlinePanel(
             "percentage_ranges",
-            label="Score associé aux réponses d'une question de pourcentage",
+            label=_("Score associé aux réponses d'une question de pourcentage"),
         ),
         get_number_multifield_panel(),
         *Question.explanation_panels,
@@ -707,8 +767,8 @@ class QuestionnaireQuestion(Question):
         super().save(*args, **kwargs)
 
     class Meta(Question.Meta):
-        verbose_name_plural = "4. Questions"
-        verbose_name = "4. Question"
+        verbose_name_plural = _("4. Questions")
+        verbose_name = _("4. Question")
         proxy = True
 
 
@@ -740,8 +800,8 @@ class ProfilingQuestion(Question):
         super().save(*args, **kwargs)
 
     class Meta(Question.Meta):
-        verbose_name_plural = "Questions de Profilage"
-        verbose_name = "Question de Profilage"
+        verbose_name_plural = _("Questions de Profilage")
+        verbose_name = _("Question de Profilage")
         proxy = True
 
 
@@ -755,15 +815,15 @@ SCORE_MAP = {
 
 class Score(models.Model):
     associated_score = models.IntegerField(
-        verbose_name="Score associé",
+        verbose_name=_("Score associé"),
         blank=True,
         null=True,
-        help_text="Si pertinent",
+        help_text=_("Si pertinent"),
         validators=[MinValueValidator(1), MaxValueValidator(4)],
     )
 
     linearized_score = models.FloatField(
-        verbose_name="Score associé linéarisé",
+        verbose_name=_("Score associé linéarisé"),
         blank=True,
         null=True,
         validators=[MinValueValidator(0), MaxValueValidator(1)],
@@ -787,15 +847,17 @@ class ResponseChoice(TimeStampedModel, Orderable, Score):
     )
 
     response_choice = models.CharField(
-        max_length=510, default="", verbose_name="Réponse possible"
+        max_length=510, default="", verbose_name=_("Réponse possible")
     )
 
     description = models.TextField(
         default="",
         null=True,
         blank=True,
-        verbose_name="Description de la réponse",
-        help_text="Texte précisant la réponse (définition, exemple, reformulation). Si la question est fermée à échelle la description ne s'affichera pas.",
+        verbose_name=_("Description de la réponse"),
+        help_text=_(
+            "Texte précisant la réponse (définition, exemple, reformulation). Si la question est fermée à échelle la description ne s'affichera pas."
+        ),
     )
     panels = [
         FieldPanel("response_choice"),
@@ -803,12 +865,14 @@ class ResponseChoice(TimeStampedModel, Orderable, Score):
         FieldPanel("associated_score"),
     ]
 
+    translated_fields = ["response_choice", "description"]
+
     def __str__(self):
         return self.response_choice
 
     class Meta:
-        verbose_name_plural = "Choix de réponse"
-        verbose_name = "Choix de réponse"
+        verbose_name_plural = _("Choix de réponse")
+        verbose_name = _("Choix de réponse")
         ordering = ["sort_order"]
 
 
@@ -822,13 +886,13 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
     )
 
     lower_bound = models.IntegerField(
-        verbose_name="Borne inférieure",
-        help_text="Si la réponse est suppérieur ou égale à",
+        verbose_name=_("Borne inférieure"),
+        help_text=_("Si la réponse est suppérieur ou égale à"),
     )
 
     upper_bound = models.IntegerField(
-        verbose_name="Borne suppérieure",
-        help_text="Si la réponse est inférieur ou égale à",
+        verbose_name=_("Borne suppérieure"),
+        help_text=_("Si la réponse est inférieur ou égale à"),
     )
 
     panels = [
@@ -839,7 +903,7 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
                 ),
                 FieldPanel("associated_score"),
             ],
-            heading="Score associé à une fourchette de pourcentage",
+            heading=_("Score associé à une fourchette de pourcentage"),
         ),
     ]
 
@@ -853,12 +917,14 @@ class PercentageRange(TimeStampedModel, Orderable, Score):
     def clean(self):
         if self.lower_bound > self.upper_bound:
             raise ValidationError(
-                "La borne inférieure doit être inférieure ou égale à la borne supérieure"
+                _(
+                    "La borne inférieure doit être inférieure ou égale à la borne supérieure"
+                )
             )
 
     class Meta:
-        verbose_name_plural = "Scores pour les différentes fourchettes"
-        verbose_name = "Score pour une fourchette donnée"
+        verbose_name_plural = _("Scores pour les différentes fourchettes")
+        verbose_name = _("Score pour une fourchette donnée")
         ordering = ["sort_order"]
 
 
@@ -868,15 +934,15 @@ class NumberRange(TimeStampedModel, Orderable, Score):
     )
 
     lower_bound = models.FloatField(
-        verbose_name="Borne inférieure",
-        help_text="Si la réponse est suppérieur ou égale à",
+        verbose_name=_("Borne inférieure"),
+        help_text=_("Si la réponse est suppérieur ou égale à"),
         null=True,
         blank=True,
     )
 
     upper_bound = models.FloatField(
-        verbose_name="Borne suppérieure",
-        help_text="Si la réponse est inférieur ou égale à",
+        verbose_name=_("Borne suppérieure"),
+        help_text=_("Si la réponse est inférieur ou égale à"),
         null=True,
         blank=True,
     )
@@ -889,7 +955,7 @@ class NumberRange(TimeStampedModel, Orderable, Score):
                 ),
                 FieldPanel("associated_score"),
             ],
-            heading="Score associé à une fourchette de nombre",
+            heading=_("Score associé à une fourchette de nombre"),
         ),
     ]
 
@@ -898,17 +964,17 @@ class NumberRange(TimeStampedModel, Orderable, Score):
         if self.lower_bound is None:
             return f"=< {self.upper_bound}"
         elif self.upper_bound is None:
-            return f"=> {self.lower_bound}"
+            return f">= {self.lower_bound}"
         else:
-            return f">= {self.lower_bound} et <= {self.upper_bound}"
+            return f">= {self.lower_bound} and <= {self.upper_bound}"
 
     def __str__(self):
-        return f"{self.question} : {self.str_boundaries} = {self.associated_score}"
+        return f"{self.question}: {self.str_boundaries} = {self.associated_score}"
 
     def clean(self):
         if self.lower_bound is None and self.upper_bound is None:
             raise ValidationError(
-                "Au moins une borne doit être renseignée",
+                _("Au moins une borne doit être renseignée"),
                 code="invalid",
             )
         if (
@@ -917,12 +983,14 @@ class NumberRange(TimeStampedModel, Orderable, Score):
             and self.lower_bound > self.upper_bound
         ):
             raise ValidationError(
-                "La borne inférieure doit être inférieure ou égale à la borne supérieure"
+                _(
+                    "La borne inférieure doit être inférieure ou égale à la borne supérieure"
+                )
             )
 
     class Meta:
-        verbose_name_plural = "Scores pour les différentes fourchettes"
-        verbose_name = "Score pour une fourchette donnée"
+        verbose_name_plural = _("Scores pour les différentes fourchettes")
+        verbose_name = _("Score pour une fourchette donnée")
         ordering = ["sort_order"]
 
 
@@ -939,15 +1007,19 @@ class Category(TimeStampedModel, Orderable):
     category = models.CharField(
         max_length=128,
         default="",
-        verbose_name="Categorie",
-        help_text="Permet de répondre à la même question pour différentes catégories",
+        verbose_name=_("Category"),
+        help_text=_(
+            "Permet de répondre à la même question pour différentes catégories"
+        ),
     )
+
+    translated_fields = ["category"]
 
     def __str__(self):
         return self.category
 
     class Meta:
-        verbose_name = "Catégorie"
+        verbose_name = _("Category")
         ordering = ["sort_order"]
 
 
@@ -962,7 +1034,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     conditional_question = models.ForeignKey(
         Question,
         on_delete=models.CASCADE,
-        verbose_name="Filtre par question",
+        verbose_name=_("Filter by question"),
         related_name="%(class)s_that_depend_on_me",
         null=True,
         blank=False,
@@ -985,18 +1057,62 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     def type(self):
         return self.conditional_question.type
 
+    @staticmethod
+    def format_explanation(question_code, response):
+        return _(
+            "La réponse de la question d'affinage %(question_code)s doit être %(response)s"
+        ) % {"question_code": question_code, "response": response}
+
+    @staticmethod
+    def explain_choice_rule(rule):
+        response_choices = ", ".join(
+            [
+                response_choice.response_choice
+                for response_choice in rule.response_choices.all()
+            ]
+        )
+        return rule.format_explanation(
+            rule.conditional_question.code,
+            _("égale à %(response_choices)s") % {"response_choices": response_choices},
+        )
+
+    RULE_EXPLANATION_BY_TYPE = {
+        QuestionType.BOOLEAN.value: lambda rule: rule.format_explanation(
+            rule.conditional_question.code,
+            _("Oui") if rule.boolean_response else _("Non"),
+        ),
+        QuestionType.UNIQUE_CHOICE.value: explain_choice_rule,
+        QuestionType.MULTIPLE_CHOICE.value: explain_choice_rule,
+        QuestionType.NUMBER.value: lambda rule: rule.format_explanation(
+            rule.conditional_question.code,
+            f"{rule.numerical_operator} - {rule.numerical_value}",
+        ),
+        QuestionType.PERCENTAGE.value: lambda rule: rule.format_explanation(
+            rule.conditional_question.code,
+            f"{rule.numerical_operator} - {rule.numerical_value}%",
+        ),
+    }
+
+    @property
+    def explanation(self):
+        return (
+            self.RULE_EXPLANATION_BY_TYPE[self.conditional_question.type](self)
+            if self.conditional_question.type in self.RULE_EXPLANATION_BY_TYPE
+            else "Règle non prise en charge"
+        )
+
     def __str__(self):
         condition_question_str = ""
         if self.conditional_question:
             if self.boolean_response:
-                condition_question_str = "réponse=" + str(self.boolean_response)
+                condition_question_str = "answer=" + str(self.boolean_response)
             elif self.numerical_operator:
                 condition_question_str = (
-                    f"réponse{str(self.numerical_operator)}{str(self.numerical_value)}"
+                    f"answer{str(self.numerical_operator)}{str(self.numerical_value)}"
                 )
             elif self.response_choices:
                 for response_choice in self.response_choices.all():
-                    condition_question_str += f"réponse={str(response_choice)}, "
+                    condition_question_str += f"answer={str(response_choice)}, "
 
         return f"(ID: {str(self.id)}) {str(self.conditional_question)}, {condition_question_str}"
 

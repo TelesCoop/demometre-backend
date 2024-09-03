@@ -1,4 +1,7 @@
+from django.utils import translation
 from rest_framework import mixins, viewsets
+from wagtail.models import Locale
+
 from open_democracy_back.models.pages_models import (
     AnimatorPage,
     ContentPage,
@@ -25,92 +28,116 @@ from open_democracy_back.serializers.page_serializers import (
     UsagePageSerializer,
 )
 
+locale_pk_per_locale = {
+    locale.language_code: locale.pk for locale in Locale.objects.all()
+}
+
+
+class OnlyPageInCurrentLanguageMixin:
+    def get_queryset(self):
+        language = translation.get_language()
+        if pages_in_current_language := self.model.objects.filter(
+            locale=locale_pk_per_locale[language]
+        ):
+            return pages_in_current_language
+        return self.model.objects.all()
+
 
 class HomePageView(
+    OnlyPageInCurrentLanguageMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = HomePageSerializer
-    queryset = HomePage.objects.all()
+    model = HomePage
 
 
 class UsagePageView(
+    OnlyPageInCurrentLanguageMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = UsagePageSerializer
-    queryset = UsagePage.objects.all()
+    model = UsagePage
 
 
 class ReferentialPageView(
+    OnlyPageInCurrentLanguageMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = ReferentialPageSerializer
-    queryset = ReferentialPage.objects.all()
+    model = ReferentialPage
 
 
 class ParticipationBoardPageView(
+    OnlyPageInCurrentLanguageMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = ParticipationBoardPageSerializer
-    queryset = ParticipationBoardPage.objects.all()
+    model = ParticipationBoardPage
 
 
 class ResultsPageView(
+    OnlyPageInCurrentLanguageMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = ResultsPageSerializer
-    queryset = ResultsPage.objects.all()
+    model = ResultsPage
 
 
 class ProjectPageView(
+    OnlyPageInCurrentLanguageMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = ProjectPageSerializer
-    queryset = ProjectPage.objects.all()
+    model = ProjectPage
 
 
-class EvaluationInitiationPageSerializerView(
+class EvaluationInitiationPageView(
+    OnlyPageInCurrentLanguageMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = EvaluationInitiationPageSerializer
-    queryset = EvaluationInitiationPage.objects.all()
+    model = EvaluationInitiationPage
 
 
 class EvaluationQuestionnairePageView(
+    OnlyPageInCurrentLanguageMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = EvaluationQuestionnairePageSerializer
-    queryset = EvaluationQuestionnairePage.objects.all()
+    model = EvaluationQuestionnairePage
 
 
 class AnimatorPageView(
+    OnlyPageInCurrentLanguageMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = AnimatorPageSerializer
-    queryset = AnimatorPage.objects.all()
+    model = AnimatorPage
 
 
 class ContentPageView(
+    OnlyPageInCurrentLanguageMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     serializer_class = ContentPageSerializer
-    queryset = ContentPage.objects.all()
+    model = ContentPage

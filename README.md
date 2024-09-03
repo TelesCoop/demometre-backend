@@ -46,6 +46,18 @@ Pour terminer : connectez-vous à la plateforme du DémoMètre avec le compte qu
 
 ## Pour les développeurs
 
+### Ajouter une langue
+
+- ajouter la langue dans `settings/base.py`, dans les `WAGTAIL_CONTENT_LANGUAGES` et
+`LOCALES_FOR_TRANSLATED_FIELDS`
+- ajouter manuellement le champ Criteria.explanatory_{locale}
+- lancer `python manage.py makemigrations` (des champs sont ajoutés automatiquement dans les modèles via
+le code de `open_democracy_back.apps.ready`)
+- envoyer en (pré-)prod le nouveau code
+- ajouter la langue dans les paramètres de wagtail
+- redémarrer le service web (via supervisor) pour que les changements soient bien pris
+en compte
+
 ### Mettre à jour la base de donnée
 
     python manage.py makemigrations

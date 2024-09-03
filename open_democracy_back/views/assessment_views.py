@@ -58,6 +58,7 @@ from open_democracy_back.serializers.assessment_serializers import (
     AssessmentNoDetailSerializer,
     AssessmentSerializerForUpdate,
     RegionSerializer,
+    DepartmentSerializer,
 )
 from open_democracy_back.serializers.user_serializers import UserSerializer
 from open_democracy_back.utils import ManagedAssessmentType, SurveyLocality
@@ -75,9 +76,10 @@ def consent_condition_of_sales(assessment, conditions_of_sale_consent):
             code=ErrorCode.CGV_MUST_BE_CONSENTED.value,
         )
 
+    mixins.ListModelMixin,
+
 
 class AssessmentsView(
-    mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
@@ -223,7 +225,7 @@ class AssessmentsView(
         else:
             user_id = request.user.id
         locality_id = request.GET.get("locality_id")
-        locality_type = request.GET.get("locality_type")
+        locality_type = request.GET.get("locality_type", LocalityType.MUNICIPALITY)
         assessments_usable = Assessment.objects.all().exclude(
             Q(assessment_type__assessment_type=ManagedAssessmentType.QUICK)
             & ~Q(initiated_by_user_id=user_id)
@@ -275,18 +277,27 @@ class ZipCodeSurveysView(mixins.ListModelMixin, viewsets.GenericViewSet):
             ).distinct(),
             many=True,
         )
-        city_surveys = {
-            LocalityType.MUNICIPALITY: municipalities.data,
-            LocalityType.INTERCOMMUNALITY: epcis.data,
-        }
-        region_surveys = RegionSerializer(
+        departments = DepartmentSerializer(
+            Department.objects.filter(
+                municipalities__zip_codes__code=zip_code
+            ).distinct(),
+            many=True,
+        )
+
+        regions = RegionSerializer(
             Region.objects.filter(
                 departments__municipalities__zip_codes__code=zip_code
             ).distinct(),
             many=True,
-        ).data
+        )
+
         return Response(
-            {SurveyLocality.CITY: city_surveys, SurveyLocality.REGION: region_surveys}
+            {
+                LocalityType.MUNICIPALITY: municipalities.data,
+                LocalityType.INTERCOMMUNALITY: epcis.data,
+                LocalityType.DEPARTMENT: departments.data,
+                LocalityType.REGION: regions.data,
+            }
         )
 
 

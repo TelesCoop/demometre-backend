@@ -1,24 +1,23 @@
-import uuid
 import re
+import uuid
 from datetime import datetime
 
+from django.conf import settings
 from django.conf.global_settings import AUTHENTICATION_BACKENDS
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-
-from my_auth.models import User
-
 from django.http import HttpResponse
+from django.utils import translation
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
+from rest_framework.response import Response
 
 from my_auth.emails import email_reset_password_link
+from my_auth.models import User
 from my_auth.models import UserResetKey
 from open_democracy_back.exceptions import ErrorCode, ValidationFieldError
-
 from .serializers import AuthSerializer
 
 # Regular expression for validating an Email
@@ -115,12 +114,19 @@ def frontend_logout(request):
 @api_view(["GET"])
 @ensure_csrf_cookie
 def who_am_i(request):
-    """Returns information about the current user."""
+    """
+    Returns information about the current user.
+    Also add a language cookie if not already set.
+    """
+    if request.user.is_authenticated:
+        response = Response(AuthSerializer(request.user).data)
+    else:
+        response = Response(status=401)
 
-    if not request.user.is_authenticated:
-        raise NotAuthenticated()
-
-    return Response(AuthSerializer(request.user).data)
+    if not request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME):
+        # set language cookie if not already set, so that the frontend can see it
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, translation.get_language())
+    return response
 
 
 @api_view(["POST"])

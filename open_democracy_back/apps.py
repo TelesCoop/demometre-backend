@@ -83,6 +83,9 @@ class AuthConfig(AppConfig):
     verbose_name = "Démomètre"
 
     def ready(self):
+        # Implicitly connect signal handlers decorated with @receiver.
+        from . import signals  # noqa
+
         locales_for_translated_fields = settings.LOCALES_FOR_TRANSLATED_FIELDS
 
         # loop through all models, find models that inherit ModelWithTranslatedFields

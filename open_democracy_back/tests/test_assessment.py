@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.contrib.auth.models import Group
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
@@ -178,7 +179,7 @@ class TestAssessmentsEdits(TestCase):
         )
 
     @authenticate
-    def test_can_close_assessment(self):
+    def test_can_close_assessment_and_closing_sends_mail(self):
         assessment = AssessmentFactory.create(initiated_by_user=authenticate.user)
         url = reverse("assessments-detail", args=[assessment.pk])
         self.assertEqual(assessment.end_date, None)
@@ -189,6 +190,10 @@ class TestAssessmentsEdits(TestCase):
             content_type="application/json",
         )
         self.assertEqual(res.json()["endDate"], today)
+
+        # check that the mail was sent
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "Cloture d'une évaluation")
 
 
 class TestAssessmentCreation(TestCase):

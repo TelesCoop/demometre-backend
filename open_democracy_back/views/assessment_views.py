@@ -277,28 +277,32 @@ class ZipCodeSurveysView(mixins.ListModelMixin, viewsets.GenericViewSet):
             ).distinct(),
             many=True,
         )
-        departments = DepartmentSerializer(
-            Department.objects.filter(
-                municipalities__zip_codes__code=zip_code
-            ).distinct(),
-            many=True,
-        )
 
-        regions = RegionSerializer(
-            Region.objects.filter(
-                departments__municipalities__zip_codes__code=zip_code
-            ).distinct(),
-            many=True,
-        )
+        to_return = {
+            LocalityType.MUNICIPALITY: municipalities.data,
+            LocalityType.INTERCOMMUNALITY: epcis.data,
+        }
 
-        return Response(
-            {
-                LocalityType.MUNICIPALITY: municipalities.data,
-                LocalityType.INTERCOMMUNALITY: epcis.data,
-                LocalityType.DEPARTMENT: departments.data,
-                LocalityType.REGION: regions.data,
-            }
-        )
+        # only include departements and region if corresponding surveys exist
+        if Survey.objects.filter(survey_locality=SurveyLocality.DEPARTMENT).exists():
+            departments = DepartmentSerializer(
+                Department.objects.filter(
+                    municipalities__zip_codes__code=zip_code
+                ).distinct(),
+                many=True,
+            )
+            to_return[LocalityType.DEPARTMENT] = departments.data
+
+        if Survey.objects.filter(survey_locality=SurveyLocality.REGION).exists():
+            regions = RegionSerializer(
+                Region.objects.filter(
+                    departments__municipalities__zip_codes__code=zip_code
+                ).distinct(),
+                many=True,
+            )
+            to_return[LocalityType.REGION] = regions.data
+
+        return Response(to_return)
 
 
 class AssessmentResponseView(

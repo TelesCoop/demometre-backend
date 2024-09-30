@@ -394,7 +394,16 @@ class Assessment(TimeStampedModel, ClusterableModel):
     ]
 
     def __str__(self):
-        return f"{self.get_locality_type_display()} {self.municipality if self.locality_type == LocalityType.MUNICIPALITY else self.epci}"
+        locality = None
+        if self.locality_type == LocalityType.MUNICIPALITY:
+            locality = self.municipality
+        elif self.locality_type == LocalityType.INTERCOMMUNALITY:
+            locality = self.epci
+        elif self.locality_type == LocalityType.DEPARTMENT:
+            locality = self.department
+        elif self.locality_type == LocalityType.REGION:
+            locality = self.region
+        return f"{self.get_locality_type_display()} {locality}"
 
     def save(self, *args, **kwargs):
         if not self.name:

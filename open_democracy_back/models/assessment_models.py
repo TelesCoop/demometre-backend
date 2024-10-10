@@ -216,6 +216,14 @@ class AssessmentType(models.Model):
         FieldPanel("pdf"),
     ]
 
+    translated_fields = [
+        "for_who",
+        "what",
+        "for_what",
+        "results",
+        "price",
+    ]
+
     def __str__(self):
         return self.get_assessment_type_display()
 

@@ -9,6 +9,9 @@ from open_democracy_back.models import (
     Criteria,
     Question,
     ProfilingQuestion,
+    ProfileType,
+    Role,
+    AssessmentType,
 )
 
 LANGUAGE_TO_CHECK = "en"
@@ -48,6 +51,15 @@ class Command(BaseCommand):
 
         for question in survey.profiling_questions.all():
             check_missing_fields(question, ProfilingQuestion)
+
+        for profile_type in ProfileType.objects.all():
+            check_missing_fields(profile_type, ProfileType)
+
+        for role in Role.objects.all():
+            check_missing_fields(role, Role)
+
+        for assessment_type in AssessmentType.objects.all():
+            check_missing_fields(assessment_type, AssessmentType)
 
         print("\n")
 

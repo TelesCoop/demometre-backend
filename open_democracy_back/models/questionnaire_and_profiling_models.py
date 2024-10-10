@@ -676,8 +676,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     def __str__(self):
         if self.profiling_question:
-            return f"{_('Profilage')}: {self.name}"
-        return f"{self.concatenated_code}: {self.name}"
+            return f"{_('Profilage')}: {self.name_fr}"
+        return f"{self.concatenated_code}: {self.name_fr}"
 
     def clean(self):
         if self.type == QuestionType.NUMBER.value:

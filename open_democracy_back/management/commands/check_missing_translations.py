@@ -21,7 +21,9 @@ def check_missing_field(instance, field):
     if getattr(instance, f"{field}_{BASE_LANGUAGE}") and not getattr(
         instance, f"{field}_{LANGUAGE_TO_CHECK}"
     ):
-        print(f"Missing translation for {field} in {instance.__class__.__name__}")
+        print(
+            f"Missing translation for {field} in {instance.__class__.__name__}, pk {instance.pk}"
+        )
         MISSING_TRANSLATIONS[f"{instance.__class__.__name__}.{field}"] += 1
 
 

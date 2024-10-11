@@ -14,9 +14,12 @@ from open_democracy_back.serializers.block_serializers import (
     RichTextSerializer,
     ImageSerializer,
 )
+from open_democracy_back.serializers.questionnaire_and_profiling_serializers import (
+    SerializerWithTranslatedFields,
+)
 
 
-class FeedbackSerializer(serializers.ModelSerializer):
+class FeedbackSerializer(SerializerWithTranslatedFields):
     picture_url = serializers.SerializerMethodField()
 
     @staticmethod

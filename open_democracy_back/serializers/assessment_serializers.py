@@ -19,6 +19,9 @@ from open_democracy_back.serializers.participation_serializers import (
     RESPONSE_FIELDS,
     ResponseSerializer,
 )
+from open_democracy_back.serializers.questionnaire_and_profiling_serializers import (
+    SerializerWithTranslatedFields,
+)
 from open_democracy_back.serializers.representativity_serializers import (
     AssessmentRepresentativityCriteriaSerializer,
 )
@@ -93,7 +96,7 @@ class EpciSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class AssessmentTypeSerializer(serializers.ModelSerializer):
+class AssessmentTypeSerializer(SerializerWithTranslatedFields):
     pdf_url = serializers.SerializerMethodField()
     name = serializers.CharField(source="get_assessment_type_display")
 

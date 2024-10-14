@@ -78,7 +78,7 @@ class Article(index.Indexed, models.Model):
         on_delete=models.SET_NULL,
         related_name="+",
     )
-    title = models.CharField(max_length=128, verbose_name="Title")
+    title = models.CharField(max_length=128, verbose_name=_("titre"))
     slug = models.CharField(max_length=150, blank=True, null=True)
     publication_date = models.DateTimeField(
         verbose_name=_("Date de publication"),

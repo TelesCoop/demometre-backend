@@ -1,3 +1,4 @@
+from django.utils import translation
 from rest_framework import serializers
 
 from open_democracy_back.models.assessment_models import AssessmentType
@@ -30,7 +31,6 @@ from open_democracy_back.serializers.content_serializers import (
     ResourceSerializer,
 )
 
-
 PAGE_FIELDS = ["id", "title", "introduction", "locale_code"]
 
 
@@ -52,6 +52,13 @@ class HomePageSerializer(PageSerialiserWithLocale):
     resources = serializers.SerializerMethodField()
     partners = serializers.SerializerMethodField()
 
+    @property
+    def locale_pk(self):
+        from open_democracy_back.views.page_views import locale_pk_per_locale
+
+        language = translation.get_language()
+        return locale_pk_per_locale[language]
+
     @staticmethod
     def get_intro_image_url(obj: HomePage):
         if obj.intro_image:
@@ -66,17 +73,15 @@ class HomePageSerializer(PageSerialiserWithLocale):
                 feedbacks.append(FeedbackSerializer(feedback, read_only=True).data)
         return feedbacks
 
-    @staticmethod
-    def get_blog_posts(_):
+    def get_blog_posts(self, *_):
         blog_posts = []
-        for blog_post in BlogPost.objects.all()[:6]:
+        for blog_post in BlogPost.objects.filter(locale=self.locale_pk)[:6]:
             blog_posts.append(BlogPostSerializer(blog_post, read_only=True).data)
         return blog_posts
 
-    @staticmethod
-    def get_resources(_):
+    def get_resources(self, *_):
         resources = []
-        for resource in Resource.objects.all()[:6]:
+        for resource in Resource.objects.filter(locale=self.locale_pk)[:6]:
             resources.append(ResourceSerializer(resource, read_only=True).data)
         return resources
 

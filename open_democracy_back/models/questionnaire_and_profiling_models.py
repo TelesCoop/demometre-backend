@@ -152,7 +152,7 @@ class Survey(TimeStampedModel):
         FieldPanel("description"),
     ]
 
-    translated_fields = ["description"]
+    translated_fields = ["name", "description"]
 
     def __str__(self):
         return f"{self.name} ({self.code})"

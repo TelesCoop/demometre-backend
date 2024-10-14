@@ -14,7 +14,6 @@ from open_democracy_back.models.pages_models import (
     ResultsPage,
     UsagePage,
 )
-
 from open_democracy_back.serializers.page_serializers import (
     AnimatorPageSerializer,
     ContentPageSerializer,

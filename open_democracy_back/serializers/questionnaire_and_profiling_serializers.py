@@ -27,6 +27,7 @@ QUESTION_FIELDS = [
     "name",
     "question_statement",
     "description",
+    "comments",
     "mandatory",
     "type",
     "response_choices",
@@ -71,11 +72,15 @@ class SerializerWithTranslatedFields(serializers.ModelSerializer):
     The method will return the content in the current locale.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in getattr(self.Meta.model, "translated_fields", []):
-            setattr(self, field, serializers.SerializerMethodField())
-            setattr(self, f"get_{field}", method_for_translated_field(field))
+    def __new__(cls, *args, **kwargs):
+        for field in getattr(cls.Meta.model, "translated_fields", []):
+            setattr(cls, field, serializers.SerializerMethodField())
+            setattr(cls, f"get_{field}", method_for_translated_field(field))
+            # if not explicitly declared here, the Method will be ignored
+            getattr(cls, "_declared_fields")[
+                field
+            ] = serializers.SerializerMethodField()
+        return super().__new__(cls, *args, **kwargs)
 
 
 class RoleSerializer(SerializerWithTranslatedFields):
@@ -328,11 +333,17 @@ class PillarSerializer(SerializerWithTranslatedFields):
     marker_ids = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, source="markers"
     )
-    description = serializers.SerializerMethodField()
 
     class Meta:
         model = Pillar
-        fields = ["id", "name", "code", "description", "marker_ids", "survey_id"]
+        fields = [
+            "id",
+            "name",
+            "code",
+            "description",
+            "marker_ids",
+            "survey_id",
+        ]
         read_only_fields = fields
 
 

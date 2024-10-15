@@ -14,7 +14,6 @@ from open_democracy_back.models.pages_models import (
     ResultsPage,
     UsagePage,
 )
-
 from open_democracy_back.serializers.page_serializers import (
     AnimatorPageSerializer,
     ContentPageSerializer,
@@ -28,9 +27,16 @@ from open_democracy_back.serializers.page_serializers import (
     UsagePageSerializer,
 )
 
-locale_pk_per_locale = {
-    locale.language_code: locale.pk for locale in Locale.objects.all()
-}
+
+def refresh_locale_pk_per_locale():
+    global locale_pk_per_locale
+    locale_pk_per_locale = {
+        locale.language_code: locale.pk for locale in Locale.objects.all()
+    }
+
+
+locale_pk_per_locale = {}
+refresh_locale_pk_per_locale()
 
 
 class OnlyPageInCurrentLanguageMixin:

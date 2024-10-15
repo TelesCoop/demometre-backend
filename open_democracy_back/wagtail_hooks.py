@@ -350,6 +350,7 @@ class ProfileTypeModelAdmin(ModelAdmin):
 
 class ProfilingQuestionModelAdmin(ModelAdmin):
     model = ProfilingQuestion
+    list_filter = ("surveys",)
     button_helper_class = RulesButtonHelper
     menu_label = "Question de profilage"
     menu_icon = "folder-inverse"

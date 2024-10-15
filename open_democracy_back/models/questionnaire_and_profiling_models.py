@@ -152,7 +152,7 @@ class Survey(TimeStampedModel):
         FieldPanel("description"),
     ]
 
-    translated_fields = ["description"]
+    translated_fields = ["name", "description"]
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -676,8 +676,8 @@ class Question(index.Indexed, TimeStampedModel, ClusterableModel):
 
     def __str__(self):
         if self.profiling_question:
-            return f"{_('Profilage')}: {self.name}"
-        return f"{self.concatenated_code}: {self.name}"
+            return f"{_('Profilage')}: {self.name_fr}"
+        return f"{self.concatenated_code}: {self.name_fr}"
 
     def clean(self):
         if self.type == QuestionType.NUMBER.value:

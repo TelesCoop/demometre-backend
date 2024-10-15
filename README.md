@@ -58,6 +58,15 @@ le code de `open_democracy_back.apps.ready`)
 - redémarrer le service web (via supervisor) pour que les changements soient bien pris
 en compte
 
+### Ajouter des champs à traduire
+
+- sur le modèle concerné, iniqué la liste des `translated_fields`
+- lancer `makemigrations`
+- modifier le fichier de migration, cf migraion 0056 pour
+  - définir la fonction `fill_fr_fields`
+  - définir les nouveaux champs à remplir par cette fonction
+  - ajouter à la fin la migration `migrations.RunPython(fill_models_fr_fields, migrations.RunPython.noop),`
+
 ### Mettre à jour la base de donnée
 
     python manage.py makemigrations

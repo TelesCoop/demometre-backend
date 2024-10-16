@@ -68,7 +68,9 @@ class RepresentativityCriteria(index.Indexed, models.Model):
             must_create_assessment_representativity = True
         super().save(*args, **kwargs)
         if must_create_assessment_representativity:
-            for assessment in Assessment.objects.all():
+            for assessment in Assessment.objects.filter(
+                survey__survey_locality=self.survey_locality
+            ):
                 AssessmentRepresentativity.objects.create(
                     assessment=assessment, representativity_criteria_id=self.id
                 )
@@ -124,8 +126,6 @@ class AssessmentRepresentativity(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(100)],
         verbose_name=_("Seuil d'acceptabilité"),
     )
-
-    # TODO : try https://medium.com/@fdemmer/django-cached-property-on-models-f4673de33990 for @cached_property (first attempt not conclusive)
 
     @property
     def count_by_response_choice(self):

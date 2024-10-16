@@ -154,7 +154,6 @@ class Resource(TranslatableMixin, Article):
         ordering = ["-publication_date"]
 
 
-@register_snippet
 class Partner(index.Indexed, models.Model):
     name = models.CharField(max_length=64, verbose_name=_("Nom"))
     logo_image = models.ForeignKey(
@@ -187,14 +186,17 @@ class Partner(index.Indexed, models.Model):
 
     search_fields = [
         index.SearchField(
-            "name",
+            "name_fr",
+        ),
+        index.SearchField(
+            "name_en",
         ),
     ]
 
     translated_fields = ["name"]
 
     def __str__(self):
-        return self.name
+        return self.name_fr
 
     class Meta:
         verbose_name = _("Partenaire")

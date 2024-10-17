@@ -19,6 +19,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     ProfileType,
     ProfileDefinition,
 )
+from open_democracy_back.settings.base import DEFAULT_LOCALE
 
 QUESTION_FIELDS = [
     "id",
@@ -56,11 +57,15 @@ def method_for_translated_field(field_name):
     def my_function(obj):
         locale = translation.get_language()
         if field_name == "explanatory":
-            return list(getattr(obj, f"{field_name}_{locale}").raw_data or [])
-        return getattr(obj, f"{field_name}_{locale}")
+            return list(getattr(obj, f"{field_name}_{locale}").raw_data or []) or list(
+                getattr(obj, f"{field_name}_{DEFAULT_LOCALE}").raw_data or []
+            )
+        else:
+            return getattr(obj, f"{field_name}_{locale}") or getattr(
+                obj, f"{field_name}_{DEFAULT_LOCALE}"
+            )
 
     my_function.__name__ = f"get_{field_name}"
-
     return my_function
 
 

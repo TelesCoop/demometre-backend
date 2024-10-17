@@ -167,6 +167,7 @@ WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
 ]
 # after updating this list, you need to run makemigrations
 LOCALES_FOR_TRANSLATED_FIELDS = ["fr", "en"]
+DEFAULT_LOCALE = "fr"
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 
 

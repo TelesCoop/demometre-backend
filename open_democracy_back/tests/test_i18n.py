@@ -25,6 +25,17 @@ class TestQuestionnaireI18n(TestCase):
         res = self.client.get(reverse("pillars-detail", args=[pillar.pk])).json()
         self.assertEqual(res["description"], "English description")
 
+    def test_i18n_fallback_to_french(self):
+        pillar = PillarFactory.create()
+        pillar.description_fr = "French description"
+        pillar.save()
+
+        self.set_locale_on_cookie("en")
+        res = self.client.get(
+            reverse("pillars-detail", args=[pillar.pk]),
+        ).json()
+        self.assertEqual(res["description"], "French description")
+
     def test_set_language_cookie_en_on_profile(self):
         self.client.get(reverse("auth:auth_profile"), headers={"ACCEPT_LANGUAGE": "en"})
         self.assertEqual(

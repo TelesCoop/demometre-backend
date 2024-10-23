@@ -220,6 +220,12 @@ class AssessmentsView(
             )
 
     def get_or_create(self, request):
+        def get_survey_by_survey_locality(survey_locality):
+            try:
+                return Survey.objects.get(survey_locality=survey_locality)
+            except Survey.DoesNotExist:
+                return Survey.objects.get(survey_locality=SurveyLocality.CITY)
+
         if request.user.is_anonymous:
             user_id = None
         else:
@@ -230,8 +236,9 @@ class AssessmentsView(
             Q(assessment_type__assessment_type=ManagedAssessmentType.QUICK)
             & ~Q(initiated_by_user_id=user_id)
         )
-        survey = Survey.objects.get(survey_locality=SurveyLocality.CITY)
         assessment_kwargs = {"locality_type": locality_type}
+
+        survey = get_survey_by_survey_locality(locality_type)
         if locality_type == LocalityType.MUNICIPALITY:
             assessment_kwargs["municipality"] = (
                 locality := Municipality.objects.get(id=locality_id)
@@ -239,12 +246,10 @@ class AssessmentsView(
         elif locality_type == LocalityType.INTERCOMMUNALITY:
             assessment_kwargs["epci"] = (locality := EPCI.objects.get(id=locality_id))
         elif locality_type == LocalityType.REGION:
-            survey = Survey.objects.get(survey_locality=SurveyLocality.REGION)
             assessment_kwargs["region"] = (
                 locality := Region.objects.get(id=locality_id)
             )
         elif locality_type == LocalityType.DEPARTMENT:
-            survey = Survey.objects.get(survey_locality=SurveyLocality.DEPARTMENT)
             assessment_kwargs["department"] = (
                 locality := Department.objects.get(id=locality_id)
             )

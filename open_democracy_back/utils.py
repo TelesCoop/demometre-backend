@@ -102,6 +102,7 @@ class PillarName(models.TextChoices):
 
 
 class SurveyLocality(models.TextChoices):
-    CITY = "city", _("Commune/EPCI")
+    CITY = "city", _("Commune")
+    EPCI = "epci", _("EPCI")
     DEPARTMENT = "department", _("Département")
     REGION = "region", _("Région")

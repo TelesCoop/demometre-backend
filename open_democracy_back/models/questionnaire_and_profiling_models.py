@@ -140,7 +140,7 @@ class Survey(TimeStampedModel):
         default="",
     )
     code = models.CharField(
-        max_length=10,
+        max_length=2,
         verbose_name=_("code"),
         help_text=_("Nom court du questionnaire pour les menus de l'interface admin"),
         default="",

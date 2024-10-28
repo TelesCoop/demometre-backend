@@ -1,6 +1,5 @@
 import datetime
 
-from django.utils import translation
 from rest_framework import serializers
 
 from open_democracy_back.models import Survey
@@ -19,7 +18,7 @@ from open_democracy_back.models.questionnaire_and_profiling_models import (
     ProfileType,
     ProfileDefinition,
 )
-from open_democracy_back.settings.base import DEFAULT_LOCALE
+from open_democracy_back.serializers_utils import SerializerWithTranslatedFields
 
 QUESTION_FIELDS = [
     "id",
@@ -50,42 +49,6 @@ SCORE_FIELDS = [
     "score_3",
     "score_4",
 ]
-
-
-def method_for_translated_field(field_name):
-    @staticmethod
-    def my_function(obj):
-        locale = translation.get_language()
-        if field_name == "explanatory":
-            return list(getattr(obj, f"{field_name}_{locale}").raw_data or []) or list(
-                getattr(obj, f"{field_name}_{DEFAULT_LOCALE}").raw_data or []
-            )
-        else:
-            return getattr(obj, f"{field_name}_{locale}") or getattr(
-                obj, f"{field_name}_{DEFAULT_LOCALE}"
-            )
-
-    my_function.__name__ = f"get_{field_name}"
-    return my_function
-
-
-class SerializerWithTranslatedFields(serializers.ModelSerializer):
-    """
-    Serializer that looks for translated fields in the original model,
-    and creates a SerializerMethodField for each of them.
-
-    The method will return the content in the current locale.
-    """
-
-    def __new__(cls, *args, **kwargs):
-        for field in getattr(cls.Meta.model, "translated_fields", []):
-            setattr(cls, field, serializers.SerializerMethodField())
-            setattr(cls, f"get_{field}", method_for_translated_field(field))
-            # if not explicitly declared here, the Method will be ignored
-            getattr(cls, "_declared_fields")[
-                field
-            ] = serializers.SerializerMethodField()
-        return super().__new__(cls, *args, **kwargs)
 
 
 class RoleSerializer(SerializerWithTranslatedFields):

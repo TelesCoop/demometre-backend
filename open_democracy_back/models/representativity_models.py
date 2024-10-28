@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Count, F, Q
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext_lazy as _
+from wagtail.admin.panels import FieldPanel
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.fields import RichTextField
@@ -59,8 +60,21 @@ class RepresentativityCriteria(index.Indexed, models.Model):
         ),
     ]
 
+    panels = [
+        FieldPanel("name"),
+        FieldPanel("survey_locality"),
+        FieldPanel("profiling_question"),
+        FieldPanel("min_rate"),
+        FieldPanel("explanation"),
+    ]
+
+    translated_fields = [
+        "name",
+        "explanation",
+    ]
+
     def __str__(self):
-        return self.name
+        return self.name_fr
 
     def save(self, *args, **kwargs):
         must_create_assessment_representativity = False
@@ -188,11 +202,13 @@ class AssessmentRepresentativity(models.Model):
         return all(
             [
                 (
-                    (response_choice_count["total"] / total_response) * 100
-                    >= self.acceptability_threshold_considered
+                    (
+                        (response_choice_count["total"] / total_response) * 100
+                        >= self.acceptability_threshold_considered
+                    )
+                    if not response_choice_count["ignore_for_acceptability_threshold"]
+                    else True
                 )
-                if not response_choice_count["ignore_for_acceptability_threshold"]
-                else True
                 for response_choice_count in self.count_by_response_choice
             ]
         )

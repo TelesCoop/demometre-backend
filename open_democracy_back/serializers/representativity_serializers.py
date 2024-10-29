@@ -4,6 +4,7 @@ from open_democracy_back.models.representativity_models import (
     AssessmentRepresentativity,
     RepresentativityCriteria,
 )
+from open_democracy_back.serializers_utils import TranslatedField
 
 
 class AssessmentRepresentativityCriteriaSerializer(serializers.ModelSerializer):
@@ -15,8 +16,8 @@ class AssessmentRepresentativityCriteriaSerializer(serializers.ModelSerializer):
     assessment_id = serializers.PrimaryKeyRelatedField(
         read_only=True, source="assessment"
     )
-    representativity_criteria_name = serializers.CharField(
-        read_only=True, source="representativity_criteria.name"
+    representativity_criteria_name = TranslatedField(
+        source="representativity_criteria.name"
     )
 
     class Meta:

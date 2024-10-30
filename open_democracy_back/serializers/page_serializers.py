@@ -290,6 +290,8 @@ class ProjectPageSerializer(PageSerialiserWithLocale):
         ids = []
         for group in obj.who_partner_sub_block_data:
             for partner in group.value["partners"]:
+                if not partner or not partner.id:
+                    continue
                 if partner.id not in ids:
                     partners.append(PartnerSerializer(partner, read_only=True).data)
                     ids.append(partner.id)

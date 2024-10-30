@@ -212,6 +212,7 @@ class AssessmentType(models.Model):
     )
 
     panels = [
+        FieldPanel("publish_results_regardless_of_representativities"),
         FieldPanel("for_who", widget=forms.Textarea),
         FieldPanel("what", widget=forms.Textarea),
         FieldPanel("for_what", widget=forms.Textarea),

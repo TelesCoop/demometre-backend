@@ -868,7 +868,7 @@ class ResponseChoice(TimeStampedModel, Orderable, Score):
     translated_fields = ["response_choice", "description"]
 
     def __str__(self):
-        return self.response_choice
+        return self.response_choice_fr
 
     class Meta:
         verbose_name_plural = _("Choix de réponse")

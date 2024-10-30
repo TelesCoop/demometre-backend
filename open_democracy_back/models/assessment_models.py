@@ -185,6 +185,10 @@ class AssessmentType(models.Model):
         unique=True,
         editable=False,
     )
+    publish_results_regardless_of_representativities = models.BooleanField(
+        verbose_name="publier les résultats sans tenir compte des critères de représentativité",
+        default=False,
+    )
     for_who = models.CharField(
         max_length=510, blank=True, verbose_name=_("A qui c'est adressé")
     )
@@ -353,6 +357,11 @@ class Assessment(TimeStampedModel, ClusterableModel):
 
     @property
     def published_results(self):
+        if (
+            self.assessment_type
+            and self.assessment_type.publish_results_regardless_of_representativities
+        ):
+            return True
         return all(
             [
                 representativity.respected

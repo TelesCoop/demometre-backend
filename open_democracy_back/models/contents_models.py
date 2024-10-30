@@ -154,6 +154,7 @@ class Resource(TranslatableMixin, Article):
         ordering = ["-publication_date"]
 
 
+@register_snippet
 class Partner(index.Indexed, models.Model):
     name = models.CharField(max_length=64, verbose_name=_("Nom"))
     logo_image = models.ForeignKey(

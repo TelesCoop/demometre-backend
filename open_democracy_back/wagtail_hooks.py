@@ -378,6 +378,7 @@ class RepresentativityModelAdmin(ModelAdmin):
     menu_order = 210
     add_to_settings_menu = False
     search_fields = ("name",)
+    list_filter = ("survey_locality",)
 
 
 class CanNotCreatePermissionHelper(PermissionHelper):

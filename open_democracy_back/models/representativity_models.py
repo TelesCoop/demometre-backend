@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Count, F, Q
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 from wagtail.admin.panels import FieldPanel
 from wagtail.search import index
@@ -146,11 +147,12 @@ class AssessmentRepresentativity(models.Model):
         # annotate() : rename fields
         # values() : specifies which columns are going to be used to "group by"
         # annotate() : specifies an operation over the grouped values
+        locale = translation.get_language()
         return (
             self.representativity_criteria.profiling_question.response_choices.all()
             .exclude(representativity_criteria_rule__totally_ignore=True)
             .annotate(
-                response_choice_name=F("response_choice"),
+                response_choice_name=F(f"response_choice_{locale}"),
                 response_choice_id=F("id"),
                 ignore_for_acceptability_threshold=F(
                     "representativity_criteria_rule__ignore_for_acceptability_threshold"

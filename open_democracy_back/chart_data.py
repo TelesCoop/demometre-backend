@@ -31,7 +31,7 @@ def get_chart_data_objective_queryset(
         response_name = Question.RESPONSE_NAME_BY_QUESTION_TYPE[
             exclude_empty_for_question_type
         ]
-        to_return[f"{response_name}__isnull"] = False
+        to_return[f"{prefix}{response_name}__isnull"] = False
 
     return to_return
 

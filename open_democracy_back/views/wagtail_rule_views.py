@@ -39,7 +39,7 @@ def get_question_response_by_question_id(question_list):
         for response_choice in question.response_choices.all():
             questions_response_by_question_id[question.id]["responses"][
                 response_choice.id
-            ] = response_choice.response_choice
+            ] = response_choice.response_choice_fr
     return json.dumps(questions_response_by_question_id)
 
 

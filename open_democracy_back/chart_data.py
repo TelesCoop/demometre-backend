@@ -3,6 +3,7 @@ from typing import Dict, Callable
 
 from django.db.models import Count, Q, F
 from django.http import Http404
+from django.utils import translation
 
 from open_democracy_back.models import (
     ResponseChoice,
@@ -81,6 +82,7 @@ def get_chart_data_of_boolean_question(question, assessment_id):
 
 
 def get_chart_data_of_choice_question(question, assessment_id, choice_type):
+    locale = translation.get_language()
     if question.objectivity == "objective":
         base_count = f"{choice_type}_assessmentresponses"
         role_count = base_count
@@ -105,7 +107,7 @@ def get_chart_data_of_choice_question(question, assessment_id, choice_type):
     total_count = 0
     for response_choice in response_choices:
         data["value"][response_choice.id] = {
-            "label": response_choice.response_choice,
+            "label": getattr(response_choice, f"response_choice_{locale}"),
             "value": response_choice.count,
         }
     for response_choice in response_choices_role_count:
@@ -135,6 +137,7 @@ def get_chart_data_of_multiple_choice_question(question, assessment_id):
 
 
 def get_chart_data_of_closed_with_scale_question(question, assessment_id):
+    locale = translation.get_language()
     if question.objectivity == "objective":
         base_count = "assessment_response"
         role_count = base_count
@@ -150,7 +153,6 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
 
     base_queryset[f"{base_count}__question_id"] = question.pk
 
-    # We don't want to show when the user respond "skip"
     closed_with_scale_responses = ClosedWithScaleCategoryResponse.objects.filter(
         **base_queryset
     ).exclude(response_choice_id=None)
@@ -178,7 +180,7 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
         data["value"][category.id] = {"label": category.category, "value": {}}
         for response_choice in response_choices:
             data["value"][category.id]["value"][response_choice.id] = {
-                "label": response_choice.response_choice,
+                "label": getattr(response_choice, f"response_choice_{locale}"),
                 "value": result_by_category_id[category.id].get(response_choice.id, 0),
             }
     for count_by_role in counts_by_category_response_choice_role:
@@ -189,7 +191,9 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
         }
 
     data["choices"] = {
-        response_choice.id: {"label": response_choice.response_choice}
+        response_choice.id: {
+            "label": getattr(response_choice, f"response_choice_{locale}")
+        }
         for response_choice in ResponseChoice.objects.filter(question_id=question.id)
     }
 

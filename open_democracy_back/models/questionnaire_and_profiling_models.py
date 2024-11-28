@@ -1067,7 +1067,7 @@ class GenericRule(TimeStampedModel, Orderable, ClusterableModel):
     def explain_choice_rule(rule):
         response_choices = ", ".join(
             [
-                response_choice.response_choice
+                response_choice.response_choice_fr
                 for response_choice in rule.response_choices.all()
             ]
         )

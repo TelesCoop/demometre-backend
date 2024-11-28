@@ -27,7 +27,7 @@ def get_response_choices_line_error(question):
     for response_choice in question.response_choices.all():
         if response_choice.linearized_score is not None:
             continue
-        choices.append(response_choice.response_choice)
+        choices.append(response_choice.response_choice_fr)
     return ", ".join(choices)
 
 

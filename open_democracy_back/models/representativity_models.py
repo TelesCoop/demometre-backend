@@ -75,7 +75,8 @@ class RepresentativityCriteria(index.Indexed, models.Model):
     ]
 
     def __str__(self):
-        return self.name_fr
+        locale = translation.get_language()
+        return getattr(self, f"name_{locale}")
 
     def save(self, *args, **kwargs):
         must_create_assessment_representativity = False

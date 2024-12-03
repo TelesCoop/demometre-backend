@@ -89,7 +89,7 @@ def get_chart_data_of_choice_question(question, assessment_id, choice_type):
         base_queryset = get_chart_data_objective_queryset(assessment_id, base_count)
     else:
         base_count = f"{choice_type}_participationresponses"
-        role_count = f"{base_count}__participation__role__name"
+        role_count = f"{base_count}__participation__role__name_{locale}"
         base_queryset = get_chart_data_subjective_queryset(assessment_id, base_count)
 
     response_choices = ResponseChoice.objects.filter(question_id=question.id).annotate(
@@ -101,7 +101,7 @@ def get_chart_data_of_choice_question(question, assessment_id, choice_type):
         count_by_role=Count("role_name", filter=Q(**base_queryset)),
     )
 
-    question_roles = [role.name for role in question.roles.all()]
+    question_roles = [getattr(role, f"name_{locale}") for role in question.roles.all()]
 
     data = {"value": {}, "role": {}}
     total_count = 0
@@ -146,7 +146,7 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
         model = AssessmentResponse
     else:
         base_count = "participation_response"
-        role_count = f"{base_count}__participation__role__name"
+        role_count = f"{base_count}__participation__role__name_{locale}"
         base_queryset = get_chart_data_subjective_queryset(assessment_id, base_count)
         root_queryset = get_chart_data_subjective_queryset(assessment_id)
         model = ParticipationResponse

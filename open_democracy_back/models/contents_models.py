@@ -3,6 +3,7 @@ import datetime
 from django import forms
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import translation
 from django.utils.text import slugify
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.fields import StreamField
@@ -197,7 +198,8 @@ class Partner(index.Indexed, models.Model):
     translated_fields = ["name"]
 
     def __str__(self):
-        return self.name_fr
+        locale = translation.get_language()
+        return getattr(self, f"name_{locale}")
 
     class Meta:
         verbose_name = _("Partenaire")

@@ -4,6 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
+from django.utils import translation
 from model_utils.models import TimeStampedModel
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
@@ -53,7 +54,8 @@ class Role(TranslatableMixin, ClusterableModel):
     translated_fields = ["name", "description"]
 
     def __str__(self):
-        return self.name
+        locale = translation.get_language()
+        return getattr(self, f"name_{locale}")
 
     def __init__(self, *args, **kwargs):
         """Fixes a bug when trying to translate."""

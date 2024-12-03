@@ -83,7 +83,8 @@ class ProfileType(models.Model):
     translated_fields = ["name"]
 
     def __str__(self):
-        return self.name
+        locale = translation.get_language()
+        return getattr(self, f"name_{locale}")
 
     class Meta:
         verbose_name_plural = _("Types de profil")
@@ -392,7 +393,8 @@ class Criteria(index.Indexed, ClusterableModel):
     ]
 
     def __str__(self):
-        return f"{self.concatenated_code}: {self.name}"
+        locale = translation.get_language()
+        return f"{self.concatenated_code}: {getattr(self, f'name_{locale}')}"
 
     def save(self, *args, **kwargs):
         code_elements = []

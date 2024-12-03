@@ -281,11 +281,11 @@ class CriteriaModelAdmin(ModelAdmin):
     menu_label = "Critère"
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
-    list_filter = ["marker__pillar__survey__name", "marker__pillar__name"]
+    list_filter = ["marker__pillar__survey__name_fr", "marker__pillar__name"]
     search_fields = (
-        "name",
+        "name_fr",
         "concatenated_code",
-        "marker__name",
+        "marker__name_fr",
         "marker__pillar__name",
     )
     ordering = ("concatenated_code",)

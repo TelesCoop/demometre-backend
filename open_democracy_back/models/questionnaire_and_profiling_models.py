@@ -88,7 +88,7 @@ class ProfileType(models.Model):
 
     def __str__(self):
         locale = translation.get_language()
-        return getattr(self, f"name_{locale}")
+        return getattr(self, f"name_{locale}") or self.name_fr
 
     class Meta:
         verbose_name_plural = _("Types de profil")

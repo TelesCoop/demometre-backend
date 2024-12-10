@@ -46,8 +46,8 @@ class TestSurvey(TestCase):
                         question.categories.count(),
                     )
                     self.assertEqual(
-                        duplicated_question.categories.first().category,
-                        question.categories.first().category,
+                        duplicated_question.categories.first().category_fr,
+                        question.categories.first().category_fr,
                     )
             elif question.type == QuestionType.PERCENTAGE:
                 self.assertEqual(

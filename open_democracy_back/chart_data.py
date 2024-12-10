@@ -177,7 +177,10 @@ def get_chart_data_of_closed_with_scale_question(question, assessment_id):
     }
     response_choices = ResponseChoice.objects.filter(question_id=question.id)
     for category in Category.objects.filter(question_id=question.id):
-        data["value"][category.id] = {"label": category.category, "value": {}}
+        data["value"][category.id] = {
+            "label": getattr(category, f"category_{locale}"),
+            "value": {},
+        }
         for response_choice in response_choices:
             data["value"][category.id]["value"][response_choice.id] = {
                 "label": getattr(response_choice, f"response_choice_{locale}"),

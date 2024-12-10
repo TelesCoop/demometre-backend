@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.templatetags.static import static
 from django.urls import path, reverse
 from django.utils.html import format_html_join
@@ -346,6 +347,11 @@ class ProfileTypeModelAdmin(ModelAdmin):
     menu_icon = "folder-inverse"
     add_to_settings_menu = False
     search_fields = ("name",)
+    list_display = ("name_with_rules_count",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(rules_count=Count("rules"))
 
 
 class ProfilingQuestionModelAdmin(ModelAdmin):

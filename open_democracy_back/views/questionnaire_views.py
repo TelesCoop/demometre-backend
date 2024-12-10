@@ -45,7 +45,6 @@ class SurveyView(
         survey_serializer = self.get_serializer(
             surveys, many=True, context=self.get_serializer_context()
         )
-
         questions = (
             QuestionnaireQuestion.objects.exclude(criteria__marker__pillar__isnull=True)
             .prefetch_related("profiles")

@@ -82,6 +82,10 @@ class ProfileType(models.Model):
 
     translated_fields = ["name"]
 
+    def name_with_rules_count(self):
+        count = self.rules.count()
+        return f"{str(self)} ({count} règle{'s' if count > 1 else ''})"
+
     def __str__(self):
         locale = translation.get_language()
         return getattr(self, f"name_{locale}")
@@ -1020,7 +1024,8 @@ class Category(TimeStampedModel, Orderable):
     translated_fields = ["category"]
 
     def __str__(self):
-        return self.category
+        locale = translation.get_language()
+        return getattr(self, f"category_{locale}")
 
     class Meta:
         verbose_name = _("Category")
